@@ -6,6 +6,9 @@
     <link rel="icon" href="./img/favicon.ico">
     <link rel="stylesheet" href="./css/public.css">
     <link rel="stylesheet" href="./css/article.css">
+    <link rel="stylesheet" href="../node_modules/highlight.js/styles/googlecode.css">
+    <script src="../node_modules/marked/marked.min.js"></script>
+    <script src="../node_modules/highlight.js/lib/highlight.js"></script>
     <!--[if lte IE 9]>
     <![endif]-->
 </head>
@@ -72,10 +75,11 @@
         <article class="article-detail">
             <h1 class="article-title">文章标题</h1>
             <span class="article-time">这是文章发布的时间</span>
-            <div  id="marked" class="detail-content"></div>
+            <div  id="marked" class="detail-content">
+            </div>
 
             <section class="star">觉得很赞给博主一个star鼓励一下<a href="https://github.com/helios741/myblog">点击进入github</a></section>
-            <section class="goComment"><a href="#connent">点击参与评论</a> </section>
+            <section class="goComment"><a href="#comment">点击参与评论</a> </section>
         </article>
         <article class="other-article">
             <h3>专题为【XXXX】的其他文章:</h3>
@@ -116,7 +120,7 @@
                             <li class="post">
                                 <div class="post-content clearfix">
                                     <div class="avatar pull-left">
-                                        <img src="" alt="用户"></img>
+                                        <img src="./img/favicon.ico" alt="用户">
                                     </div>
                                     <div class="post-body">
                                         <header class="post-body-header">
@@ -133,7 +137,7 @@
                             <li class="post">
                                 <div class="post-content clearfix">
                                     <div class="avatar pull-left">
-                                        <img src="" alt="用户"></img>
+                                        <img src="./img/favicon.ico" alt="用户">
                                     </div>
                                     <div class="post-body">
                                         <header class="post-body-header">
@@ -150,7 +154,7 @@
                                     <li class="post">
                                         <div class="post-content clearfix">
                                             <div class="avatar pull-left">
-                                                <img src="" alt="用户"></img>
+                                                <img src="./img/favicon.ico" alt="用户">
                                             </div>
                                             <div class="post-body">
                                                 <header class="post-body-header">
@@ -183,65 +187,45 @@
     </div>
 
 </footer>
+<script src="./js/public/header.js"></script>
 <script>
-    (function(){
-        var canvas = document.getElementById("canvas");
-        var cobj = canvas.getContext("2d");
-        function drawStar(x,y,radiusB,radiusS,num,color) {
-            var angle  =  360/(num*2);
-            var starArr  = [];
-            for(var i=0;i<num*2;i++)  {
-                var obj  = {};
-                if(i&1)  {
-                    obj.x = x + radiusB*Math.cos(i*angle*Math.PI/180);
-                    obj.y = y + radiusB*Math.sin(i*angle*Math.PI/180);
-                } else {
-                    obj.x = x + radiusS*Math.cos(i*angle*Math.PI/180);
-                    obj.y = y + radiusS*Math.sin(i*angle*Math.PI/180);
-                }
-                starArr.push(obj);
-            }
-            cobj.beginPath();
-            cobj.fillStyle =  color;
-            cobj.moveTo(starArr[0].x,starArr[0].y);
-            for(var i=0;i<2*num;i++)  {
-                cobj.lineTo(starArr[i].x,starArr[i].y);
-            }
-            cobj.closePath();
-            cobj.fill();
-        }
+    /*var html = document.getElementById('marked').innerHTML;*/
 
-        var star  = [];
-        for(var i=0;i<15;i++){
-            var starObj = {
-                radius1:20+10*Math.random(),
-                radius2:8+7*Math.random(),
-                x:10+180*Math.random(),
-                y:10+60*Math.random(),
-                num:5,
-                color:"rgb("+parseInt(255*Math.random())+","+parseInt(255*Math.random())+","+parseInt(255*Math.random())+")",
-                angle:360*Math.random(),
-                changeAngle:-5+10*Math.random()
-            }
-            star.push(starObj);
+    var xmlHttp;
+    function createxmlHttpRequest() {
+        if (window.ActiveXObject) {
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        } else if (window.XMLHttpRequest) {
+            xmlHttp = new XMLHttpRequest();
         }
-        setInterval(function(){
-            cobj.clearRect(0,0,200,200);
-            var starLen = star.length;
-            for(var i=0;i<starLen;i++){
-                star[i].angle+=star[i].changeAngle;
-                cobj.save();
-                cobj.beginPath();
-                cobj.translate(star[i].x,star[i].y);
-                cobj.rotate(star[i].angle*Math.PI/180);
-                cobj.scale(Math.sin(star[i].angle*Math.PI/180),Math.sin(star[i].angle*Math.PI/180));
-                cobj.globalAlpha = Math.abs(Math.sin(star[i].angle*Math.PI/180));
-                drawStar (0,0,star[i].radius1,star[i].radius2,star[i].num,star[i].color);
-                cobj.restore();
+    }
+        function doGet(url){
+// 注意在传参数值的时候最好使用encodeURI处理一下，以防出现乱码
+        createxmlHttpRequest();
+        xmlHttp.open("GET",url);
+        xmlHttp.send(null);
+        xmlHttp.onreadystatechange = function(RES) {
+            if ((xmlHttp.readyState == 4) && (xmlHttp.status == 200)) {
+                console.log(RES.currentTarget.responseText);
+                document.getElementById('marked').innerHTML =
+                    marked(RES.currentTarget.responseText);
+            } else {
+                console.log('fail');
             }
-        },50);
-
-    })()
+        }
+    }
+    doGet("./data/1.md");
+    hljs.initHighlightingOnLoad();
+    marked.setOptions({
+        renderer: new marked.Renderer(),
+        gfm: true,
+        tables: true,
+        breaks: false,
+        pedantic: false,
+        sanitize: false,
+        smartLists: true,
+        smartypants: false
+    });
 </script>
 </body>
 </html>

@@ -6,37 +6,283 @@
     <link rel="stylesheet" href="../../node_modules/highlight.js/styles/googlecode.css">
     <script src="../../node_modules/marked/marked.min.js"></script>
     <script src="../../node_modules/highlight.js/lib/highlight.js"></script>
+    <script src="../../node_modules/jQuery/tmp/jquery.js"></script>
 </head>
 <body>
-<p id="p">
-## fdga
-rdstgsrdgvrdt
-```javascript
-function(){
-    fsdgfd
-    console.log("ss");
+<div id="p">
+# 博客的后台以及数据库的设计
+
+## 数据库的部分
+
+### 文章列表
+使用说明：展示文章列表
+
+|接口地址|请求方式|
+|:-----|:----:|
+|articles/{categoryId}/{page}|get|
+#### 请求字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| -----:|
+| page | number | 当前页 |必填|页码|
+|categoryId|number|分别ID|必填|对应的数据库中的id|
+#### 相应字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| :-----:|
+| code | String | 返回码 |必填|返回码 没有业务逻辑处理 统一返回100|
+|data|json|响应数据（Article对象）|非必填|文章信息|
+#### 响应包的格式
+```json
+{
+"data": [
+{
+"articleId": 1,
+"authorId": 1,
+"title": "想要比同龄人更优秀，这3点你应该知道！",
+"content": “这里是文章的内容”,
+"category": 1,
+"comments": []
+},
+{
+"articleId": 2,
+"authorId": 1,
+"title": "这种情况，不如先不要谈恋爱！",
+"content": null,
+"category": 1,
+"comments": []
+}
+],
+"code": 100
 }
 ```
--  fdgsdfgsd
--  fdgsdfgsd
--  fdgsdfgsd
-</p>
+### 文章详情
+使用说明：展示文章内容以及标题</br>
+逻辑关系：显示文章详情
+
+|接口地址|请求方式|
+|:-----|:----:|
+|articleInfor/id|get|
+#### 请求字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| -----:|
+| id | number | 文章id |必填|文章id|
+#### 相应字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| :-----:|
+| code | String | 返回码 |必填|返回码 没有业务逻辑处理 统一返回100|
+|data|json|响应数据（Article对象）|非必填|文章信息|
+#### 相应包的格式
+```json
+{"data":
+{
+"id":1,
+"title":"javaScript标题",
+"content":"我是js内容详情",
+"category":1
+},
+"code":"100"}
+
+```
+### 分类列表
+使用说明：展示类型</br>
+逻辑关系：展示文章的分类
+
+|接口地址|请求方式|
+|:-----|:----:|
+|/category|get|
+#### 请求字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| -----:|
+| 无|
+#### 相应字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| :-----:| -----:| :-----:|
+| code | String | 返回码 |必填|返回码 没有业务逻辑处理 统一返回100|
+|data|json|响应数据（Category对象）|非必填|文章信息|
+#### 响应包格式
+```javascript
+{
+"data": [
+{
+"id": 1,
+"name": "JavaScript"
+},
+{
+"id": 2,
+"name": "HTML5"
+},
+{
+"id": 3,
+"name": "热门文章"
+}
+],
+"code": 100
+}
+
+```
+### 导航列表
+使用说明：展示所有导航</br>
+逻辑关系：显示全部导航
+
+|接口地址|请求方式|
+|:-----|:----:|
+|/category|get|
+#### 请求字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| -----:|
+| 无|
+#### 相应字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| :-----:| -----:| :-----:|
+| code | String | 返回码 |必填|返回码 没有业务逻辑处理 统一返回100|
+|data|json|响应数据（Article对象））|非必填|文章信息|
+#### 相应包格式
+```json
+{
+"data": [
+{
+"id": 1,
+"navigation": "首页"
+},
+{
+"id": 2,
+"navigation": "javascript"
+},
+{
+"id": 3,
+"navigation": "html5"
+},
+{
+"id": 4,
+"navigation": "关于我"
+}
+],
+"code": 100
+}
+
+```
+
+### 评论
+使用说明：文章评论</br>
+逻辑说明：评论成功后将评论加入文章中
+
+|接口地址|请求方式|
+|:-----|:----:|
+|/commen|post|
+#### 请求字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| -----:|
+| articleId | number | 文章id |必填||
+|commentContent|String|评论内容|必填||
+|邮箱|string|用户邮箱|必填||
+|昵称|string|用户昵称|必填||
+#### 相应字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| :-----:|
+| code | String | 返回码 |必填|返回码 没有业务逻辑处理 统一返回100|
+|data|json|响应数据（Article对象）|非必填|文章信息|
+#### 数据包格式
+```json
+{
+"data": {
+"id": 1,
+"authorId": null,
+"title": "javascript简介",
+"content": "JavaScript一种直译式脚本语言。",
+"category": 1,
+"comments": [
+{
+"commentId": 1,
+"commentContent": "我不是黄蓉我不会武功",
+"commenterId": 1000,
+"commenterName": "想要飞翔的猪",
+"reply": null,
+"replyerName": null,
+"replyerId": null
+}
+]
+},
+"code": 100
+}
+
+```
+
+### 回复评论
+使用说明：文章评论</br>
+逻辑说明：评论成功后将评论加入文章中
+
+|接口地址|请求方式|
+|:-----|:----:|
+|/replyComment|post|
+#### 请求字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| -----:|
+| articleId | number | 文章id |必填||
+| commentId | number | 评论id |必填||
+|reply|String|回复评论内容|必填||
+|邮箱|string|用户邮箱|必填||
+|昵称|string|用户昵称|必填||
+#### 相应字段
+| 字段 | 类型 | 描述 |值条件|备注|
+| ------------- |:-------------:| -----:| -----:| :-----:|
+| code | String | 返回码 |必填|返回码 没有业务逻辑处理 统一返回100|
+|data|json|响应数据（Article对象）|非必填|文章信息|
+#### 数据包格式
+```json
+{
+"data": {
+"id": 1,
+"authorId": null,
+"title": "javascript简介",
+"content": "JavaScript一种直译式脚本语言。",
+"category": 1,
+"comments": [
+{
+"commentId": 1,
+"commentContent": "我不是黄蓉我不会武功",
+"commenterId": 1000,
+"commenterName": "想要飞翔的猪",
+"reply": "我不是靖哥哥，我不要你的爱情",
+"replyerName": "想要游泳的乌鸦",
+"replyerId": 1
+}
+]
+},
+"code": 100
+}
+
+```
+
+
+## 后台部分
+使用环境：`nodejs` *6.9.2*稳定版</br>
+使用框架：`express`、`moogoose`</br>
+模板引擎：`ejs`</br>
+使用数据库：`mongobd`</br>
+
+</div>
 <div id="content"></div>
 <script>
-    hljs.initHighlightingOnLoad();
-    marked.setOptions({
-        renderer: new marked.Renderer(),
-        gfm: true,
-        tables: true,
-        breaks: false,
-        pedantic: false,
-        sanitize: false,
-        smartLists: true,
-        smartypants: false
-    });
-    var html = document.getElementById('p').innerHTML;
-    document.getElementById('content').innerHTML =
-        marked(html);
+
+
+    $.ajax({
+        url:"../data/1.md",
+        method:"get",
+        success:function(res){
+            document.getElementById('content').innerHTML =
+                marked(res);
+            hljs.initHighlightingOnLoad();
+            marked.setOptions({
+                renderer: new marked.Renderer(),
+                gfm: true,
+                tables: true,
+                breaks: false,
+                pedantic: false,
+                sanitize: false,
+                smartLists: true,
+                smartypants: false
+            });
+        }
+    })
 </script>
 </body>
 </html>
