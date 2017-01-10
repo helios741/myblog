@@ -1,0 +1,103 @@
+.article-mid{
+    .article-detail{
+        position: relative;
+        width:100%;
+        .article-time{
+            position: absolute;
+            right:15px;
+            top:15px;
+            color: #111;
+        }
+        .star{
+            font-size: 1.6rem;
+            line-height: 2.2rem;
+            a{
+                color: #444;
+                text-decoration: none;
+            }
+            a:hover{
+                color: #00ee00;
+                transition: color .5s;
+            }
+        }
+        .goComment a{
+            color: #444;
+            font-size:1.4rem;
+            text-decoration: none;
+        }
+        .goComment a:hover{
+            color: #00ee00;
+            transition: color .5s;
+        }
+        border-bottom: 2px solid #eee;
+    }
+    .other-article{
+        border-bottom: 2px solid #eee;
+        ul li a{
+            text-decoration: none;
+            line-height: 2rem;
+            font-size: 1.4rem;
+            color: #444;
+        }
+        ul li a:hover{
+            color: #00ffdd;
+            transition: color .5s;
+        }
+        padding:15px 0;
+    }
+    .article-comment{
+        .comment-sum{
+            font-size: 1.4rem;
+            display: block;
+            padding:8px 0;
+            color: #000;
+            width:100px;
+            border-bottom:2px solid #00ffdd;
+        }
+        .submit-comment a:nth-child(1){
+            background: #12b0e6;
+            display: inline-block;
+            color: #fff;
+            width: 160px;
+            text-align: center;
+            line-height: 48px;
+            text-decoration: none;
+            font-size: 1.6rem;
+            margin-right: 20px;
+        }
+        .submit-comment a:nth-child(2){
+            font-size: 1.6rem;
+            color: #0086B3;
+        }
+        .comment-list .post{
+            margin-top: 15px;
+            .post-content{
+                .avatar{
+                    border-left:5px solid transparent;
+                    margin-right: 15px;
+                    img{
+                        height:40px;
+                        width:40px;
+                    }
+                }
+                .post-body{
+                    .post-body-header{
+                        font-size:1.2rem;
+                        .post-username{
+                            color: #00ffdd;
+                        }
+                        strong{
+                            line-height: 1.2rem;
+                            font-size: 2.4rem;
+                            font-weight: 900;
+                            vertical-align: inherit;
+                        }
+                    }
+                }
+            }
+            .children>li{
+                margin-left: 48px;;
+            }
+        }
+    }
+}
