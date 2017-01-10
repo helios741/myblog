@@ -188,34 +188,8 @@
 
 </footer>
 <script src="./js/public/header.js"></script>
+<script src="../node_modules/jQuery/tmp/jquery.js"></script>
 <script>
-    /*var html = document.getElementById('marked').innerHTML;*/
-
-    var xmlHttp;
-    function createxmlHttpRequest() {
-        if (window.ActiveXObject) {
-            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
-        } else if (window.XMLHttpRequest) {
-            xmlHttp = new XMLHttpRequest();
-        }
-    }
-        function doGet(url){
-// 注意在传参数值的时候最好使用encodeURI处理一下，以防出现乱码
-        createxmlHttpRequest();
-        xmlHttp.open("GET",url);
-        xmlHttp.send(null);
-        xmlHttp.onreadystatechange = function(RES) {
-            if ((xmlHttp.readyState == 4) && (xmlHttp.status == 200)) {
-                console.log(RES.currentTarget.responseText);
-                document.getElementById('marked').innerHTML =
-                    marked(RES.currentTarget.responseText);
-            } else {
-                console.log('fail');
-            }
-        }
-    }
-    doGet("./data/1.md");
-    hljs.initHighlightingOnLoad();
     marked.setOptions({
         renderer: new marked.Renderer(),
         gfm: true,
@@ -226,6 +200,13 @@
         smartLists: true,
         smartypants: false
     });
+    $.get("./data/1.md",function(res){
+        $("#marked").html(marked(res));
+        $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+        });
+    })
+    //hljs.initHighlightingOnLoad();
 </script>
 </body>
 </html>
