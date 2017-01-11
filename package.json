@@ -19,9 +19,14 @@
   "devDependencies": {
     "angular": "^1.6.1",
     "angular-route": "^1.6.1",
+    "bootstrap": "^3.3.7",
+    "ejs": "^2.5.5",
+    "express": "^4.14.0",
+    "formidable": "^1.0.17",
     "gulp": "^3.9.1",
     "gulp-less": "^3.3.0",
     "highlight.js": "^9.9.0",
+    "mongoose": "^4.7.6",
     "seajs": "^3.0.2"
   },
   "dependencies": {
