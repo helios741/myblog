@@ -7,6 +7,11 @@
     <script src="../../node_modules/marked/marked.min.js"></script>
     <script src="../../node_modules/highlight.js/lib/highlight.js"></script>
     <script src="../../node_modules/jQuery/tmp/jquery.js"></script>
+    <style>
+        table td,th{
+            border:1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
 <div id="content"></div>
@@ -23,7 +28,9 @@
         smartLists: true,
         smartypants: false
     });
-
+    var md = getElementById('md').innerHTML;
+    document.getElementById('content').innerHTML =
+        marked(md);
 
     var xmlHttp;
     function createxmlHttpRequest() {

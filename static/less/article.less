@@ -10,10 +10,35 @@
             top:15px;
             color: #111;
         }
+        /*下面是对markdown进行扩展的样式*/
         .detail-content{
-            pre{
-                background: #eeeeee;
+            table td,th{
+                border:1px solid #ddd;
+                font-size: 1.4rem;
             }
+            ul {
+                display: block;
+                padding-left: 25px;
+                li{
+                   line-height:2.4rem;
+                }
+            }
+            ul>li{
+                list-style: disc;
+                ul>li{
+                    list-style: circle;
+                }
+            }
+            p{
+                font-size: 1.6rem;
+                code{
+                    color:#9d0006;
+                }
+            }
+            pre{
+                background-color: #eee !important;
+            }
+            /*扩展结束*/
         }
         .star{
             border-top:1px solid #222;
@@ -45,8 +70,8 @@
         border-bottom: 2px solid #eee;
         ul li a{
             text-decoration: none;
-            line-height: 2rem;
-            font-size: 1.4rem;
+            line-height: 2.6rem;
+            font-size: 1.6rem;
             color: #444;
         }
         ul li a:hover{
