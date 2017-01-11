@@ -1,6 +1,7 @@
 
 
-article{
+
+.article{
     width:1280px;
     margin: 25px auto;
     .article-left{
@@ -135,39 +136,34 @@ article{
                 }
             }
         }
-        nav .pagination{
-            display:inline-block ;
+        nav .pager {
             padding-left: 0;
-            margin-top: 15px;
-            margin-left: 35%;
-            border-radius: 4px;
+            margin: 20px 0;
+            text-align: center;
+            list-style: none;
             li{
-                display: inline-block;
-                position: relative;
+                display: inline;
                 a{
-                    border-top-left-radius:4px;
-                    border-bottom-left-radius:4px;
-                    float: left;
-                    padding: 5px 12px;
-                    margin-left: -1px;
-                    line-height: 1.42857143;
-                    color: #428bca;
-                    text-decoration: none;
+                    display: inline-block;
+                    padding: 5px 14px;
                     background-color: #fff;
                     border: 1px solid #ddd;
+                    border-radius: 15px;
+                    text-decoration: none;
+                    color: #428bca;
+                    cursor: pointer;
+
                 }
             }
-            .active a{
-                z-index: 2;
-                color: #fff;
-                cursor: default;
-                background-color: #428bca;
-                border-color: #428bca;
+            .disabled>a{
+                color: #777;
+                cursor: not-allowed;
+                background-color: #fff;
             }
         }
     }
-
 }
+
 
 
 

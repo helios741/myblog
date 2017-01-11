@@ -8,12 +8,17 @@
         <div class="article-desc">
             {{item.desc}}
         </div>
-        <button class="read-all"><a href="#/detail/{{item.articleId}}">阅读全文&raquo;</a></button>
+        <button class="read-all"><a href="#!/detail/{{item.articleId}}">阅读全文&raquo;</a></button>
     </div>
 </div>
-<nav>
-    <ul class="pager">
-        <li><a href="#">Previous</a></li>
-        <li><a href="#">Next</a></li>
-    </ul>
-</nav>
+
+<div ng-show="!loading">
+    <h4>当前第{{currentPage}}页--共有{{totPage}}页</h4>
+    <nav>
+        <ul class="pager">
+            <li ng-class="{disabled:currentPage<=1}"><a ng-click="go(currentPage-1)">上一页</a></li>
+            <li ng-class="{disabled:currentPage>=totPage}"><a ng-click="go(currentPage+1)">下一页</a></li>
+        </ul>
+    </nav>
+</div>
+
