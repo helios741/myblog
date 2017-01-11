@@ -1,106 +1,80 @@
 <article class="article-detail">
     <h1 class="article-title">{{article.title}}</h1>
     <span class="article-time">{{article.time}}</span>
-    <div  id="marked" class="detail-content">
-        {{article.content}}
-    </div>
-
-    <section class="star">觉得很赞给博主一个star鼓励一下<a href="https://github.com/helios741/myblog">点击进入github</a></section>
-    <section class="goComment"><a href="#comment">点击参与评论</a> </section>
+   <!-- <div  id="marked" class="detail-content"></div>-->
+    <marked-render>{{article.content}}</marked-render>
+    <section class="star">觉得很赞给博主一个star鼓励一下&nbsp;&nbsp;&nbsp;<a href="https://github.com/helios741/myblog">点击进入github</a></section>
+    <section class="goComment"><a href="{{dirname}}#comment">点击参与评论</a> </section>
 </article>
 <article class="other-article">
-    <h3>专题为【XXXX】的其他文章:</h3>
+    <h3>专题为【{{category}}】的其他文章:</h3>
     <ul>
-        <li><a href="#">其他文章</a></li>
-        <li><a href="#">其他文章</a></li>
-        <li><a href="#">其他文章</a></li>
-        <li><a href="#">其他文章</a></li>
-        <li><a href="#">其他文章</a></li>
+        <li ng-repeat="item in articleList"><a href="$/detail/{{item.articleid}}">{{item.title}}</a></li>
     </ul>
 </article>
 <article id="comment" class="article-comment">
-    <h3 class="comment-title">XXX文章的评论</h3>
+    <h3 class="comment-title">{{article.title}}文章的评论</h3>
     <p class="comment-sum">15comments</p>
     <section class="submit-comment">
         <a href="#">点击发表新评论</a>
         <a href="#">(查看所有完整评论)</a>
     </section>
+    <section class="report-comment">
+        <form action="#" method="post" name="myForm" novalidate>
+            <p>
+                <input type="text" name="username" placeholder="请填写您的用户名">
+            </p>
+            <p>
+                <input type="text" name="email" placeholder="请填写您的邮箱">
+            </p>
+            <p>
+                <textarea name="commentContent"></textarea>
+            </p>
+            <p>
+                <input type="submit" value="提交">
+            </p>
+        </form>
+    </section>
     <section class="comment-list">
         <ul class="post-list">
-            <li class="post">
+            <li class="post"  ng-repeat="item in commentList">
                 <div class="post-content clearfix">
                     <div class="avatar pull-left">
-                        <img src="" alt="用户"></img>
+                        <img ng-src="{{item.img}}" alt="用户">
                     </div>
                     <div class="post-body">
                         <header class="post-body-header">
-                            <span class="post-username">helios</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                            <span>一个月前</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                            <span class="post-username">{{item.commenterName}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                            <span>{{item.time}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
                             <a href="#">回复</a>
                         </header>
                         <div class="post-body-inner">
-                            <p>这是评论的信息</p>
+                            <p>{{item.commentContent}}</p>
                         </div>
                     </div>
                 </div>
                 <ul class="children">
-                    <li class="post">
+                    <li class="post" ng-repeat="reply in replyList">
                         <div class="post-content clearfix">
                             <div class="avatar pull-left">
-                                <img src="./img/favicon.ico" alt="用户">
+                                <img ng-src="{{reply.img}}" alt="用户">
                             </div>
                             <div class="post-body">
                                 <header class="post-body-header">
-                                    <span class="post-username">helios</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                    <span>一个月前</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                                    <span class="post-username">{{reply.replyerName}}</span>&nbsp;&nbsp;@{{item.commenterName}}<strong>.</strong>&nbsp;&nbsp;
+                                    <span> {{reply.time}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
                                     <a href="#">回复</a>
                                 </header>
                                 <div class="post-body-inner">
-                                    <p>这是评论的信息</p>
+                                    <p>{{item.commentContent}}</p>
                                 </div>
                             </div>
                         </div>
                     </li>
-                    <li class="post">
-                        <div class="post-content clearfix">
-                            <div class="avatar pull-left">
-                                <img src="./img/favicon.ico" alt="用户">
-                            </div>
-                            <div class="post-body">
-                                <header class="post-body-header">
-                                    <span class="post-username">helios</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                    <span>一个月前</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                    <a href="#">回复</a>
-                                </header>
-                                <div class="post-body-inner">
-                                    <p>这是评论的信息</p>
-                                </div>
-                            </div>
-                        </div>
-                        <ul class="children">
-                            <li class="post">
-                                <div class="post-content clearfix">
-                                    <div class="avatar pull-left">
-                                        <img src="./img/favicon.ico" alt="用户">
-                                    </div>
-                                    <div class="post-body">
-                                        <header class="post-body-header">
-                                            <span class="post-username">helios</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                            <span>一个月前</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                            <a href="#">回复</a>
-                                        </header>
-                                        <div class="post-body-inner">
-                                            <p>这是评论的信息</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </li>
+
+
                 </ul>
             </li>
-            <li class="post"></li>
-            <li class="post"></li>
         </ul>
     </section>
 </article>

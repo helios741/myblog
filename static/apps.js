@@ -3,7 +3,8 @@
 var app = angular.module("myBlog", [
     "ngRoute",
     "myBlog.controllers.index",
-    "myBlog.controllers.articleDetail"
+    "myBlog.controllers.articleDetail",
+    "myBlog.directives.marked"
 ]);
 
 app.constant("AppConfig",{

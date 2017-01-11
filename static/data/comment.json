@@ -1,0 +1,34 @@
+{
+    "data": {
+        "id": 1,
+        "authorId": null,
+        "title": "javascript简介",
+        "content": "JavaScript一种直译式脚本语言。",
+        "category": 1,
+        "comments": [
+            {
+                "commentId": 1,
+                "commentContent": "我不是黄蓉我不会武功",
+                "commenterId": 1000,
+                "time":"6666",
+                "img":"./img/favicon.ico",
+                "commenterName": "想要飞翔的猪",
+                "reply": null,
+                "replyerName": null,
+                "replyerId": null
+            },
+            {
+                "commentId": 1,
+                "commentContent": "我不是黄蓉我不会武功",
+                "commenterId": 1000,
+                "time":"777",
+                "img":"./img/favicon.ico",
+                "commenterName": "想要飞翔的猪",
+                "reply": null,
+                "replyerName": null,
+                "replyerId": null
+            }
+        ]
+    },
+    "code": 100
+}
