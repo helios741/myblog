@@ -99,11 +99,22 @@ article{
                 font-size:2rem;
                 padding-left: 15px;
             }
-            p{
+            .article-desc{
                 font-size: 1.6rem;
                 line-height: 2.2rem;
                 color: #444;
-                word-wrap:break-word;
+                position: relative;
+                overflow: hidden;
+                height:130px;
+                padding-right: 20px;
+                word-wrap: break-word;
+            }
+            .article-desc::after{
+                content: "....";
+                font-weight: bold;
+                bottom:0;
+                right:0;
+                padding:0 20px 1px 15px ;
             }
             .read-all{
                 border:none;
@@ -117,6 +128,11 @@ article{
                 right:12px;
                 color: #eee;
                 bottom: 12px;
+                a{
+                    color: #fff;
+                    text-decoration: none;
+                    display: block;
+                }
             }
         }
         nav .pagination{

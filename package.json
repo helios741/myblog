@@ -17,9 +17,12 @@
   },
   "homepage": "https://github.com/helios741/myblog#readme",
   "devDependencies": {
+    "angular": "^1.6.1",
+    "angular-route": "^1.6.1",
     "gulp": "^3.9.1",
     "gulp-less": "^3.3.0",
-    "highlight.js": "^9.9.0"
+    "highlight.js": "^9.9.0",
+    "seajs": "^3.0.2"
   },
   "dependencies": {
     "marked": "^0.3.6"

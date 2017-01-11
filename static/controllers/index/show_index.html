@@ -1,0 +1,19 @@
+<div class="article-recommend" ng-repeat="item in articleList">
+    <h3> {{item.title}} </h3>
+    <span class="time">{{item.time}}</span>
+    <div class="article-recommend-content clearfix">
+        <figure class="pull-left">
+            <img ng-src="{{item.img}}" alt="文章推荐图片展示">
+        </figure>
+        <div class="article-desc">
+            {{item.desc}}
+        </div>
+        <button class="read-all"><a href="#/detail/{{item.articleId}}">阅读全文&raquo;</a></button>
+    </div>
+</div>
+<nav>
+    <ul class="pager">
+        <li><a href="#">Previous</a></li>
+        <li><a href="#">Next</a></li>
+    </ul>
+</nav>

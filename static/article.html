@@ -19,58 +19,9 @@
 </p>
 <![endif]-->
 
-<header class=" header clearfix">
-    <canvas id="canvas" class="logo pull-left">尚义龙的技术博客</canvas>
-    <nav class="pull-right">
-        <ul>
-            <li><a href="#">首页</a></li>
-            <li><a href="#">博客</a></li>
-            <li><a href="#">关于我</a></li>
-            <li><a href="#">留言板</a></li>
-            <li><a href="#">Gist</a></li>
-        </ul>
-    </nav>
-</header>
+<ng-include src="'./public/index-header.html'"></ng-include>
 <article class="clearfix  article">
-    <div class="article-left pull-left">
-        <div class="author-intro">
-            <div class="author-info">
-                <a href="#">
-                    <img src="./img/avatar.jpg" alt="本文的头像">
-                </a>
-                <h3>尚义龙</br>Helios</h3>
-                <p>ACM弱渣，前端爱好者</p>
-            </div>
-            <div class="author-link">
-
-            </div>
-        </div>
-        <div class="article-type">
-            <ul>
-                <li><a href="#">首页</a></li>
-                <li><a href="#">文章归档</a></li>
-                <li><a href="#">文章整理</a></li>
-                <li><a href="#">友情链接</a></li>
-                <li><a href="#">关于</a></li>
-            </ul>
-            <nav>
-                <li><a href="#"></a></li>
-                <li><a href="#"></a></li>
-                <li><a href="#"></a></li>
-                <li><a href="#"></a></li>
-            </nav>
-        </div>
-        <div class="article-type">
-            <h3>文章分类</h3>
-            <ul>
-                <li><a href="#">ACM搜索 (5)</a></li>
-                <li><a href="#">ACM图论 (15)</a></li>
-                <li><a href="#">ACM动态规划 (25)</a></li>
-                <li><a href="#">数据结构 (35)</a></li>
-                <li><a href="#">前端项目 (12)</a></li>
-            </ul>
-        </div>
-    </div>
+    <ng-include src="'./public/author-type.html'"></ng-include>
     <div class="article-mid pull-right">
         <article class="article-detail">
             <h1 class="article-title">文章标题</h1>
@@ -179,15 +130,8 @@
         </article>
     </div>
 </article>
-<footer>
-    <div>
-        <p>备案信息:正在建设</p>
-        <p>对本站建设和技术交流请发我的邮箱：674876158@qq.com</p>
-        <p>本站源码地址<a>点击进入</a></p>
-    </div>
-
-</footer>
-<script src="./js/public/header.js"></script>
+<div ng-include="'./public/index-footer.html'"></div>
+<script src="public/js/header.js"></script>
 <script src="../node_modules/jQuery/tmp/jquery.js"></script>
 <script>
     marked.setOptions({
