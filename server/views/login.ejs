@@ -8,6 +8,7 @@
     <meta name="author" content="">
     <link rel="icon" href="./favicon.ico">
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
     <title>Signin Template for Bootstrap</title>
     <style>
         body {
@@ -58,19 +59,42 @@
 
 <div class="container">
 
-    <form class="form-signin" role="form">
+    <form class="form-signin" role="form" >
         <h2 class="form-signin-heading">Please sign in</h2>
-        <input type="email" class="form-control" placeholder="username" required autofocus>
-        <input type="password" class="form-control" placeholder="Password" required>
+        <input type="text" id="adminName" class="form-control" placeholder="username" required autofocus>
+        <input type="password" id="adminPwd" class="form-control" placeholder="Password" required>
         <div class="checkbox">
             <label>
-                <input type="checkbox" value="remember-me"> Remember me
+                <input type="checkbox"  name="remPwd"> Remember me
             </label>
         </div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <button  id="submitLogin" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
     </form>
 
 </div> <!-- /container -->
+
+<script>
+    $("#submitLogin").click(function(){
+        $.ajax({
+            type:"post",
+            url:"/checkLogin",
+            data:{
+                "name":$("#adminName").val(),
+                "pwd":$("#adminPwd").val()
+            },
+            success:function(res){
+                if(-2==res){
+                    alert("用户名或者密码错误");
+                }else if(-1==res){
+                    alert("服务器错误");
+                }
+            },
+            error:function(){
+                console.log("error");
+            }
+        })
+    });
+</script>
 
 </body>
 </html>

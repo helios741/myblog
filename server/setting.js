@@ -1,0 +1,1 @@
+exports.dbName = "blog";
