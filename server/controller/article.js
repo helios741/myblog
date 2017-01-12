@@ -22,7 +22,6 @@ exports.ArticleList = function(req,res){
             articleList:result
         });
     })
-
 }
 exports.newArticle  = function(req,res){
     res.render("index",{
@@ -38,9 +37,8 @@ exports.doNewArticle = function(req,res){
             res.send("-1");
             return ;
         }
-        console.log(fields);
         var newArticle = new Article({
-            articleId:565,
+            articleId:(Math.random()*10000+89999)>>0,
             title:fields.title,
             contentUrl:"./sfsdg",
             content:fields.content,
@@ -55,4 +53,27 @@ exports.doNewArticle = function(req,res){
             res.send("1");
         });
     })
+}
+exports.delArticle = function(req,res){
+    console.log("some"+req.query._id);
+    Article.removeById(req.query._id,function(err,result){
+        if(err){
+            csonole.log(err);
+            res.send("-1");
+            return ;
+        }
+        if(1==result.ok && result.n==0) result("0");
+        if(1==result.ok) res.send("1");
+        res.send("1");
+    });
+}
+exports.getArticleList = function(req,res){
+    Article.fetch(function(err,result){
+        if(err){
+            console.log(err);
+            return ;
+        }
+        console.log(result);
+        res.send(result);
+    });
 }

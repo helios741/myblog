@@ -1,0 +1,174 @@
+
+
+
+.article{
+    width:1280px;
+    margin: 25px auto;
+    .article-left{
+        width:25%;
+        background-image:url("../img/author-bac.jpg");
+        .author-intro{
+            margin-top:25px ;
+            a{
+                display: block;
+                margin-left:20% ;
+            }
+            a img{
+                border-radius:50%;
+            }
+            h3{
+                color: #eee;
+                font-size:2.6rem;
+                text-align: center;
+            }
+            p{
+                color: #eee;
+                font-size:1.8rem;
+                text-align: center;
+            }
+        }
+        .article-type{
+            padding-left: 20%;
+            margin-bottom: 65px;
+            h3{
+                font-size:2.2rem;
+                color: #00ffdd;
+            }
+            ul{
+                width:80%;
+                margin:auto;
+                li a{
+                    color: #00ffdd;
+                    display: block;
+                    font-size: 1.6rem;  ;
+                    line-height:2.4rem;
+                    font-weight: 500;
+                    text-decoration: none;
+                }
+                li a:hover{
+                    color: #4d2926;
+                    transition: color .5s;
+                }
+                margin-bottom: 20px;
+            }
+            nav li{
+                display: inline-block;
+                margin-right: 8px;
+                a{
+                    text-decoration: none;
+                    display: block;
+                    height:30px;
+                    width: 30px;
+                    color: #fff;
+                }
+            }
+            nav li:nth-child(1){
+                background-image: url("../img/weibo.png");
+                background-size: contain;
+                border-radius: 50%;
+            }
+            nav li:nth-child(2){
+                background-image: url("../img/git.png");
+                background-size: contain;
+                border-radius: 50%;
+            }
+            nav li:nth-child(3){
+                background-image: url("../img/email.jpg");
+                background-size: contain;
+                border-radius: 50%;
+            }
+            nav li:nth-child(4){
+                background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAGFBMVEXX19fi4uLs7Ozu7u7z8/P39/f7+/v///8ogvf9AAAACHRSTlMAIkZoibff/pNjuAYAAACsSURBVHjapZJJEsMgDAS1jIb//9gJpAISpDikbxKNtRhZUAdgKj9QRHvBcDmC9oUHxVoidDsvMBv6uedmBg4jCewpk4F3AyOYGdaCWj6gtSXkME/WN5I3cJhKV52yj2WrEJJJVa8CbiV8dpRTSce2Wpaprf561NVaPmdZ3LyiI/I81SDgiOOLULadbMTNEOfyIvVkiCFIhr/Txahcjdl3yMWgXAyTRMFgIv/zAKAqCK7AmYXiAAAAAElFTkSuQmCC");
+                background-size: contain;
+                border-radius: 50%;
+            }
+        }
+    }
+    .article-mid{
+        width:70%;
+        background-color: #fff;
+        .article-recommend{
+            position: relative;
+            border-bottom: 1px solid #ddd;
+            .time{
+                position: absolute;
+                right:15px;
+                top:0;
+                color: #444;;
+            }
+            h3{
+                font-size:2rem;
+                padding-left: 15px;
+            }
+            .article-desc{
+                font-size: 1.6rem;
+                line-height: 2.2rem;
+                color: #444;
+                position: relative;
+                overflow: hidden;
+                height:130px;
+                padding-right: 20px;
+                word-wrap: break-word;
+            }
+            .article-desc::after{
+                content: "....";
+                font-weight: bold;
+                bottom:0;
+                right:0;
+                padding:0 20px 1px 15px ;
+            }
+            .read-all{
+                border:none;
+                position: absolute;
+                display: block;
+                font-size: 1.8rem;
+                font-weight:500;
+                width: 109px;
+                line-height: 56px;
+                background: #5bc0de;
+                right:12px;
+                color: #eee;
+                bottom: 12px;
+                a{
+                    color: #fff;
+                    text-decoration: none;
+                    display: block;
+                }
+            }
+        }
+        nav .pager {
+            padding-left: 0;
+            margin: 20px 0;
+            text-align: center;
+            list-style: none;
+            li{
+                display: inline;
+                a{
+                    display: inline-block;
+                    padding: 5px 14px;
+                    background-color: #fff;
+                    border: 1px solid #ddd;
+                    border-radius: 15px;
+                    text-decoration: none;
+                    color: #428bca;
+                    cursor: pointer;
+
+                }
+            }
+            .disabled>a{
+                color: #777;
+                cursor: not-allowed;
+                background-color: #fff;
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+

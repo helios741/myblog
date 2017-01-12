@@ -1,4 +1,4 @@
 node_modules
 bower_components
 .idea
-static/css
+server/static/css

@@ -4,7 +4,7 @@
     <div class="panel-heading"><%=title%></div>
 
     <!-- Table -->
-    <table class="table">
+    <table class="table syl-table">
         <thead>
             <tr>
                 <th>#</th>
@@ -22,10 +22,42 @@
                 <td><%= articleList[i].title %></td>
                 <td><%= articleList[i].hidden?"未发布":"已发布" %></td>
                 <td><%= articleList[i].contentUrl %></td>
-                <td>操作</td>
+                <td class="delParent">
+                    <ul>
+                        <li href="/admin/article/new<%=articleList[i]._id%>" class="btn btn-info" >编辑</li>
+                        <li class="btn btn-primary" id="category">分类</li>
+                        <li class="btn btn-success" id="topCategory">置顶</li>
+                        <li class="btn btn-danger delArticle" data="<%=articleList[i]._id%>">删除</li>
+                    </ul>
+                </td>
 
             </tr>
         <%}%>
         </tbody>
     </table>
 </div>
+<script>
+    (function(){
+        $(".delParent").click(function(){
+            var ev = ev || window.event;
+            var target = ev.target || ev.srcElement;
+
+            if(!$(target).attr("data"))  return ;
+            if(confirm("确定删除吗")){
+                $.get("/admin/article/del",
+                    {_id:$(target).attr("data")},
+                    function(res){
+                        if(-1==res){
+                            alert("服务器错误");
+                        } else if(0==res){
+                            alert("这个数据不存在");
+                        } else if(1==res){
+                            $(target).parent().parent().parent().remove();
+                            alert("删除成功");
+                        }
+                    }
+                )
+            }
+        });
+    })()
+</script>

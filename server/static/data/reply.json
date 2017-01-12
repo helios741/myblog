@@ -1,0 +1,45 @@
+{
+    "data": {
+        "id": 1,
+        "authorId": null,
+        "title": "javascript简介",
+        "content": "JavaScript一种直译式脚本语言。",
+        "category": 1,
+        "comments": [
+            {
+                "commentId": 1,
+                "commentContent": "我不是黄蓉我不会武功",
+                "commenterId": 1000,
+                "time":"6666",
+                "commenterName": "想要飞翔的猪",
+                "reply": "我不是靖哥哥，我不要你的爱情",
+                "replyerName": "想要游泳的乌鸦",
+                "img":"./img/favicon.ico",
+                "replyerId": 1
+            },
+            {
+                "commentId": 1,
+                "commentContent": "我不是黄蓉我不会武功",
+                "commenterId": 1000,
+                "img":"./img/favicon.ico",
+                "time":"6666",
+                "commenterName": "想要飞翔的猪",
+                "reply": "我不是靖哥哥，我不要你的爱情",
+                "replyerName": "想要游泳的乌鸦",
+                "replyerId": 1
+            },
+            {
+                "commentId": 1,
+                "commentContent": "我不是黄蓉我不会武功",
+                "commenterId": 1000,
+                "time":"6666",
+                "img":"./img/favicon.ico",
+                "commenterName": "想要飞翔的猪",
+                "reply": "我不是靖哥哥，我不要你的爱情",
+                "replyerName": "想要游泳的乌鸦",
+                "replyerId": 1
+            }
+        ]
+    },
+    "code": 100
+}
