@@ -68,7 +68,7 @@
                 <input type="checkbox"  name="remPwd"> Remember me
             </label>
         </div>
-        <button  id="submitLogin" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <button  id="submitLogin" class="btn btn-lg btn-primary btn-block" type="button">Sign in</button>
     </form>
 
 </div> <!-- /container -->
@@ -87,12 +87,15 @@
                     alert("用户名或者密码错误");
                 }else if(-1==res){
                     alert("服务器错误");
+                }else{
+                    window.location.href = location.origin +"/admin";
                 }
             },
             error:function(){
                 console.log("error");
             }
         })
+
     });
 </script>
 
