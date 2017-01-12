@@ -1,0 +1,34 @@
+#newArticleTitle{
+    height: 50px;
+    width:80%;
+    margin-bottom: 15px;
+    display: inline-block;
+    border:1px solid #eee;
+    border-bottom: 1px solid #00AAAA;
+}
+.newArticleBtn{
+    display: inline-block;
+    height: 50px;
+    width:9%;
+    border:none;
+    color: #fff;;
+    background-color: #00AAAA;
+}
+.MDLeft{
+    width:50%;
+    height: 100%;
+    float: left;
+}
+.MDLeft textarea{
+    width:100%;
+    min-height: 600px;
+    border:none;
+    background: rgba(0,0,0,0.1);
+}
+.MDRight{
+    width:50%;
+    min-height: 600px;
+    float: right;
+    background-color: #ccc;
+
+}

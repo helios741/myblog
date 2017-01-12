@@ -27,17 +27,12 @@ exports.checkLogin = function(req,res){
             }
             req.session.name = fields.name;
             res.send("1");
-            //res.redirect("/admin");
         })
     });
 }
 
-//展示管理员界面
-exports.showAdmin = function(req,res){
-    console.log("name:"+req.session.name);
-    /*if(!req.session.name){
-        res.redirect("/login");
-    }*/
-    //res.send("Ssss");
-    res.render("index");
+exports.showAdminData = function(req,res){
+    res.render("index",{
+        type:"showData"
+    });
 }

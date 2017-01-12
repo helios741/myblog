@@ -1,0 +1,62 @@
+<h1 class="page-header"> 新建文章</h1>
+<input type="text" placeholder="请输入文章标题" id="newArticleTitle">
+<input type="button" class="newArticleBtn" id="submitNewArticle" value="发表">
+<input type="button" class="newArticleBtn" id="waitNewArticle" value="存入草稿">
+
+<div  class="MDLeft">
+    <textarea id="text-input" placeholder="正文" oninput="this.editor.update()"></textarea>
+</div>
+<div id="divMarkDownHtml" class="MDRight">
+    <div id="preview"></div>
+</div>
+<script type="text/javascript">
+    var renderer_zai30 = new marked.Renderer();
+    marked.setOptions({
+        renderer: renderer_zai30,
+        gfm: true,
+        tables: true,
+        breaks: true,//回车换成br
+        pedantic: false,
+        sanitize: true,
+        smartLists: true,
+        smartypants: false
+    });
+
+    //
+    function Editor(input, preview) {
+        this.update = function () {
+            //marked(input.value); 解析Markdown为HTML
+            preview.innerHTML = marked(input.value);
+        };
+        input.editor = this;
+        this.update();
+    }
+    var $markdown = function (id) { return document.getElementById(id); };
+    new Editor($markdown("text-input"), $markdown("preview"));
+</script>
+
+<script>
+    (function(){
+        var textInput = $("#text-input"),
+            submitNewArticle = $("#submitNewArticle"),
+            waitNewArticle = $("#waitNewArticle"),
+            newArticleTitle = $("#newArticleTitle");
+        submitNewArticle.click(function(){
+            alert("sss");
+            $.ajax({
+                type:"post",
+                url:"/doNewArticle",
+                data:{
+                    "title":newArticleTitle.val(),
+                    "content":textInput.val()
+                },
+                success:function(res){
+                    alert(res);
+                },
+                error:function(err){
+                    console.log(err);
+                }
+            });
+        })
+    })()
+</script>
