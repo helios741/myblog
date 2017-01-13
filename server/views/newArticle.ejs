@@ -1,9 +1,51 @@
 <h1 class="page-header"> 新建文章</h1>
 <input type="text" placeholder="请输入文章标题" id="newArticleTitle">
-<input type="button" class="newArticleBtn" id="submitNewArticle" value="发表">
+<!--<input type="button" class="newArticleBtn" value="发表">-->
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-lg newArticleBtn" data-toggle="modal" data-target="#myModal">
+    发表
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <h4>选择分类</h4>
+                <input type="text" class="form-control" placeholder="新增分类">
+                <div class="btn-group" style="margin: 15px 0;">
+                    <button type="button" class="btn btn-default dropdown-toggle" id="showCategoryBtn">
+                        点击查看分类
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" id="showCategory">
+                        <li>
+                            <a href="#"><input type="checkbox">&nbsp; Dropdown link</a>
+                        </li>
+                        <li>
+                            <a href="#"><input type="checkbox">&nbsp; Dropdown link</a>
+                        </li>
+                    </ul>
+                </div>
+                <textarea type="text" class="form-control" placeholder="请输入摘要" id="newArticleDesc"></textarea>
+                &nbsp;&nbsp;
+                <div contentEditable="true" class="form-control" id="articleKeyWord"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitNewArticle">确认发表</button>
+            </div>
+        </div>
+    </div>
+</div>
 <input type="button" class="newArticleBtn" id="waitNewArticle" value="存入草稿">
 
-<div  class="MDLeft">
+<div class="MDLeft">
     <textarea id="text-input" placeholder="正文" oninput="this.editor.update()"></textarea>
 </div>
 <div id="divMarkDownHtml" class="MDRight">
@@ -31,32 +73,55 @@
         input.editor = this;
         this.update();
     }
-    var $markdown = function (id) { return document.getElementById(id); };
+    var $markdown = function (id) {
+        return document.getElementById(id);
+    };
     new Editor($markdown("text-input"), $markdown("preview"));
 </script>
-
 <script>
-    (function(){
+    (function () {
         var textInput = $("#text-input"),
             submitNewArticle = $("#submitNewArticle"),
             waitNewArticle = $("#waitNewArticle"),
-            newArticleTitle = $("#newArticleTitle");
-        submitNewArticle.click(function(){
-            alert("sss");
+            articleKeyWord = $("#articleKeyWord"),
+            newArticleDesc = $("#newArticleDesc"),
+            newArticleTitle = $("#newArticleTitle"),
+            showCategoryBtn = $("#showCategoryBtn"),
+            showCategory  = $("#showCategory");
+
+        function doSubmit(res) {
+            //debugger;
             $.ajax({
-                type:"post",
-                url:"/doNewArticle",
-                data:{
-                    "title":newArticleTitle.val(),
-                    "content":textInput.val()
+                type: "post",
+                url: "/doNewArticle",
+                data: {
+                    "title": newArticleTitle.val(),
+                    "content": textInput.val(),
+                    "desc": newArticleDesc.val(),
+                    "hidden": ($(res.target).attr("id") == "waitNewArticle") ? true : fasle,
+                    "keyword": articleKeyWord.val().split(",")
                 },
-                success:function(res){
-                    alert(res);
+                success: function (res) {
+                    if (1 == res) {
+                        alert("发布成功点击\n点击跳转到文章展示");
+                        window.location = "/admin/article/show";
+                        return;
+                    }
+                    alert("服务器错误，请重新尝试");
                 },
-                error:function(err){
+                error: function (err) {
                     console.log(err);
                 }
             });
-        })
+        }
+
+        waitNewArticle.click(doSubmit);
+        submitNewArticle.click(doSubmit)
+        var flag = true;
+        showCategoryBtn.click(function(){
+            flag = !flag;
+            if(!flag) showCategory.show();
+            else showCategory.hide();
+        });
     })()
 </script>

@@ -10,17 +10,19 @@
     index.controller("ArticleDetail",[
         "$scope","$route","$routeParams","$http","$location",
         function($scope,$route,$routeParams,$http,$location){
+
             $scope.dirname = $location.$$absUrl;
             $http
-                .get("data/article.json",{})
+                .get("/admin/article/getArticle/:"+$routeParams.articleid,{})
                 .then(function(res){
-                    $scope.article = res.data.data[0];
+                   // console.log(res);debugger;
+                    $scope.article = res.data;
                     /*
                     * 这里还由于技术水平有限，只能在这里简单的操作一下DOM，日后有能力改之
                     * @time  2017-1-11 19:43
                     * @author Helios
                      */
-                    $("#marked").html(marked(res.data.data[0].content));
+                    $("#marked").html(marked(res.data.content));
                     $('pre code').each(function(i, block) {
                         hljs.highlightBlock(block);
                     });

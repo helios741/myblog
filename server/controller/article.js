@@ -40,10 +40,11 @@ exports.doNewArticle = function(req,res){
         var newArticle = new Article({
             articleId:(Math.random()*10000+89999)>>0,
             title:fields.title,
-            contentUrl:"./sfsdg",
             content:fields.content,
             category:[1,2,6],
-            hidden:false
+            keyword:fields.keyword,
+            hidden:fields.hidden,
+            desc:fields.desc
         });
         newArticle.save(function(err,result){
             if(err){
@@ -55,7 +56,6 @@ exports.doNewArticle = function(req,res){
     })
 }
 exports.delArticle = function(req,res){
-    console.log("some"+req.query._id);
     Article.removeById(req.query._id,function(err,result){
         if(err){
             csonole.log(err);
@@ -73,7 +73,17 @@ exports.getArticleList = function(req,res){
             console.log(err);
             return ;
         }
-        console.log(result);
         res.send(result);
     });
+}
+exports.getArticleDetail = function(req,res){
+    var articleId = parseInt(req.params.id.slice(1));
+    Article.findById(articleId,function(err,result){
+        if(err){
+            console.log(err);
+            res.send("-1");
+            return ;
+        }
+        res.send(result);
+    })
 }

@@ -19,9 +19,10 @@
         //正在加载资源
          $scope.loading = true;
         $http
-            .get("data/index.json",{id:1})//等后台做好之后，在这里传输数据
+            .get("/admin/article/getArticleList",{})//等后台做好之后，在这里传输数据
             .then(function(res){
-                $scope.articleList = res.data.data;
+                $scope.articleList = res.data;
+                //debugger;
                 $scope.totPage = Math.ceil($scope.articleList.length/AppConfig.pageSize);
                 $scope.loading = false;
             },
