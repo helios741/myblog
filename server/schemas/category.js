@@ -28,7 +28,7 @@ CategorySchema.statics = {
     },
     findById:function(id,cb){
         return this
-            .findOne({articleId:id})
+            .findOne({id:id})
             .exec(cb)
     },
     removeById:function(id,cb){
@@ -36,6 +36,7 @@ CategorySchema.statics = {
             .remove({_id:id})
             .exec(cb)
     }
+    
 };
 
-exports.CategorySchema = CategorySchema;
+module.exports = CategorySchema;

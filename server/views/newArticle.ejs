@@ -1,11 +1,11 @@
 <h1 class="page-header"> 新建文章</h1>
-<input type="text" placeholder="请输入文章标题" id="newArticleTitle">
+<input type="text" placeholder="请输入文章标题" id="newArticleTitle"  value="<%=article.title%>">
 <!--<input type="button" class="newArticleBtn" value="发表">-->
 <!-- Button trigger modal -->
 <button type="button" class="btn btn-primary btn-lg newArticleBtn" data-toggle="modal" data-target="#myModal">
-    发表
+    <%=saveBtn%>
 </button>
-
+<input type="hidden" value="<%=article._id%>" id="article_id">
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -17,28 +17,39 @@
             </div>
             <div class="modal-body">
                 <h4>选择分类</h4>
-                <input type="text" class="form-control" placeholder="新增分类">
+                <input type="text" class="form-control" placeholder="新增分类,请用英文逗号分割" id="newCategory">
                 <div class="btn-group" style="margin: 15px 0;">
                     <button type="button" class="btn btn-default dropdown-toggle" id="showCategoryBtn">
                         点击查看分类
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" id="showCategory">
+                        <% categoryListLen=categoryList.length %>
+                        <% for(var i=0;i<categoryListLen;i++){%>
                         <li>
-                            <a href="#"><input type="checkbox">&nbsp; Dropdown link</a>
+                            <a href="#">
+                                <% if(article.category && -1!=article.category.indexOf(categoryList[i].id) ){ %>
+                                    <input type="checkbox" id="<%=categoryList[i].id %>" checked>
+                                <%}else{%>
+                                    <input type="checkbox" id="<%=categoryList[i].id %>" >
+                                <%}%>
+                                &nbsp; <%=categoryList[i].name%>
+                            </a>
                         </li>
-                        <li>
-                            <a href="#"><input type="checkbox">&nbsp; Dropdown link</a>
-                        </li>
+                        <% } %>
                     </ul>
                 </div>
-                <textarea type="text" class="form-control" placeholder="请输入摘要" id="newArticleDesc"></textarea>
+                <textarea type="text" class="form-control" placeholder="请输入摘要" id="newArticleDesc"><%=article.desc%></textarea>
                 &nbsp;&nbsp;
-                <div contentEditable="true" class="form-control" id="articleKeyWord"></div>
+                <div contentEditable="true" class="form-control" id="articleKeyWord">
+                    <%if(article.keyword){%>
+                        <%=article.keyword.join(",")%>
+                    <%}%>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="submitNewArticle">确认发表</button>
+                <button type="button" class="btn btn-primary" id="submitNewArticle">确认<%=saveBtn%></button>
             </div>
         </div>
     </div>
@@ -46,7 +57,7 @@
 <input type="button" class="newArticleBtn" id="waitNewArticle" value="存入草稿">
 
 <div class="MDLeft">
-    <textarea id="text-input" placeholder="正文" oninput="this.editor.update()"></textarea>
+    <textarea id="text-input" placeholder="正文" oninput="this.editor.update()"><%=article.content%></textarea>
 </div>
 <div id="divMarkDownHtml" class="MDRight">
     <div id="preview"></div>
@@ -87,19 +98,34 @@
             newArticleDesc = $("#newArticleDesc"),
             newArticleTitle = $("#newArticleTitle"),
             showCategoryBtn = $("#showCategoryBtn"),
-            showCategory  = $("#showCategory");
+            newCategory = $("#newCategory"),
+            showCategory  = $("#showCategory"),
+            article_id = $("#article_id");
 
         function doSubmit(res) {
-            //debugger;
+            var checkbox = $("input[type='checkbox']");
+            var categoryLen = checkbox.length;
+            var categoryStr  = "";
+            for(var i=0;i<categoryLen;i++){
+                if( checkbox.eq(i).is(":checked") ){
+                    categoryStr+=checkbox.eq(i).attr("id")+",";
+                }
+            }
+            if(categoryStr[categoryStr.length-1]==","){
+                categoryStr.slice(0,categoryStr.length-1)
+            }
             $.ajax({
                 type: "post",
                 url: "/doNewArticle",
                 data: {
+                    "_id":article_id.val()?article_id.val():"",
                     "title": newArticleTitle.val(),
                     "content": textInput.val(),
                     "desc": newArticleDesc.val(),
-                    "hidden": ($(res.target).attr("id") == "waitNewArticle") ? true : fasle,
-                    "keyword": articleKeyWord.val().split(",")
+                    "hidden": ($(res.target).attr("id") == "waitNewArticle") ? true : false,
+                    keyword: articleKeyWord.html(),
+                    newCategory : newCategory.val(),
+                    "category":categoryStr
                 },
                 success: function (res) {
                     if (1 == res) {
@@ -123,5 +149,6 @@
             if(!flag) showCategory.show();
             else showCategory.hide();
         });
+
     })()
 </script>

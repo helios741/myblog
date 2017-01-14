@@ -1,0 +1,35 @@
+<h1 class="page-header">文章分类</h1>
+<div class="panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading"></div>
+
+    <!-- Table -->
+    <table class="table syl-table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>ID</th>
+            <th>分类名称</th>
+            <th>文章总数</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <%var categoryLen = categoryList.length%>
+        <% for(var i=0;i<categoryLen;i++){%>
+        <tr>
+            <td><%=i%></td>
+            <td><%=categoryList[i].id%></td>
+            <td><%=categoryList[i].name%></td>
+            <td><%=categoryList[i].list.length%></td>
+            <td class="delParent">
+                <button type="button"  class="btn btn-primary">
+                    分类
+                </button>
+            </td>
+        </tr>
+        <%}%>
+
+        </tbody>
+    </table>
+</div>

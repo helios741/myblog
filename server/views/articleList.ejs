@@ -24,8 +24,42 @@
                 <td><%= articleList[i].contentUrl %></td>
                 <td class="delParent">
                     <ul>
-                        <li href="/admin/article/new<%=articleList[i]._id%>" class="btn btn-info" >编辑</li>
-                        <li class="btn btn-primary" id="category">分类</li>
+                        <a href="/admin/article/new/<%=articleList[i]._id%>" class="btn btn-info" id="editBth">编辑</a>
+                        <!-- Button trigger modal -->
+                        <button type="button"  class="btn btn-primary">
+                            分类
+                        </button>
+                        <div class="modal sylBar" >
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close closeBar" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                        <h4 class="modal-title">Modal title</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="nav nav-pills nav-stacked">
+                                            <% categoryListLen=categoryList.length %>
+                                            <% for(var j=0;j<categoryListLen;j++){%>
+                                            <li>
+                                                <a href="#">
+                                                    <% if(articleList[i].category && -1!=articleList[i].category.indexOf(categoryList[j].id) ){ %>
+                                                    <input type="checkbox" id="<%=categoryList[j].id %>" checked>
+                                                    <%}else{%>
+                                                    <input type="checkbox" id="<%=categoryList[j].id %>" >
+                                                    <%}%>
+                                                    &nbsp; <%=categoryList[j].name%>
+                                                </a>
+                                            </li>
+                                            <% } %>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default closeBar" data-dismiss="modal">Close</button>
+                                        <button type="button" data="<%=articleList[i]._id%>" class="btn btn-primary saveCategoryBtn">Save changes</button>
+                                    </div>
+                                </div><!-- /.modal-content -->
+                            </div><!-- /.modal-dialog -->
+                        </div><!-- /.modal -->
                         <li class="btn btn-success" id="topCategory">置顶</li>
                         <li class="btn btn-danger delArticle" data="<%=articleList[i]._id%>">删除</li>
                     </ul>
@@ -41,7 +75,10 @@
         $(".delParent").click(function(){
             var ev = ev || window.event;
             var target = ev.target || ev.srcElement;
-
+            if($(target).attr("type")=="button"){
+                $(target).siblings("div").show();
+                return ;
+            }
             if(!$(target).attr("data"))  return ;
             if(confirm("确定删除吗")){
                 $.get("/admin/article/del",
@@ -58,6 +95,31 @@
                     }
                 )
             }
+        });
+        $(".closeBar").click(function(){
+            $(".sylBar").hide();
+        });
+        $(".sylBar").click(function(){
+            var ev = ev || window.event;
+            var target = ev.target || ev.srcElement;
+            if(!$(target).attr("data"))  return ;
+            var categoryStr = "";
+            var checkbox = $(target).parent().parent().children().children("ul").find("input[type=checkbox]"),
+                checkboxLen = checkbox.length;
+            for(var i=0;i<checkboxLen;i++){
+                if(checkbox.eq(i).is(":checked"))
+                    categoryStr+=checkbox.eq(i).attr("id")+",";
+            }
+            if(categoryStr[categoryStr.length-1]==","){
+                categoryStr =   categoryStr.slice(0,categoryStr.length-1)
+            }
+            $.get("/admin/category/save?category="+categoryStr+"&aid="+$(target).attr("data")
+                    ,function(res){
+                    $(".sylBar").hide();
+                    if(1!=res){
+                        alert("保存失败，请联系管理员");
+                    }
+                })
         });
     })()
 </script>

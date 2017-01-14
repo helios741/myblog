@@ -2,7 +2,7 @@ var Article = require("../models/article");
 var DB = require("../models/db");
 var formidable  = require("formidable");
 var mongoose = require("mongoose");
-
+var Category = require("../models/category");
 mongoose.Promise = require('bluebird');
 //展示管理员界面
 exports.ArticleList = function(req,res){
@@ -10,24 +10,41 @@ exports.ArticleList = function(req,res){
     /*if(!req.session.name){
      res.redirect("/login");
      }*/
+    Category.fetch(function(err,result){
+        if(err){
+            console.log(err);
+            return ;
+        }
+        Article.fetch(function(err,result2){
+            if(err){
+                console.log(err);
+                return ;
+            }
+            res.render("index",{
+                type:"articleList",
+                title:"文章列表",
+                articleList:result2,
+                categoryList:result
+            });
+        })
+    })
 
-    Article.fetch(function(err,result){
+}
+exports.newArticle  = function(req,res){
+
+    Category.fetch(function(err,result){
         if(err){
             console.log(err);
             return ;
         }
         res.render("index",{
-            type:"articleList",
-            title:"文章列表",
-            articleList:result
+            type:"newArticle",
+            title:"新建文章",
+            categoryList:result,
+            saveBtn:"发表",
+            article:""
         });
     })
-}
-exports.newArticle  = function(req,res){
-    res.render("index",{
-        type:"newArticle",
-        title:"新建文章"
-    });
 }
 exports.doNewArticle = function(req,res){
     var form = new formidable.IncomingForm();
@@ -37,22 +54,80 @@ exports.doNewArticle = function(req,res){
             res.send("-1");
             return ;
         }
-        var newArticle = new Article({
-            articleId:(Math.random()*10000+89999)>>0,
-            title:fields.title,
-            content:fields.content,
-            category:[1,2,6],
-            keyword:fields.keyword,
-            hidden:fields.hidden,
-            desc:fields.desc
-        });
-        newArticle.save(function(err,result){
-            if(err){
-                console.log(err);
-                res.send("-1");
+
+
+
+        //文章的ID
+        var aid = (Math.random()*10000+89999)>>0;
+        //创建新的分类
+        var newCateGoryArr =  fields.newCategory.split(","),
+            categoryArr = [],
+            newCategoryLen = newCateGoryArr.length,
+            existCategory = fields.category.split(","),
+            existCategoryLen = existCategory.length;
+        for(var i=0;i<existCategoryLen;i++) {
+            if(existCategory[i]=="") continue;
+            categoryArr.push(parseInt(existCategory[i]));
+        }
+        if(fields._id){
+
+            (function iterator(i){
+                if(i>=newCategoryLen){
+                    Article.update({_id:fields._id},{
+                        title: fields.title,
+                        content: fields.content,
+                        category: categoryArr,
+                        keyword: fields.keyword.split(","),
+                        hidden: fields.hidden,
+                        desc: fields.desc
+                    },function(err,result){
+                        if(err){
+                            console.log(err);
+                            res.send("-1");
+                        }
+                        res.send("1");
+                    });
+                    return ;
+                }
+                Category.createNewCategory(newCateGoryArr[i],aid,function(err,result){
+                    if(err){
+                        console.log(err);
+                        return ;
+                    }
+                    categoryArr.push(result.id);
+                    iterator(i+1);
+                });
+            })(0);
+            return ;
+        }
+        (function iterator(i){
+            if(i>=newCategoryLen){
+                Article.createOneArticle({
+                    articleId: aid,
+                    title: fields.title,
+                    content: fields.content,
+                    category: categoryArr,
+                    keyword: fields.keyword.split(","),
+                    hidden: fields.hidden,
+                    desc: fields.desc
+                },function(err,result){
+                    if(err){
+                        console.log(err);
+                        res.send("-1");
+                    }
+                    res.send("1");
+                });
+                return ;
             }
-            res.send("1");
-        });
+            Category.createNewCategory(newCateGoryArr[i],aid,function(err,result){
+                if(err){
+                    console.log(err);
+                    return ;
+                }
+                categoryArr.push(result.id);
+                iterator(i+1);
+            });
+        })(0);
     })
 }
 exports.delArticle = function(req,res){
@@ -67,15 +142,6 @@ exports.delArticle = function(req,res){
         res.send("1");
     });
 }
-exports.getArticleList = function(req,res){
-    Article.fetch(function(err,result){
-        if(err){
-            console.log(err);
-            return ;
-        }
-        res.send(result);
-    });
-}
 exports.getArticleDetail = function(req,res){
     var articleId = parseInt(req.params.id.slice(1));
     Article.findById(articleId,function(err,result){
@@ -86,4 +152,44 @@ exports.getArticleDetail = function(req,res){
         }
         res.send(result);
     })
+}
+exports.getArticleList = function(req,res){
+    Article.findByData(req.query,function(err,result){
+        if(err){
+            console.log(err);
+            return ;
+        }
+        res.send(result);
+    });
+}
+exports.getAllArticle =  function(req,res){
+    Article.countAllData(function(err,result){
+        if(err){
+            console.log(err);
+            return ;
+        }
+        res.send(result);
+    })
+}
+exports.editArticle  =function(req,res){
+    var _id = req.params._id;
+    Article.findBy_Id(_id,function(err,result){
+        if(err){
+            console.log(err);
+            return ;
+        }
+        Category.fetch(function(err,result2){
+            if(err){
+                console.log(err);
+                return ;
+            }
+            res.render("index",{
+                type:"newArticle",
+                title:"新建文章",
+                categoryList:result2,
+                article:result,
+                saveBtn:"保存"
+            });
+        })
+    });
 }

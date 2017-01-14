@@ -18,13 +18,18 @@
              start = ($scope.currentPage-1)*count;
         //正在加载资源
          $scope.loading = true;
-        $http
-            .get("/admin/article/getArticleList",{})//等后台做好之后，在这里传输数据
+        $http({
+            method:"GET",
+            url:"/admin/article/getArticleList/"+$scope.currentPage+"?start="+start+"&count="+count
+            })
             .then(function(res){
                 $scope.articleList = res.data;
-                //debugger;
-                $scope.totPage = Math.ceil($scope.articleList.length/AppConfig.pageSize);
-                $scope.loading = false;
+                $http
+                    .get("/admin/article/getAllArticle")
+                    .then(function(res){
+                        $scope.totPage = Math.ceil(res.data.length/AppConfig.pageSize);
+                        $scope.loading = false;
+                    })
             },
             function(){
                 console.log("读取文章列表失败");

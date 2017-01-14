@@ -12,5 +12,22 @@ var a = new Article({
     hidden:false
 })
 a.save();
-*/
+*//*
+var newArticle = new Article({
+    articleId:aid,
+    title:fields.title,
+    content:fields.content,
+    category:categoryArr,
+    keyword:fields.keyword.split(","),
+    hidden:fields.hidden,
+    desc:fields.desc
+});*/
+Article.createOneArticle = function(data,cb){
+    new Article(data).save(cb);
+}
+Article.saveNewCategory =function(_id,category,cb){
+    Article.where({_id:_id}).update({$set:{category:category}},cb);
+}
+
+
 module.exports = Article;
