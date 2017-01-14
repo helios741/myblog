@@ -23,7 +23,7 @@
             <td><%=categoryList[i].name%></td>
             <td><%=categoryList[i].list.length%></td>
             <td class="delParent">
-                <button type="button"  class="btn btn-danger">删除</button>
+                <button type="button" data="<%=categoryList[i].id%>"  class="btn btn-danger delCategory">删除</button>
                 <a href="/admin/category/detail/<%=categoryList[i].id%>" type="button"  class="btn btn-info">查看文章</a>
             </td>
         </tr>
@@ -32,3 +32,11 @@
         </tbody>
     </table>
 </div>
+<script>
+    (function(){
+        $(".delParent").click(function(){
+            var ev  = ev || window.event;
+            var target = ev.target || ev.srcElement;
+        });
+    })
+</script>

@@ -207,7 +207,7 @@ exports.articlePreview = function(req,res){
             }
             res.render("index",{
                 type:"preview",
-                title:"新建文章",
+                title:"文章预览",
                 categoryList:result2,
                 article:result,
                 saveBtn:"保存"
