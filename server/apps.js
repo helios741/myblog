@@ -29,6 +29,7 @@ app.get("/admin/article/detail/:_id",Article.articlePreview);
 app.get("/admin/article/getAllArticle",Article.getAllArticle);
 app.get("/admin/category/show",Category.Show);
 app.get("/admin/category/save",Category.save);
+app.get("/admin/category/del/:id",Category.del);
 app.get("/admin/category/detail/:id",Category.showCategoryDetail);
 app.post("/doNewArticle",Article.doNewArticle);
 app.listen(PORT);

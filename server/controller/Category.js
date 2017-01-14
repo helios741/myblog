@@ -120,3 +120,47 @@ exports.showCategoryDetail = function(req,res,next){
         })(0);
     });
 }
+exports.del = function(req,res,next){
+    var id = req.params.id;
+    console.log(id);
+    Category.findById(id,function (err,result) {
+        if(err){
+            console.log(err);
+            next();return ;
+        }
+        var list =  result.list,
+            listTot  = list.length;
+         (function iterator(i) {
+            if(i>=listTot){
+
+                return ;
+            }
+            Article.findById(list[i],function(err,res2){
+                if(err){
+                    console.log(err);
+                    return ;
+                }
+                var categoryList = res2.category;
+                if(-1==categoryList.indexOf(id)){
+                    iterator(i+1)
+                }
+                categoryList = categoryList.splice(categoryList.indexOf(id),1);
+                Article.where({articleId:list[i]}).update({category:categoryList},function(err,res3){
+                    if(err){
+                        console.log(err);
+                        return ;
+                    }
+                    iterator(i+1);
+                })
+            });
+        })(0)
+        Category.removeById(id,function(err,res2){
+            if(err){
+                console.log(err);
+                res.send("-1");
+                return ;
+            }
+            res.send("1");
+        });
+    })
+}

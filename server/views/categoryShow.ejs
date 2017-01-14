@@ -33,10 +33,22 @@
     </table>
 </div>
 <script>
-    (function(){
-        $(".delParent").click(function(){
-            var ev  = ev || window.event;
-            var target = ev.target || ev.srcElement;
-        });
-    })
+    $(".delParent").click(function(){
+        var ev  = ev || window.event,
+           target = ev.target || ev.srcElement,
+            delBtn = $(target);
+
+        if(!delBtn.attr("data")) return ;
+        if(confirm("确信要删除么")){
+            $.get("/admin/category/del/"+delBtn.attr("data"),function(res){
+                if(1!=res){
+                    alert("删除失败请联系管理员");
+                }else {
+                    location.href  = "/admin/category/show";
+                }
+            })
+        }
+
+
+    });
 </script>

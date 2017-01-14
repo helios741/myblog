@@ -31,12 +31,17 @@ CategorySchema.statics = {
             .findOne({id:id})
             .exec(cb)
     },
-    removeById:function(id,cb){
+    removeBy_Id:function(id,cb){
         return this
             .remove({_id:id})
             .exec(cb)
+    },
+    removeById:function(id,cb){
+        return this
+            .remove({id:id})
+            .exec(cb)
     }
-    
+
 };
 
 module.exports = CategorySchema;
