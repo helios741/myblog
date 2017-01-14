@@ -23,9 +23,8 @@
             <td><%=categoryList[i].name%></td>
             <td><%=categoryList[i].list.length%></td>
             <td class="delParent">
-                <button type="button"  class="btn btn-primary">
-                    分类
-                </button>
+                <button type="button"  class="btn btn-danger">删除</button>
+                <a href="/admin/category/detail/<%=categoryList[i].id%>" type="button"  class="btn btn-info">查看文章</a>
             </td>
         </tr>
         <%}%>

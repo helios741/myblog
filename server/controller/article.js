@@ -193,3 +193,25 @@ exports.editArticle  =function(req,res){
         })
     });
 }
+exports.articlePreview = function(req,res){
+    var _id = req.params._id;
+    Article.findBy_Id(_id,function(err,result){
+        if(err){
+            console.log(err);
+            return ;
+        }
+        Category.fetch(function(err,result2){
+            if(err){
+                console.log(err);
+                return ;
+            }
+            res.render("index",{
+                type:"preview",
+                title:"新建文章",
+                categoryList:result2,
+                article:result,
+                saveBtn:"保存"
+            });
+        })
+    });
+}

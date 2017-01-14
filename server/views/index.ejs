@@ -83,7 +83,11 @@
             <%}else if("showData" ==type){%>
                 <% include showData.ejs %>
             <%}else if("categoryShow"==type){%>
-                <%include categoryShow.ejs %>
+                <% include categoryShow.ejs %>
+            <%}else if("categoryDetail"==type){%>
+                <% include categoryDetail.ejs %>
+            <%}else if("preview" == type){%>
+                <% include preview.ejs %>
             <%}%>
         </div>
     </div>

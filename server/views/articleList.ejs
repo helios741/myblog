@@ -103,17 +103,23 @@
             var ev = ev || window.event;
             var target = ev.target || ev.srcElement;
             if(!$(target).attr("data"))  return ;
-            var categoryStr = "";
+            var categoryStr = "",
+                unCategoryStr = "";
             var checkbox = $(target).parent().parent().children().children("ul").find("input[type=checkbox]"),
                 checkboxLen = checkbox.length;
             for(var i=0;i<checkboxLen;i++){
                 if(checkbox.eq(i).is(":checked"))
                     categoryStr+=checkbox.eq(i).attr("id")+",";
+                else
+                    unCategoryStr+=checkbox.eq(i).attr("id")+","
             }
             if(categoryStr[categoryStr.length-1]==","){
-                categoryStr =   categoryStr.slice(0,categoryStr.length-1)
+                categoryStr = categoryStr.slice(0,categoryStr.length-1)
             }
-            $.get("/admin/category/save?category="+categoryStr+"&aid="+$(target).attr("data")
+            if(unCategoryStr[unCategoryStr.length-1]==","){
+                unCategoryStr = unCategoryStr.slice(0,unCategoryStr.length-1)
+            }
+            $.get("/admin/category/save?category="+categoryStr+"&aid="+$(target).attr("data")+"&unCategoryStr="+unCategoryStr
                     ,function(res){
                     $(".sylBar").hide();
                     if(1!=res){

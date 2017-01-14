@@ -1,0 +1,19 @@
+<h4><%=title%></h4>
+<ul class="list-group">
+    <% listTot = articleDetailList.length%>
+    <%for(var i=0;i<listTot;i++){%>
+        <li class="list-group-item">
+            <div class="media">
+
+                <div class="media-body">
+                    <h4 class="media-heading"><%=articleDetailList[i].title %></h4>
+                    <%= articleDetailList[i].desc %>
+                </div>
+            </div>
+            <a href="/admin/article/detail/<%= articleDetailList[i]._id %>" class="btn btn-info dropdown-toggle" style="position: absolute; right: 22px;top: 14px;">
+                点击预览
+            </a>
+        </li>
+    <%}%>
+</ul>
+

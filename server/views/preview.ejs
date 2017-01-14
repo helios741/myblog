@@ -1,0 +1,40 @@
+<h1 class="page-header"> 预览文章</h1>
+<h3><%=article.title%></h3>
+<!--<input type="button" class="newArticleBtn" value="发表">-->
+<!-- Button trigger modal -->
+
+<input type="hidden" value="<%=article._id%>" id="article_id">
+
+<div class="MDLeft" style="display: none;">
+    <textarea id="text-input" placeholder="正文" oninput="this.editor.update()"><%=article.content%></textarea>
+</div>
+<div id="divMarkDownHtml" class="MDRight"  style="width: 100%">
+    <div id="preview"></div>
+</div>
+<script type="text/javascript">
+    var renderer_zai30 = new marked.Renderer();
+    marked.setOptions({
+        renderer: renderer_zai30,
+        gfm: true,
+        tables: true,
+        breaks: true,//回车换成br
+        pedantic: false,
+        sanitize: true,
+        smartLists: true,
+        smartypants: false
+    });
+
+    //
+    function Editor(input, preview) {
+        this.update = function () {
+            //marked(input.value); 解析Markdown为HTML
+            preview.innerHTML = marked(input.value);
+        };
+        input.editor = this;
+        this.update();
+    }
+    var $markdown = function (id) {
+        return document.getElementById(id);
+    };
+    new Editor($markdown("text-input"), $markdown("preview"));
+</script>
