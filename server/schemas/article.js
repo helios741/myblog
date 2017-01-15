@@ -37,7 +37,7 @@ ArticleSchema.statics = {
     //得到所有文章
     fetch:function(cb){
         return this
-            .find({})
+            .find({isdel:false})
             .sort({ "meta.updateAt" : 1 })
             .exec(cb)
     },

@@ -103,16 +103,22 @@
             article_id = $("#article_id");
 
         function doSubmit(res) {
-            var checkbox = $("input[type='checkbox']");
-            var categoryLen = checkbox.length;
-            var categoryStr  = "";
+            var checkbox = $("input[type='checkbox']"),
+                categoryLen = checkbox.length,
+                categoryStr  = "",
+                unCategoryStr = "";
             for(var i=0;i<categoryLen;i++){
                 if( checkbox.eq(i).is(":checked") ){
                     categoryStr+=checkbox.eq(i).attr("id")+",";
+                    continue;
                 }
+                unCategoryStr+=checkbox.eq(i).attr("id")+",";
             }
             if(categoryStr[categoryStr.length-1]==","){
                 categoryStr.slice(0,categoryStr.length-1)
+            }
+            if(unCategoryStr[unCategoryStr.length-1]==","){
+                unCategoryStr.slice(0,unCategoryStr.length-1)
             }
             $.ajax({
                 type: "post",
@@ -125,7 +131,8 @@
                     "hidden": ($(res.target).attr("id") == "waitNewArticle") ? true : false,
                     keyword: articleKeyWord.html(),
                     newCategory : newCategory.val(),
-                    "category":categoryStr
+                    "category":categoryStr,
+                    unCategory:unCategoryStr
                 },
                 success: function (res) {
                     if (1 == res) {

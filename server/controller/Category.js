@@ -18,7 +18,7 @@ exports.save = function(req,res){
                     console.log(err);
                     return ;
                 }
-                if(-1!=result.list.indexOf(res3.articleId))  {
+                if( !result || -1!=result.list.indexOf(res3.articleId))  {
                     iterator(i+1);
                     return ;
                 }
@@ -78,7 +78,6 @@ exports.Show = function(req,res){
             console.log(err);
             return ;
         }
-
         res.render("index",{
             type:"categoryShow",
             categoryList:result

@@ -10,7 +10,7 @@ exports.ArticleList = function(req,res){
     /*if(!req.session.name){
      res.redirect("/login");
      }*/
-    var data ={usdel:false};
+    var data ={isdel:false};
     if(req.query.hidden){
         data.hidden = req.query.hidden;
     }
@@ -24,7 +24,6 @@ exports.ArticleList = function(req,res){
                 console.log(err);
                 return ;
             }
-            console.log(result2);
             res.render("index",{
                 type:"articleList",
                 title:"文章列表",
@@ -60,8 +59,6 @@ exports.doNewArticle = function(req,res){
             return ;
         }
 
-
-
         //文章的ID
         var aid = (Math.random()*10000+89999)>>0;
         //创建新的分类
@@ -69,7 +66,8 @@ exports.doNewArticle = function(req,res){
             categoryArr = [],
             newCategoryLen = newCateGoryArr.length,
             existCategory = fields.category.split(","),
-            existCategoryLen = existCategory.length;
+            existCategoryLen = existCategory.length,
+            unCategoryStr = fields.unCategoryStr;
         for(var i=0;i<existCategoryLen;i++) {
             if(existCategory[i]=="") continue;
             categoryArr.push(parseInt(existCategory[i]));
@@ -106,7 +104,7 @@ exports.doNewArticle = function(req,res){
             return ;
         }
         (function iterator(i){
-            if(i>=newCategoryLen){
+            if(i>=newCategoryLen || (newCategoryLen==1 && newCateGoryArr[0]=="") ){
                 Article.createOneArticle({
                     articleId: aid,
                     title: fields.title,
@@ -114,13 +112,16 @@ exports.doNewArticle = function(req,res){
                     category: categoryArr,
                     keyword: fields.keyword.split(","),
                     hidden: fields.hidden,
-                    desc: fields.desc
+                    desc: fields.desc,
+                    isdel:false
                 },function(err,result){
                     if(err){
                         console.log(err);
                         res.send("-1");
+                        return ;
                     }
-                    res.send("1");
+                    res.redirect("/admin/category/save?aid="+result._id+"&category="+fields.category+"&unCategoryStr="+unCategoryStr)
+                    // res.send("1");
                 });
                 return ;
             }
@@ -133,17 +134,19 @@ exports.doNewArticle = function(req,res){
                 iterator(i+1);
             });
         })(0);
+
     })
 }
 exports.delArticle = function(req,res){
     Article.removeById(req.query._id,function(err,result){
         if(err){
             csonole.log(err);
-            res.send("-1");
             return ;
         }
-        if(1==result.ok && result.n==0) result("0");
-        if(1==result.ok) res.send("1");
+        if( (1==result.ok && result.n==0) || !result.ok ) {
+            result("0");
+            return ''
+        }
         res.send("1");
     });
 }
@@ -219,7 +222,4 @@ exports.articlePreview = function(req,res){
             });
         })
     });
-}
-exports.showDelArticle  = function(req,res){
-    
 }
