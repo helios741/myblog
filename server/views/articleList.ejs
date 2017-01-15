@@ -1,7 +1,14 @@
 <h1 class="page-header">文章管理</h1>
 <div class="panel panel-default">
     <!-- Default panel contents -->
-    <div class="panel-heading"><%=title%></div>
+    <div class="panel-heading">
+        <%=title%>
+        <div class="btn-group" style=" margin-left: 77%;">
+            <button type="button" class="btn btn-default" id="allArticle">全部文章</button>
+            <button type="button" class="btn btn-default" id="publishArticle">已经发布</button>
+            <button type="button" class="btn btn-default" id="waitArticle">等待发布</button>
+        </div>
+    </div>
 
     <!-- Table -->
     <table class="table syl-table">
@@ -127,6 +134,21 @@
                         alert("保存失败，请联系管理员");
                     }
                 })
+        });
+        $("#allArticle").click(function(){
+            $.get("/admin/article/show",function(res){
+                location.href = "/admin/article/show";
+            })
+        });
+        $("#publishArticle").click(function(){
+            $.get("/admin/article/show?hidden=false",function(res){
+                location.href = "/admin/article/show?hidden=false";
+            })
+        });
+        $("#waitArticle").click(function(){
+            $.get("/admin/article/show?hidden=true",function(res){
+                location.href = "/admin/article/show?hidden=true";
+            })
         });
     })()
 </script>

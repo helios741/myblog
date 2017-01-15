@@ -22,6 +22,7 @@ app.get("/admin",Login.showAdminData);
 app.get("/admin/article/show",Article.ArticleList);
 app.get("/admin/article/del",Article.delArticle);
 app.get("/admin/article/new",Article.newArticle);
+app.get("/admin/article/wait",Article.showDelArticle);
 app.get("/admin/article/new/:_id",Article.editArticle);
 app.get("/admin/article/getArticleList/:page",Article.getArticleList);
 app.get("/admin/article/getArticle/:id",Article.getArticleDetail);

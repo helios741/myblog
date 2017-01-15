@@ -10,16 +10,21 @@ exports.ArticleList = function(req,res){
     /*if(!req.session.name){
      res.redirect("/login");
      }*/
+    var data ={usdel:false};
+    if(req.query.hidden){
+        data.hidden = req.query.hidden;
+    }
     Category.fetch(function(err,result){
         if(err){
             console.log(err);
             return ;
         }
-        Article.fetch(function(err,result2){
+        Article.findData(data,function(err,result2){
             if(err){
                 console.log(err);
                 return ;
             }
+            console.log(result2);
             res.render("index",{
                 type:"articleList",
                 title:"文章列表",
@@ -214,4 +219,7 @@ exports.articlePreview = function(req,res){
             });
         })
     });
+}
+exports.showDelArticle  = function(req,res){
+    
 }

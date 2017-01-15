@@ -26,6 +26,7 @@ CategorySchema.statics = {
             .sort("meta.updateAt")
             .exec(cb)
     },
+    
     findById:function(id,cb){
         return this
             .findOne({id:id})

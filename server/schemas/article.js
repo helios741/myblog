@@ -41,6 +41,12 @@ ArticleSchema.statics = {
             .sort({ "meta.updateAt" : 1 })
             .exec(cb)
     },
+    findData:function(data,cb){
+        return this
+            .find(data)
+            .sort("meta.updateAt")
+            .exec(cb)
+    },
     findById:function(id,cb){
         return this
             .findOne({articleId:id})
@@ -53,13 +59,14 @@ ArticleSchema.statics = {
     },
     removeById:function(id,cb){
         return this
-            .remove({_id:id})
+            .where({_id:id})
+            .update({isdel:true})
             .exec(cb)
     },
     //用户分页
     findByData:function(data,cb){
         return this
-            .find({"hidden":false})
+            .find({"hidden":false,isdel:false})
             .skip(data.start)
             .limit(data.count)
             .sort({ "meta.updateAt" : -1 })
@@ -67,7 +74,7 @@ ArticleSchema.statics = {
     },
     countAllData:function(cb){
         return this
-            .find({"hidden":false})
+            .find({"hidden":false,isdel:false})
             .exec(cb)
     }
 };
