@@ -57,7 +57,7 @@ ArticleSchema.statics = {
             .findOne({_id:id})
             .exec(cb)
     },
-    removeById:function(id,cb){
+    removeBy_Id:function(id,cb){
         return this
             .where({_id:id})
             .update({isdel:true})

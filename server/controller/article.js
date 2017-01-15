@@ -138,17 +138,56 @@ exports.doNewArticle = function(req,res){
     })
 }
 exports.delArticle = function(req,res){
-    Article.removeById(req.query._id,function(err,result){
+    var _id = req.query._id;
+    Article.findBy_Id(_id,function(err,result){
         if(err){
             csonole.log(err);
             return ;
         }
-        if( (1==result.ok && result.n==0) || !result.ok ) {
-            result("0");
-            return ''
-        }
-        res.send("1");
+        var category = result.category,
+            categoryTot  =  category.length,
+            aid = result.articleId;
+        (function iterator(i){
+            if(i>=categoryTot) {
+                Article.removeBy_Id(_id,function(err,res3){
+                    if(err){
+                        csonole.log(err);
+                        return ;
+                    }
+                    if( (1==res3.ok && res3.n==0) || !res3.ok ) {
+                        res.send("0");
+                        return ''
+                    }
+                    res.send("1");
+                });
+                return ;
+            }
+            Category.findById(category[i],function(err,res2){
+                if(err){
+                    csonole.log(err);
+                    return ;
+                }
+                var list =[];
+                if(!res2 || res2.list.indexOf(aid)==-1 ){
+                    iterator(i+1);
+                    return ;
+                }
+                list = res2.list;
+                list.splice(res2.list.indexOf(aid),1);
+                Category.where({id:category[i]}).update({list:list},function (err,r) {
+                    if(err){
+                        csonole.log(err);
+                        return ;
+                    }
+                    console.log("R:"+r);
+                    iterator(i+1);
+                });
+            })
+        })(0);
     });
+
+
+
 }
 exports.getArticleDetail = function(req,res){
     var articleId = parseInt(req.params.id.slice(1));
