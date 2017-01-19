@@ -10,22 +10,51 @@
     index.controller("ArticleDetail",[
         "$scope","$route","$routeParams","$http","$location","localStorageService","commentService",
         function($scope,$route,$routeParams,$http,$location,localStorageService,commentService){
-            console.log(localStorageService);
             $scope.commentFormData = {
                 nick:localStorageService.get("nick") || "",
                 email:localStorageService.get("email") || ""
             };
             $scope.dirname = $location.$$absUrl;
-            var aid = $routeParams.articleid;
+            //debugger;
+            var aid = $routeParams.articleid,  //文章的ID
+                tid = "",                           //评论回复给的那个人的ID
+                cid = "";                           //该条评论ID
             $scope.addComment = function(){
                 var tmpNick = localStorageService.get("nick"),
                     tmpEmail= localStorageService.get("email");
-                if(true){
-                    commentService.saveUser($scope.commentFormData);
-                }
 
+                console.log("cid:"+cid);
+                if(cid){
+                    
+                    return ;
+                }
+                if(!tmpNick || $scope.commentFormData.email != tmpEmail  ){
+                    commentService.saveUser($scope.commentFormData,function(newUser){
+                        //TODO 准备开始评论模块
+                        $scope.commentFormData.from = newUser.data._id;
+                        $scope.commentFormData.article = $scope.article._id;
+                        commentService.saveComment($scope.commentFormData);
+                    });
+                } else if($scope.commentFormData.email == tmpEmail && $scope.commentFormData.nick!=tmpNick){
+                    alert("请不要更换用户名："+tmpNick);
+                    return ;
+                } else if($scope.commentFormData.email==tmpEmail && tmpNick==$scope.commentFormData.nick){
+                    commentService.findExistUser($scope.commentFormData.nick,function(existUser){
+                        $scope.commentFormData.from = existUser.data._id;
+                        $scope.commentFormData.article = $scope.article._id;
+                        commentService.saveComment($scope.commentFormData);
+                    });
+                }else {
+                    return ;
+                }
                 /*$http
                     .get("/admin/user/")*/
+            };
+
+            $scope.replayComment = function($event){
+                console.log("Sssss");
+                cid = $($event.target).data("cid");
+                tid = $($event.target).data("tid");
             }
             $http
                 .get("/admin/article/getArticle/:"+aid,{})
@@ -41,7 +70,21 @@
                     $('pre code').each(function(i, block) {
                         hljs.highlightBlock(block);
                     });
-                    $http.get("data/category.json",{id:res.data.data.category})
+                    //下面是进行评论的模块
+                    $http
+                        .get("admin/comment/getAll?id="+$scope.article._id,{})
+                        .then(function(comments){
+                                $scope.comments = comments.data;
+                            },
+                            function(){
+                                console.log("获取评论失败");
+                            });
+
+
+
+
+                    //分类模块
+                    /*$http.get("data/category.json",{id:res.data.data.category})
                         .then(function(result){
                             $scope.category = result.data.data[0].name;
                             $http
@@ -55,25 +98,8 @@
                         },
                         function(){
                             console.log("获取文章类型失败");
-                        })
+                        })*/
 
-                    //下面是进行评论的模块
-                    $http
-                        .get("data/comment.json",{})
-                        .then(function(result){
-                            $scope.commentList = result.data.data.comments;
-                                $http
-                                    .get("data/reply.json",{})
-                                    .then(function(res2){
-                                            $scope.replyList = res2.data.data.comments;
-                                        },
-                                        function(){
-                                            console.log("获取评论回复失败");
-                                        });
-                        },
-                        function(){
-                            console.log("获取评论失败");
-                        });
                 },
                 function(){
                     console.log("读取文章详细错误");

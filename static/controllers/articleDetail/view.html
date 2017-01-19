@@ -7,9 +7,9 @@
     <section class="goComment"><a href="{{dirname}}#comment">点击参与评论</a> </section>
 </article>
 <article class="other-article">
-    <h3>专题为【{{category}}】的其他文章:</h3>
+    <h3>专题为【XXXX}】的其他文章:</h3>
     <ul>
-        <li ng-repeat="item in articleList"><a href="$/detail/{{item.articleid}}">{{item.title}}</a></li>
+        <!--<li ng-repeat="item in articleList"><a href="$/detail/{{item.articleid}}">{{item.title}}</a></li>-->
     </ul>
 </article>
 <article id="comment" class="article-comment">
@@ -32,6 +32,7 @@
                       ng-show="commentForm.nick.$invalid &&
                                 commentForm.nick.$dirty">昵称必须大于两个字符</span>
             </label>
+
             <br>
             <label>您的邮箱:
                 <input type="email"
@@ -59,6 +60,47 @@
 
     <section class="comment-list">
         <ul class="post-list">
+            <li class="post"  ng-repeat="comment in comments">
+                <div class="post-content clearfix">
+                    <div class="avatar pull-left">
+                        <img ng-src="" alt="用户">
+                    </div>
+                    <div class="post-body">
+                        <header class="post-body-header">
+                            <span class="post-username">{{comment.from.nick}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                            <span></span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                            <a href="{{dirname}}#comment"
+                               data-cid="{{comment._id}}"
+                               data-tid="{{comment.from._id}}"
+                               ng-click="replayComment($event)">回复</a>
+                        </header>
+                        <div class="post-body-inner">
+                            <p>{{comment.content}}</p>
+                        </div>
+                    </div>
+                </div>
+                <ul class="children">
+                    <li class="post" >
+                        <div class="post-content clearfix">
+                            <div class="avatar pull-left">
+                                <img ng-src="trt" alt="用户">
+                            </div>
+                            <div class="post-body">
+                                <header class="post-body-header">
+                                    <span class="post-username">trtrt</span>&nbsp;&nbsp;@<strong>.</strong>&nbsp;&nbsp;
+                                    <span> {{reply.time}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                                    <a href="{{dirname}}#comment">回复</a>
+                                </header>
+                                <div class="post-body-inner">
+                                    <p>ctfdr</p>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+
+                </ul>
+            </li>
             <li class="post"  >
                 <div class="post-content clearfix">
                     <div class="avatar pull-left">

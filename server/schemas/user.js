@@ -29,10 +29,9 @@ UserSchema.statics = {
             .sort({ "meta.updateAt" : 1 })
             .exec(cb)
     },
-    findByEmail:function(email,cb){
+    findByNick:function(nick,cb){
         return this
-            .find({email:email})
-            .sort("meta.updateAt")
+            .find({nick:nick})
             .exec(cb)
     }
 }

@@ -17,6 +17,15 @@ var CategorySchema = new Schema({
         }
     }
 });
+
+CategorySchema.pre("save",function(next){
+    if(this.isNew){
+        this.meta.createAt = this.meta.updateAt  = Date.now();
+    }else{
+        this.meta.createAt   = Date.now();
+    }
+    next();
+});
 //定义个静态的方法，这个方法可以通过model直接去调用
 CategorySchema.statics = {
     //得到所有文章
