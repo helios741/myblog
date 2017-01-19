@@ -15,58 +15,80 @@
 <article id="comment" class="article-comment">
     <h3 class="comment-title">{{article.title}}文章的评论</h3>
     <p class="comment-sum">15comments</p>
-    <section class="submit-comment">
-        <a href="#">点击发表新评论</a>
-        <a href="#">(查看所有完整评论)</a>
-    </section>
-    <section class="report-comment">
-        <form action="#" method="post" name="myForm" novalidate>
-            <p>
-                <input type="text" name="username" placeholder="请填写您的用户名">
-            </p>
-            <p>
-                <input type="text" name="email" placeholder="请填写您的邮箱">
-            </p>
-            <p>
-                <textarea name="commentContent"></textarea>
-            </p>
-            <p>
-                <input type="submit" value="提交">
-            </p>
+    <section class="submit-comment" id="submitComment">
+        <a class="show-all-comment">(查看所有完整评论)</a>
+        <form  id="commentForm" name="commentForm" ng-submit="addComment()">
+            <label>您的昵称:
+                <input type="text"
+                       name="nick"
+                       placeholder="请输入您的昵称"
+                       ng-model="commentFormData.nick"
+                       ng-class="{'form-error':commentForm.nick.$invalid &&
+                                commentForm.nick.$touched}"
+                       ng-minlength="2"
+                       required>
+                <span ng-class="{'form-err':commentForm.nick.$invalid &&
+                                            commentForm.nick.$touched}"
+                      ng-show="commentForm.nick.$invalid &&
+                                commentForm.nick.$dirty">昵称必须大于两个字符</span>
+            </label>
+            <br>
+            <label>您的邮箱:
+                <input type="email"
+                       name="email"
+                       placeholder="请输入您的邮箱"
+                       ng-model="commentFormData.email"
+                       ng-class="{'form-error':commentForm.email.$invalid &&
+                                commentForm.email.$touched}"
+                       required>
+                <span ng-class="{'form-err':commentForm.email.$invalid &&
+                                            commentForm.email.$touched}"
+                      ng-show="commentForm.email.$invalid &&
+                                commentForm.email.$dirty">邮箱错误</span>
+            </label><br>
+            <label>
+                评论内容：
+                <textarea name="content" ng-model="commentFormData.content"></textarea>
+            </label><br>
+            <label >
+                <button type="submit" class="submit-comment commentSubmitBtn" style="cursor: pointer">点击发表</button>
+            </label>
+
         </form>
     </section>
+
     <section class="comment-list">
         <ul class="post-list">
-            <li class="post"  ng-repeat="item in commentList">
+            <li class="post"  >
                 <div class="post-content clearfix">
                     <div class="avatar pull-left">
-                        <img ng-src="{{item.img}}" alt="用户">
+                        <img ng-src="" alt="用户">
                     </div>
                     <div class="post-body">
                         <header class="post-body-header">
-                            <span class="post-username">{{item.commenterName}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                            <span>{{item.time}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                            <a href="#">回复</a>
+                            <span class="post-username"></span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                            <span></span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                            <a href="{{dirname}}#comment">回复</a>
                         </header>
                         <div class="post-body-inner">
-                            <p>{{item.commentContent}}</p>
+                            <p>fg</p>
                         </div>
                     </div>
                 </div>
                 <ul class="children">
-                    <li class="post" ng-repeat="reply in replyList">
+                    <li class="post" >
                         <div class="post-content clearfix">
                             <div class="avatar pull-left">
-                                <img ng-src="{{reply.img}}" alt="用户">
+                                <img ng-src="trt" alt="用户">
                             </div>
                             <div class="post-body">
                                 <header class="post-body-header">
-                                    <span class="post-username">{{reply.replyerName}}</span>&nbsp;&nbsp;@{{item.commenterName}}<strong>.</strong>&nbsp;&nbsp;
+                                    <span class="post-username">trtrt</span>&nbsp;&nbsp;@<strong>.</strong>&nbsp;&nbsp;
                                     <span> {{reply.time}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                    <a href="#">回复</a>
+                                    <a href="{{dirname}}#comment">回复</a>
                                 </header>
                                 <div class="post-body-inner">
-                                    <p>{{item.commentContent}}</p>
+                                    <p>ctfdr</p>
                                 </div>
                             </div>
                         </div>
@@ -78,3 +100,4 @@
         </ul>
     </section>
 </article>
+

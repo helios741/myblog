@@ -3,11 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .error{
+            border:2px solid red;
+        }
+        button{
+            height: 40px;
+            width: 80px;
+            border:none;
+            background-color: #00b3ee;
+            color: #fff;
+        }
+    </style>
     <script src="../../node_modules/angular/angular.js"></script>
 </head>
-<body>
-<form action="" name="commentForm">
-    <label for=""></label>
+<body ng-app="testForm">
+<form  name="myForm">
+    <label></label>
+    <input type="text"
+           name="username"
+           ng-model="username"
+            ng-class="{'error':myForm.username.$invalid &&
+                                myForm.username.$touched}"
+           ng-minlength="4"
+           ng-maxlength="10"
+           required>
+    <pre>
+        {{myForm._email}}
+    </pre>
+    <br>
+    <pre>
+        sss:{{email}}
+    </pre>
+    <input type="email"
+           name="_email"
+           ng-model="email"
+           ng-class="{'error':myForm._email.$invalid &&
+                                myForm._email.$touched}"
+            required>
+    <button ng-disabled="myForm.$invalid" >tijao</button>
 </form>
+
+<script>
+    var form = angular.module("testForm",[]);
+</script>
 </body>
 </html>

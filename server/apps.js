@@ -4,6 +4,7 @@ var Login = require("./controller/login");
 var Show = require("./controller/show");
 var Article  = require("./controller/article");
 var Category  = require("./controller/Category");
+var User = require("./controller/user");
 var session = require('express-session');
 var PORT = process.env.PORT || 3000;
 //使用session
@@ -22,7 +23,7 @@ app.get("/admin",Login.showAdminData);
 app.get("/admin/article/show",Article.ArticleList);
 app.get("/admin/article/del",Article.delArticle);
 app.get("/admin/article/new",Article.newArticle);
-//app.get("/admin/article/wait",Article.showDelArticle);
+app.get("/admin/article/deled",Article.showDelArticle);
 app.get("/admin/article/new/:_id",Article.editArticle);
 app.get("/admin/article/getArticleList/:page",Article.getArticleList);
 app.get("/admin/article/getArticle/:id",Article.getArticleDetail);
@@ -33,4 +34,6 @@ app.get("/admin/category/save",Category.save);
 app.get("/admin/category/del/:id",Category.del);
 app.get("/admin/category/detail/:id",Category.showCategoryDetail);
 app.post("/doNewArticle",Article.doNewArticle);
+
+app.post("/admin/user/save",User.save);
 app.listen(PORT);

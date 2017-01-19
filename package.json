@@ -18,6 +18,7 @@
   "homepage": "https://github.com/helios741/myblog#readme",
   "devDependencies": {
     "angular": "^1.6.1",
+    "angular-local-storage": "^0.5.0",
     "angular-route": "^1.6.1",
     "bootstrap": "^3.3.7",
     "crypto": "0.0.3",

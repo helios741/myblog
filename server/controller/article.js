@@ -174,12 +174,11 @@ exports.delArticle = function(req,res){
                 }
                 list = res2.list;
                 list.splice(res2.list.indexOf(aid),1);
-                Category.where({id:category[i]}).update({list:list},function (err,r) {
+                Category.where({id:category[i]}).update({list:list},function (err) {
                     if(err){
                         csonole.log(err);
                         return ;
                     }
-                    console.log("R:"+r);
                     iterator(i+1);
                 });
             })
@@ -261,4 +260,16 @@ exports.articlePreview = function(req,res){
             });
         })
     });
+}
+exports.showDelArticle  = function(req,res){
+    Article.findData({isdel:true},function (err,result) {
+        if(err){
+            console.log(err);
+            return ;
+        }
+        res.render("index",{
+            type:"delArticle",
+            list:result
+        })
+    })
 }

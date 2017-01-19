@@ -8,12 +8,27 @@
         })
     }]);
     index.controller("ArticleDetail",[
-        "$scope","$route","$routeParams","$http","$location",
-        function($scope,$route,$routeParams,$http,$location){
-
+        "$scope","$route","$routeParams","$http","$location","localStorageService","commentService",
+        function($scope,$route,$routeParams,$http,$location,localStorageService,commentService){
+            console.log(localStorageService);
+            $scope.commentFormData = {
+                nick:localStorageService.get("nick") || "",
+                email:localStorageService.get("email") || ""
+            };
             $scope.dirname = $location.$$absUrl;
+            var aid = $routeParams.articleid;
+            $scope.addComment = function(){
+                var tmpNick = localStorageService.get("nick"),
+                    tmpEmail= localStorageService.get("email");
+                if(true){
+                    commentService.saveUser($scope.commentFormData);
+                }
+
+                /*$http
+                    .get("/admin/user/")*/
+            }
             $http
-                .get("/admin/article/getArticle/:"+$routeParams.articleid,{})
+                .get("/admin/article/getArticle/:"+aid,{})
                 .then(function(res){
                    // console.log(res);debugger;
                     $scope.article = res.data;
