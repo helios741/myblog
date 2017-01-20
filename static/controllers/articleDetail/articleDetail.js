@@ -25,7 +25,7 @@
 
                 console.log("cid:"+cid);
                 if(cid){
-                    
+                    // TODO 天亮从这里开始，评论回复模块
                     return ;
                 }
                 if(!tmpNick || $scope.commentFormData.email != tmpEmail  ){
