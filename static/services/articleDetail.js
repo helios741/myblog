@@ -1,8 +1,8 @@
 (function(angular){
     var articleDetailModule = angular.module("myBlog.services.articleDetailModule",[]);
     articleDetailModule.service("commentService",[
-        "$http","localStorageService",
-        function($http,localStorageService){
+        "$http","$location","localStorageService",
+        function($http,$location,localStorageService){
         this.saveUser = function(data,cb){
             localStorageService.set("nick",data.nick);
             localStorageService.set("email",data.email);
@@ -38,7 +38,7 @@
            })
        }
 
-        this.saveComment = function(data){
+        this.saveComment = function(data,cb){
             $http({
                 method:"post",
                 url:"/admin/comment/save",
@@ -49,12 +49,16 @@
                     alert("获取评论信息失败");
                     return ;
                 }
+                //console.log(999999);
+                //window.location = "/#!"+$location.$$path;
                 location.reload();
                 //debugger;
-                //cb(commentMsg.data);
+                cb(commentMsg);
             },function errorCallback(err){
                 console.log(err);
             });
-        }
+        };
+
+
     }])
-})(angular)
+})(angular);

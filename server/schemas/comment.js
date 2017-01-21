@@ -31,4 +31,12 @@ CommentSchema.pre("save",function(next){
     }
     next();
 });
+
+CommentSchema.static = {
+    getBy_id :　function(id,cb){
+        return find({_id:id})
+            .exec(cb);
+    }
+}
+
 module.exports = CommentSchema;

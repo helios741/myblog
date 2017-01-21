@@ -14,10 +14,10 @@
 </article>
 <article id="comment" class="article-comment">
     <h3 class="comment-title">{{article.title}}文章的评论</h3>
-    <p class="comment-sum">15comments</p>
+    <p class="comment-sum">{{comments.length}}comments</p>
     <section class="submit-comment" id="submitComment">
         <a class="show-all-comment">(查看所有完整评论)</a>
-        <form  id="commentForm" name="commentForm" ng-submit="addComment()">
+        <form  id="commentForm" name="commentForm">
             <label>您的昵称:
                 <input type="text"
                        name="nick"
@@ -52,7 +52,10 @@
                 <textarea name="content" ng-model="commentFormData.content"></textarea>
             </label><br>
             <label >
-                <button type="submit" class="submit-comment commentSubmitBtn" style="cursor: pointer">点击发表</button>
+                <button type="button"
+                        class="submit-comment commentSubmitBtn"
+                        ng-click="addComment()"
+                        style="cursor: pointer">点击发表</button>
             </label>
 
         </form>
@@ -63,7 +66,7 @@
             <li class="post"  ng-repeat="comment in comments">
                 <div class="post-content clearfix">
                     <div class="avatar pull-left">
-                        <img ng-src="" alt="用户">
+                        <img  alt="用户">
                     </div>
                     <div class="post-body">
                         <header class="post-body-header">
@@ -80,57 +83,23 @@
                     </div>
                 </div>
                 <ul class="children">
-                    <li class="post" >
+                    <li class="post" ng-repeat="reply in comment.reply">
                         <div class="post-content clearfix">
                             <div class="avatar pull-left">
-                                <img ng-src="trt" alt="用户">
+                                <img  alt="用户">
                             </div>
                             <div class="post-body">
                                 <header class="post-body-header">
-                                    <span class="post-username">trtrt</span>&nbsp;&nbsp;@<strong>.</strong>&nbsp;&nbsp;
-                                    <span> {{reply.time}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                    <a href="{{dirname}}#comment">回复</a>
+                                    <span class="post-username"></span>&nbsp;{{reply.from.nick}}&nbsp;@
+                                    <strong>.</strong>&nbsp;{{reply.to.nick}}&nbsp;
+                                    <span> {{reply.meta.updateAt}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
+                                    <a href="{{dirname}}#comment"
+                                       data-cid="{{comment._id}}"
+                                       data-tid="{{reply.from._id}}"
+                                       ng-click="replayComment($event)">回复</a>
                                 </header>
                                 <div class="post-body-inner">
-                                    <p>ctfdr</p>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-
-
-                </ul>
-            </li>
-            <li class="post"  >
-                <div class="post-content clearfix">
-                    <div class="avatar pull-left">
-                        <img ng-src="" alt="用户">
-                    </div>
-                    <div class="post-body">
-                        <header class="post-body-header">
-                            <span class="post-username"></span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                            <span></span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                            <a href="{{dirname}}#comment">回复</a>
-                        </header>
-                        <div class="post-body-inner">
-                            <p>fg</p>
-                        </div>
-                    </div>
-                </div>
-                <ul class="children">
-                    <li class="post" >
-                        <div class="post-content clearfix">
-                            <div class="avatar pull-left">
-                                <img ng-src="trt" alt="用户">
-                            </div>
-                            <div class="post-body">
-                                <header class="post-body-header">
-                                    <span class="post-username">trtrt</span>&nbsp;&nbsp;@<strong>.</strong>&nbsp;&nbsp;
-                                    <span> {{reply.time}}</span>&nbsp;&nbsp;<strong>.</strong>&nbsp;&nbsp;
-                                    <a href="{{dirname}}#comment">回复</a>
-                                </header>
-                                <div class="post-body-inner">
-                                    <p>ctfdr</p>
+                                    <p>{{reply.content}}</p>
                                 </div>
                             </div>
                         </div>

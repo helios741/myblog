@@ -42,4 +42,5 @@ app.get("/admin/user/getNick",User.getNick);
 
 app.post("/admin/comment/save",Comment.save);
 app.get("/admin/comment/getAll",Comment.getAll);
+//app.post("/admin/comment/reply",Comment.reply);
 app.listen(PORT);

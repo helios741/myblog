@@ -15,25 +15,38 @@
                 email:localStorageService.get("email") || ""
             };
             $scope.dirname = $location.$$absUrl;
+            //$scope.dirname = "/#!"+$location.$$path;
             //debugger;
-            var aid = $routeParams.articleid,  //文章的ID
-                tid = "",                           //评论回复给的那个人的ID
-                cid = "";                           //该条评论ID
+            var aid = $routeParams.articleid;  //文章的ID
+                //tid = "",                           //评论回复给的那个人的ID
+                //cid = "";                           //该条评论ID
+
+            $scope.replayComment = function($event){
+                cid = $($event.target).data("cid");
+                tid = $($event.target).data("tid");
+                localStorageService.set("cid",cid);
+                localStorageService.set("tid",tid);
+
+            };
+
             $scope.addComment = function(){
                 var tmpNick = localStorageService.get("nick"),
-                    tmpEmail= localStorageService.get("email");
-
-                console.log("cid:"+cid);
-                if(cid){
-                    // TODO 天亮从这里开始，评论回复模块
-                    return ;
-                }
+                    tmpEmail= localStorageService.get("email"),
+                    cid = localStorageService.get("cid") || "",
+                    tid = localStorageService.get("tid") ||"";
+                localStorageService.remove("cid");
+                localStorageService.remove("tid");
+                // TODO 天亮从这里开始，评论回复模块
                 if(!tmpNick || $scope.commentFormData.email != tmpEmail  ){
                     commentService.saveUser($scope.commentFormData,function(newUser){
                         //TODO 准备开始评论模块
                         $scope.commentFormData.from = newUser.data._id;
                         $scope.commentFormData.article = $scope.article._id;
-                        commentService.saveComment($scope.commentFormData);
+                        $scope.commentFormData.cid = cid;
+                        $scope.commentFormData.tid = tid;
+                        commentService.saveComment($scope.commentFormData,function(){
+                            location = "/#!"+$location.$$path;
+                        });
                     });
                 } else if($scope.commentFormData.email == tmpEmail && $scope.commentFormData.nick!=tmpNick){
                     alert("请不要更换用户名："+tmpNick);
@@ -42,20 +55,20 @@
                     commentService.findExistUser($scope.commentFormData.nick,function(existUser){
                         $scope.commentFormData.from = existUser.data._id;
                         $scope.commentFormData.article = $scope.article._id;
-                        commentService.saveComment($scope.commentFormData);
+                        $scope.commentFormData.cid = cid;
+                        $scope.commentFormData.tid = tid;
+                        commentService.saveComment($scope.commentFormData,function(comments){
+                            //console.log(comments);
+                            location = "/#!"+$location.$$path;
+                        });
+
                     });
                 }else {
                     return ;
                 }
-                /*$http
-                    .get("/admin/user/")*/
             };
 
-            $scope.replayComment = function($event){
-                console.log("Sssss");
-                cid = $($event.target).data("cid");
-                tid = $($event.target).data("tid");
-            }
+
             $http
                 .get("/admin/article/getArticle/:"+aid,{})
                 .then(function(res){
@@ -74,11 +87,12 @@
                     $http
                         .get("admin/comment/getAll?id="+$scope.article._id,{})
                         .then(function(comments){
-                                $scope.comments = comments.data;
-                            },
-                            function(){
-                                console.log("获取评论失败");
-                            });
+                            $scope.comments = comments.data;
+                        //debugger;
+                        },
+                        function(){
+                            console.log("获取评论失败");
+                        });
 
 
 
