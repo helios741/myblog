@@ -71,7 +71,7 @@ exports.save = function(req,res){
         }
         res.send("1");
     })
-}
+};
 exports.Show = function(req,res){
     Category.fetch(function(err,result){
         if(err){
@@ -83,8 +83,8 @@ exports.Show = function(req,res){
             categoryList:result
         });
     });
-}
-exports.showCategoryDetail = function(req,res,next){
+};
+exports.showCategoryDetail = function(req,res){
     id  = parseInt(req.params.id);
     if(!id) {
         res.send("-1");
@@ -118,7 +118,7 @@ exports.showCategoryDetail = function(req,res,next){
             });
         })(0);
     });
-}
+};
 exports.del = function(req,res,next){
     var id = req.params.id;
     console.log(id);
@@ -139,8 +139,8 @@ exports.del = function(req,res,next){
                     console.log(err);
                     return ;
                 }
-                var categoryList = res2.category;
-                if(-1==categoryList.indexOf(id)){
+                var categoryList = res2 ? res2.category : null;
+                if(!categoryList || -1==categoryList.indexOf(id)){
                     iterator(i+1)
                 }
                 categoryList = categoryList.splice(categoryList.indexOf(id),1);
@@ -161,5 +161,27 @@ exports.del = function(req,res,next){
             }
             res.send("1");
         });
+    })
+};
+exports.indexGet = function(req,res){
+    Category.indexGet(req.query,function(err,category){
+        if(err){
+            throw err;
+        }
+        res.send(category);
+    });
+};
+exports.getInfo = function(req,res){
+    var aid = req.params.aid;
+    Article.findById(aid,function(err,article){
+        if(err) throw err;
+        res.send(article);
+    });
+};
+exports.getCategoryInfo = function(req,res){
+    var cid = req.params.cid;
+    Category.findById(cid,function(err,category){
+        if(err) throw err;
+        res.send(category);
     })
 }

@@ -20,20 +20,19 @@
             <li><a href="#">关于</a></li>
         </ul>
         <nav>
-            <li><a href="#"></a></li>
-            <li><a href="#"></a></li>
-            <li><a href="#"></a></li>
+            <li><a href="http://weibo.com/u/5325107209"></a></li>
+            <li><a href="https://github.com/helios741"></a></li>
+            <li><a href="http://blog.csdn.net/woshinannan741"></a></li>
             <li><a href="#"></a></li>
         </nav>
     </div>
-    <div class="article-type">
+    <div class="article-type" ng-controller="indexCategoryShow">
         <h3>文章分类</h3>
         <ul>
-            <li><a href="#">ACM搜索 (5)</a></li>
-            <li><a href="#">ACM图论 (15)</a></li>
-            <li><a href="#">ACM动态规划 (25)</a></li>
-            <li><a href="#">数据结构 (35)</a></li>
-            <li><a href="#">前端项目 (12)</a></li>
+            <li ng-repeat="category in categorys">
+                <a href="http://localhost:3000/#!/category/{{category.id}}/1?title={{category.name}}">{{category.name}} ({{category.list.length}})</a>
+            </li>
         </ul>
+        <button class="all-category-btn" ng-click="showAllCategory()">{{clickMsg}}</button>
     </div>
 </div>

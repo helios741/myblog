@@ -49,10 +49,7 @@
                     alert("获取评论信息失败");
                     return ;
                 }
-                //console.log(999999);
-                //window.location = "/#!"+$location.$$path;
                 location.reload();
-                //debugger;
                 cb(commentMsg);
             },function errorCallback(err){
                 console.log(err);

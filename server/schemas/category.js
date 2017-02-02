@@ -1,6 +1,7 @@
 var mongoose  = require("mongoose");
 var DB = require("../models/db");
-var Schema = mongoose.Schema;
+var Schema = mongoose.Schema,
+    ObjectId  = Schema.Types.ObjectId;
 
 var CategorySchema = new Schema({
     id:Number,
@@ -35,7 +36,7 @@ CategorySchema.statics = {
             .sort("meta.updateAt")
             .exec(cb)
     },
-    
+
     findById:function(id,cb){
         return this
             .findOne({id:id})
@@ -49,6 +50,14 @@ CategorySchema.statics = {
     removeById:function(id,cb){
         return this
             .remove({id:id})
+            .exec(cb)
+    },
+    indexGet:function(data,cb){
+        return this
+            .find({})
+            .sort({ "meta.updateAt" : 1 })
+            .skip(data.start)
+            .limit(data.count)
             .exec(cb)
     }
 

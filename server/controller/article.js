@@ -3,26 +3,21 @@ var DB = require("../models/db");
 var formidable  = require("formidable");
 var mongoose = require("mongoose");
 var Category = require("../models/category");
+var fs = require("fs");
 mongoose.Promise = require('bluebird');
 //展示管理员界面
 exports.ArticleList = function(req,res){
-    //没有登录不能进入这个页面
-    /*if(!req.session.name){
-     res.redirect("/login");
-     }*/
     var data ={isdel:false};
     if(req.query.hidden){
         data.hidden = req.query.hidden;
     }
     Category.fetch(function(err,result){
         if(err){
-            console.log(err);
-            return ;
+            throw err;
         }
         Article.findData(data,function(err,result2){
             if(err){
-                console.log(err);
-                return ;
+                throw err;
             }
             res.render("index",{
                 type:"articleList",
@@ -33,13 +28,12 @@ exports.ArticleList = function(req,res){
         })
     })
 
-}
+};
 exports.newArticle  = function(req,res){
 
     Category.fetch(function(err,result){
         if(err){
-            console.log(err);
-            return ;
+            throw err;
         }
         res.render("index",{
             type:"newArticle",
@@ -49,7 +43,7 @@ exports.newArticle  = function(req,res){
             article:""
         });
     })
-}
+};
 exports.doNewArticle = function(req,res){
     var form = new formidable.IncomingForm();
     form.parse(req,function(err,fields){
@@ -73,7 +67,6 @@ exports.doNewArticle = function(req,res){
             categoryArr.push(parseInt(existCategory[i]));
         }
         if(fields._id){
-
             (function iterator(i){
                 if(i>=newCategoryLen){
                     Article.update({_id:fields._id},{
@@ -88,6 +81,13 @@ exports.doNewArticle = function(req,res){
                             console.log(err);
                             res.send("-1");
                         }
+                        //TODO 把文件放入指定的文件夹内
+                        fs.writeFile("./data/"+fields.title+".md",fields.content,function(err){
+                            if(err){
+                                throw err;
+                            }
+                            console.log("保存文件成功");
+                        });
                         res.send("1");
                     });
                     return ;
@@ -120,6 +120,13 @@ exports.doNewArticle = function(req,res){
                         res.send("-1");
                         return ;
                     }
+                    //TODO 把文件放入指定的文件夹内
+                    fs.writeFile("./data/"+fields.title+".md",fields.content,function(err){
+                        if(err){
+                            throw err;
+                        }
+                        console.log("保存文件成功");
+                    });
                     res.redirect("/admin/category/save?aid="+result._id+"&category="+fields.category+"&unCategoryStr="+unCategoryStr)
                     // res.send("1");
                 });
@@ -231,7 +238,7 @@ exports.editArticle  =function(req,res){
             }
             res.render("index",{
                 type:"newArticle",
-                title:"新建文章",
+                title:"编辑文章",
                 categoryList:result2,
                 article:result,
                 saveBtn:"保存"
@@ -273,3 +280,47 @@ exports.showDelArticle  = function(req,res){
         })
     })
 }
+exports.getAll = function(req,res){
+    Category.findById(req.query.cid,function(err,result){
+        if(err){
+            throw err;
+        }
+        if(!result) return ;
+        var
+            listTot = result.list.length,
+            articleArr = [];
+        (function iterator(i){
+            if(i>=listTot){
+                res.send(articleArr);
+                return ;
+            }
+            Article.findById(result.list[i],function(err,res2){
+                if(err){
+                    console.log(err);
+                    return ;
+                }
+                if(res2)  articleArr.push(res2);
+                iterator(i+1);
+            });
+        })(0);
+    });
+}
+exports.getArticleDetailCategoryList = function(req,res){
+    var form = new formidable.IncomingForm();
+    form.parse(req,function(err,fields) {
+        var list = fields.list,
+            len = list.length,
+            articles = [];
+        (function iterator(i){
+            if(i>=len){
+                res.send(articles);
+                return ;
+            }
+            Article.findById(list[i],function(err,article){
+                if(err) throw err;
+                articles.push(article);
+                iterator(i+1);
+            });
+        })(0);
+    })
+};

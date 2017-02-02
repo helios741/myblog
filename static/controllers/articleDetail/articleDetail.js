@@ -1,5 +1,4 @@
 (function(angular){
-
     var index = angular.module("myBlog.controllers.index",["ngRoute"]);
     index.config(["$routeProvider",function($routeProvider){
         $routeProvider.when("/detail/:articleid",{
@@ -8,8 +7,10 @@
         })
     }]);
     index.controller("ArticleDetail",[
-        "$scope","$route","$routeParams","$http","$location","localStorageService","commentService",
-        function($scope,$route,$routeParams,$http,$location,localStorageService,commentService){
+        "$scope","$route","$routeParams","$http","$location",
+        "localStorageService","commentService","articleDetailCategory","markd",
+        function($scope,$route,$routeParams,$http,$location,localStorageService,
+                 commentService,articleDetailCategory,markd){
             $scope.commentFormData = {
                 nick:localStorageService.get("nick") || "",
                 email:localStorageService.get("email") || ""
@@ -67,57 +68,31 @@
                     return ;
                 }
             };
-
-
-            $http
-                .get("/admin/article/getArticle/:"+aid,{})
-                .then(function(res){
-                   // console.log(res);debugger;
-                    $scope.article = res.data;
-                    /*
-                    * 这里还由于技术水平有限，只能在这里简单的操作一下DOM，日后有能力改之
-                    * @time  2017-1-11 19:43
-                    * @author Helios
-                     */
-                    $("#marked").html(marked(res.data.content));
-                    $('pre code').each(function(i, block) {
-                        hljs.highlightBlock(block);
+            articleDetailCategory.getCategory(aid,function(cid){
+                articleDetailCategory.getCategoryOtherArticle(cid,function(category){
+                    $scope.catgoryName = category.data.name;
+                    var aList = category.data.list.splice(0,5);
+                    articleDetailCategory.getArticleList(aList,function(list){
+                        $scope.articleList = list;
                     });
-                    //下面是进行评论的模块
-                    $http
-                        .get("admin/comment/getAll?id="+$scope.article._id,{})
-                        .then(function(comments){
-                            $scope.comments = comments.data;
-                        //debugger;
-                        },
-                        function(){
-                            console.log("获取评论失败");
-                        });
-
-
-
-
-                    //分类模块
-                    /*$http.get("data/category.json",{id:res.data.data.category})
-                        .then(function(result){
-                            $scope.category = result.data.data[0].name;
-                            $http
-                                .get("data/article.json",{})
-                                .then(function(res2){
-                                    $scope.articleList = res2.data.data;
-                                },
-                                function(){
-                                    console.log("通过文章类型，获取文章失败");
-                                });
-                        },
-                        function(){
-                            console.log("获取文章类型失败");
-                        })*/
-
-                },
-                function(){
-                    console.log("读取文章详细错误");
+                })
+            });
+            markd.renderMD(aid,function(article){
+                $scope.article = article;
+                /*
+                 * 这里还由于技术水平有限，只能在这里简单的操作一下DOM，日后有能力改之
+                 * @time  2017-1-11 19:43
+                 * @author Helios
+                 */
+                $("#marked").html(marked(article.content));
+                $('pre code').each(function(i, block) {
+                    hljs.highlightBlock(block);
                 });
+                markd.renderComment($scope.article._id,function(comments){
+                    $scope.comments = comments;
+
+                })
+            });
         }
     ]);
 

@@ -76,6 +76,14 @@ ArticleSchema.statics = {
         return this
             .find({"hidden":false,isdel:false})
             .exec(cb)
+    },
+    getSameCategoryById : function(cid,cb){
+        return this
+            .find({
+                isdel:false,
+                hidden:false
+            })
+            .exec(cb)
     }
 };
 

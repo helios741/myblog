@@ -29,10 +29,17 @@ exports.checkLogin = function(req,res){
             res.send("1");
         })
     });
-}
-
+};
+//展示管理界面
 exports.showAdminData = function(req,res){
     res.render("index",{
         type:"showData"
     });
+};
+exports.logined = function(req,res,next){
+    console.log("name:"+req.session.name);
+    if(!req.session.name){
+        res.redirect("/login");
+    }
+    next();
 }
