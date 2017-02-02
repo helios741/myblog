@@ -17,7 +17,7 @@
                 <th>#</th>
                 <th>标题</th>
                 <th>状态</th>
-                <th>评论</th>
+                <th>访问次数</th>
                 <th>操作</th>
             </tr>
         </thead>
@@ -28,7 +28,7 @@
                 <td><%= i+1 %></td>
                 <td><%= articleList[i].title %></td>
                 <td><%= articleList[i].hidden?"未发布":"已发布" %></td>
-                <td><%= articleList[i].contentUrl %></td>
+                <td><%= articleList[i].pv %></td>
                 <td class="delParent">
                     <ul>
                         <a href="/admin/article/new/<%=articleList[i]._id%>" class="btn btn-info" id="editBth">编辑</a>

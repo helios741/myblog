@@ -105,6 +105,7 @@ exports.doNewArticle = function(req,res){
         }
         (function iterator(i){
             if(i>=newCategoryLen || (newCategoryLen==1 && newCateGoryArr[0]=="") ){
+                console.log(categoryArr);
                 Article.createOneArticle({
                     articleId: aid,
                     title: fields.title,
@@ -114,12 +115,13 @@ exports.doNewArticle = function(req,res){
                     hidden: fields.hidden,
                     desc: fields.desc,
                     isdel:false
-                },function(err,result){
+                },function(err,article){
                     if(err){
                         console.log(err);
                         res.send("-1");
                         return ;
                     }
+                    //console.log(article);
                     //TODO 把文件放入指定的文件夹内
                     fs.writeFile("./data/"+fields.title+".md",fields.content,function(err){
                         if(err){
@@ -127,8 +129,10 @@ exports.doNewArticle = function(req,res){
                         }
                         console.log("保存文件成功");
                     });
-                    res.redirect("/admin/category/save?aid="+result._id+"&category="+fields.category+"&unCategoryStr="+unCategoryStr)
-                    // res.send("1");
+
+                    res.redirect("/admin/category/save?aid="+article._id
+                        +"&category="+categoryArr.join(",")
+                        +"&unCategoryStr="+unCategoryStr)
                 });
                 return ;
             }
@@ -143,7 +147,7 @@ exports.doNewArticle = function(req,res){
         })(0);
 
     })
-}
+};
 exports.delArticle = function(req,res){
     var _id = req.query._id;
     Article.findBy_Id(_id,function(err,result){
@@ -156,12 +160,12 @@ exports.delArticle = function(req,res){
             aid = result.articleId;
         (function iterator(i){
             if(i>=categoryTot) {
-                Article.removeBy_Id(_id,function(err,res3){
+                Article.removeBy_Id(_id,function(err,delMsg){
                     if(err){
                         csonole.log(err);
                         return ;
                     }
-                    if( (1==res3.ok && res3.n==0) || !res3.ok ) {
+                    if( (1==delMsg.ok && delMsg.n==0) || !delMsg.ok ) {
                         res.send("0");
                         return ''
                     }
@@ -169,18 +173,17 @@ exports.delArticle = function(req,res){
                 });
                 return ;
             }
-            Category.findById(category[i],function(err,res2){
+            Category.findById(category[i],function(err,delCategory){
                 if(err){
                     csonole.log(err);
                     return ;
                 }
-                var list =[];
-                if(!res2 || res2.list.indexOf(aid)==-1 ){
+                if(!delCategory || delCategory.list.indexOf(aid)==-1 ){
                     iterator(i+1);
                     return ;
                 }
-                list = res2.list;
-                list.splice(res2.list.indexOf(aid),1);
+                var list = delCategory.list;
+                list.splice(delCategory.list.indexOf(aid),1);
                 Category.where({id:category[i]}).update({list:list},function (err) {
                     if(err){
                         csonole.log(err);
@@ -197,6 +200,11 @@ exports.delArticle = function(req,res){
 }
 exports.getArticleDetail = function(req,res){
     var articleId = parseInt(req.params.id.slice(1));
+    Article.update({articleId:articleId}, {$inc: {pv: 1}}, function(err) {
+        if (err) {
+            console.log(err)
+        }
+    });
     Article.findById(articleId,function(err,result){
         if(err){
             console.log(err);
@@ -248,6 +256,7 @@ exports.editArticle  =function(req,res){
 }
 exports.articlePreview = function(req,res){
     var _id = req.params._id;
+
     Article.findBy_Id(_id,function(err,result){
         if(err){
             console.log(err);

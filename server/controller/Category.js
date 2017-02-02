@@ -7,6 +7,7 @@ exports.save = function(req,res){
         aid = req.query.aid,
         unCategoryStrArr = req.query.unCategoryStr.split(","),
         unCategoryStrTot = unCategoryStrArr.length;
+
     (function iterator(i){
 
         if(i>=categoryTot ||(categoryTot==1&&categoryArr[0]=="") ){
@@ -121,7 +122,6 @@ exports.showCategoryDetail = function(req,res){
 };
 exports.del = function(req,res,next){
     var id = req.params.id;
-    console.log(id);
     Category.findById(id,function (err,result) {
         if(err){
             console.log(err);

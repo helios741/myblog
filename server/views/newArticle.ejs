@@ -2,6 +2,53 @@
 <input type="text" placeholder="请输入文章标题" id="newArticleTitle"  value="<%=article.title%>">
 <!--<input type="button" class="newArticleBtn" value="发表">-->
 <!-- Button trigger modal -->
+
+
+<input type="button" class="upload-article-img" id="uploadArticleImg" value="上传文章图片">
+<div class="modal " id="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">上传文章图片</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/admin/uploads/articleImg" enctype="multipart/form-data">
+                    <input  type="file" value="上传图片">
+                    <input class="articleImgForm" type="submit" value="提交">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default close2" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<input type="button" class="upload-desc-img" id="uploadDescImg" value="上传文章图片">
+
+<div class="modal " id="descModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">上传封面图片</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/admin/uploads/descImg" enctype="multipart/form-data">
+                    <input type="file" ><br>
+                    <input class="descImgForm" type="submit" value="提交">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default close2" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+
 <button type="button" class="btn btn-primary btn-lg newArticleBtn" data-toggle="modal" data-target="#myModal">
     <%=saveBtn%>
 </button>
@@ -55,7 +102,6 @@
     </div>
 </div>
 <input type="button" class="newArticleBtn" id="waitNewArticle" value="存入草稿">
-
 <div class="MDLeft">
     <textarea id="text-input" placeholder="正文" oninput="this.editor.update()"><%=article.content%></textarea>
 </div>
@@ -156,6 +202,23 @@
             if(!flag) showCategory.show();
             else showCategory.hide();
         });
-
+        var vis = true;
+        $("#uploadArticleImg")
+            .on("click",function(){
+                vis = !vis;
+                if(!vis) $("#modal").show();
+                else $("#modal").hide();
+            });
+        var ved = true;
+        $("#uploadDescImg")
+            .on("click",function(){
+                ved = !ved;
+                if(!ved) $("#descModal").show();
+                else $("#descModal").hide();
+            });
+        $(".modal .close,.close2").click(function(){
+            $("#modal").hide();
+            $("#descModal").hide();
+        });
     })()
 </script>

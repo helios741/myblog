@@ -11,5 +11,6 @@ app.use(session({
 app.use(express.static("./public"));
 app.use(express.static("../node_modules"));
 app.use(express.static("../static"));
+app.use(express.static("./uploads"));
 require('./config/router')(app);
 app.listen(PORT);

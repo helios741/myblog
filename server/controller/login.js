@@ -37,9 +37,7 @@ exports.showAdminData = function(req,res){
     });
 };
 exports.logined = function(req,res,next){
-    console.log("name:"+req.session.name);
     if(!req.session.name){
         res.redirect("/login");
-    }
-    next();
-}
+    }else next();
+};

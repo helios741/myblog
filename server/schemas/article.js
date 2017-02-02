@@ -8,6 +8,10 @@ var ArticleSchema = new Schema({
     content:String,
     category:[Number],
     desc:String,
+    pv:{
+        type:Number,
+        default:0
+    },
     keyword:[String],
     hidden:Boolean,
     isdel:Boolean,
@@ -77,6 +81,7 @@ ArticleSchema.statics = {
             .find({"hidden":false,isdel:false})
             .exec(cb)
     },
+    
     getSameCategoryById : function(cid,cb){
         return this
             .find({

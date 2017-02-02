@@ -1,10 +1,29 @@
 #newArticleTitle{
     height: 50px;
-    width:80%;
+    width:62%;
     margin-bottom: 15px;
     display: inline-block;
     border:1px solid #eee;
     border-bottom: 1px solid #00AAAA;
+}
+.upload-article-img,.upload-desc-img{
+    width:9%;
+    border:none;
+    line-height: 50px;
+    display: inline-block;
+    border-radius: 9px;
+    background-color: #00ee00;
+    color: #fff;;
+    font-size: 1.4rem;
+}
+.descImgForm,.articleImgForm{
+    border:none;
+    background-color: #00AAAA;
+    width: 60px;
+    line-height: 30px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.6rem;
 }
 .newArticleBtn{
     display: inline-block;

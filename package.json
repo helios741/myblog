@@ -30,7 +30,8 @@
     "gulp-less": "^3.3.0",
     "highlight.js": "^9.9.0",
     "mongoose": "^4.7.6",
-    "seajs": "^3.0.2"
+    "seajs": "^3.0.2",
+    "underscore": "^1.8.3"
   },
   "dependencies": {
     "marked": "^0.3.6"
