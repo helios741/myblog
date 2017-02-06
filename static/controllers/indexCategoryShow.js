@@ -11,20 +11,20 @@
                 });
             var flag = true;
             $scope.showAllCategory = function(){
-                if(flag)
+                if(flag){
                     indexCategoryService.getAllCategory()
                         .then(function(categorys){
-                            console.log(categorys);
+                           // debugger;
                             $scope.categorys = categorys;
                             $scope.clickMsg = "点击收起";
                         });
-                else
+                }else{
                     indexCategoryService.getCategory()
                         .then(function(categorys){
-                            console.log("part:"+categorys);
                             $scope.categorys = categorys;
                             $scope.clickMsg = "点击查看全部";
                         });
+                }
                 flag = !flag;
             };
 

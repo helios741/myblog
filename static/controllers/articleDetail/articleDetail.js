@@ -39,44 +39,50 @@
                 localStorageService.remove("tid");
                 // TODO 天亮从这里开始，评论回复模块
                 if(!tmpNick || $scope.commentFormData.email != tmpEmail  ){
-                    commentService.saveUser($scope.commentFormData,function(newUser){
-                        //TODO 准备开始评论模块
-                        $scope.commentFormData.from = newUser.data._id;
-                        $scope.commentFormData.article = $scope.article._id;
-                        $scope.commentFormData.cid = cid;
-                        $scope.commentFormData.tid = tid;
-                        commentService.saveComment($scope.commentFormData,function(){
-                            location = "/#!"+$location.$$path;
+                    commentService.saveUser($scope.commentFormData)
+                        .then(function(newUser){
+                            //TODO 准备开始评论模块
+                            $scope.commentFormData.from = newUser.data._id;
+                            $scope.commentFormData.article = $scope.article._id;
+                            $scope.commentFormData.cid = cid;
+                            $scope.commentFormData.tid = tid;
+                            commentService.saveComment($scope.commentFormData,function(){
+                                location = "/#!"+$location.$$path;
+                            });
                         });
-                    });
                 } else if($scope.commentFormData.email == tmpEmail && $scope.commentFormData.nick!=tmpNick){
                     alert("请不要更换用户名："+tmpNick);
                     return ;
                 } else if($scope.commentFormData.email==tmpEmail && tmpNick==$scope.commentFormData.nick){
-                    commentService.findExistUser($scope.commentFormData.nick,function(existUser){
-                        $scope.commentFormData.from = existUser.data._id;
-                        $scope.commentFormData.article = $scope.article._id;
-                        $scope.commentFormData.cid = cid;
-                        $scope.commentFormData.tid = tid;
-                        commentService.saveComment($scope.commentFormData,function(comments){
-                            //console.log(comments);
-                            location = "/#!"+$location.$$path;
-                        });
+                    commentService.findExistUser($scope.commentFormData.nick)
+                        .then(function(existUser){
+                            $scope.commentFormData.from = existUser.data._id;
+                            $scope.commentFormData.article = $scope.article._id;
+                            $scope.commentFormData.cid = cid;
+                            $scope.commentFormData.tid = tid;
+                            commentService.saveComment($scope.commentFormData,function(comments){
+                                //console.log(comments);
+                                location = "/#!"+$location.$$path;
+                            });
 
-                    });
+                        });
                 }else {
                     return ;
                 }
             };
-            articleDetailCategory.getCategory(aid,function(cid){
-                articleDetailCategory.getCategoryOtherArticle(cid,function(category){
-                    $scope.catgoryName = category.data.name;
-                    var aList = category.data.list.splice(0,5);
-                    articleDetailCategory.getArticleList(aList,function(list){
-                        $scope.articleList = list;
-                    });
+            articleDetailCategory.getCategory(aid)
+                .then(function(cid){
+                    return articleDetailCategory.getCategoryOtherArticle(cid)
                 })
-            });
+                .then(function(category){
+                    if(!category.data) return [];   
+                    var aList = category.data.list.splice(0,5);
+                    $scope.catgoryName = category.data.name;
+                    return articleDetailCategory.getArticleList(aList);
+                })
+                .then(function(list){
+                    $scope.articleList = list;
+                });
             markd.renderMD(aid,function(article){
                 $scope.article = article;
                 /*

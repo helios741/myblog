@@ -17,10 +17,11 @@
         var count = AppConfig.pageSize,
             start = ($scope.currentPage-1)*count;
         //正在加载资源
-        categoryDetailService.getAllArticle(cid,function(list){
-            $scope.list = list.slice(start,start+count);
-            $scope.totPage = Math.ceil(list.length/count);
-        });
+        categoryDetailService.getAllArticle(cid)
+            .then(function(list){
+                $scope.list = list.slice(start,start+count);
+                $scope.totPage = Math.ceil(list.length/count);
+            });
         //categoryDetailService.getPageArticles($scope.currentPage,start,count);
 
         //点击上一页和下一个的执行函数

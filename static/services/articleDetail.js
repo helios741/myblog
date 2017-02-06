@@ -1,9 +1,11 @@
 (function(angular){
     var articleDetailModule = angular.module("myBlog.services.articleDetailModule",[]);
     articleDetailModule.service("commentService",[
-        "$http","$location","localStorageService",
-        function($http,$location,localStorageService){
-        this.saveUser = function(data,cb){
+        "$http","$location","$q","localStorageService",
+        function($http,$location,$q,localStorageService){
+        this.saveUser = function(data){
+            var deferred = $q.defer(),
+                promise = deferred.promise;
             localStorageService.set("nick",data.nick);
             localStorageService.set("email",data.email);
             $http({
@@ -18,12 +20,15 @@
                     alert("用户名村存在，请换一个嘞");
                     return ;
                 }
-                cb(res);
+                deferred.resolve(res);
             },function errorCallback(err){
                 console.log(err);
             });
+            return promise;
         };
-       this.findExistUser = function(nick,cb){
+       this.findExistUser = function(nick){
+           var deferred = $q.defer(),
+               promise = deferred.promise;
            $http({
                method:"get",
                url:"/admin/user/getNick?nick="+nick
@@ -32,11 +37,12 @@
                    alert("这个用户不存在");
                    return ;
                }
-               cb(res);
+               deferred.resolve(res);
            },function errorCallback(err){
                console.log(err);
            })
-       }
+           return promise;
+       };
 
         this.saveComment = function(data,cb){
             $http({

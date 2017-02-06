@@ -18,20 +18,22 @@
              start = ($scope.currentPage-1)*count;
         //正在加载资源
          $scope.loading = true;
-         getArticleService.getArticle($scope.currentPage,start,count,function(list){
-             $scope.articleList  =list;
-             getArticleService.getArticleCount(function(count){
+         getArticleService.getArticle($scope.currentPage,start,count)
+             .then(function(list){
+                 $scope.articleList  =list;
+                 return getArticleService.getArticleCount();
+             })
+             .then(function(count){
                  $scope.totPage = Math.ceil(count/AppConfig.pageSize);
                  $scope.loading = false;
              });
-         });
 
         //点击上一页和下一个的执行函数
         $scope.go = function(page){
             if(page<1 || page>$scope.totPage) return ;
             $route.updateParams({page:page});
         }
-       
+
 
     }]);
 
