@@ -4,24 +4,29 @@
         "$scope","$location","indexCategoryService",
         function($scope,$location,indexCategoryService){
             $scope.dirname = $location.$$absUrl;
-            indexCategoryService.getCategory(function(categorys){
-                $scope.categorys = categorys;
-            });
-            $scope.clickMsg = "点击查看全部";
+            indexCategoryService.getCategory()
+                .then(function(categorys){
+                    $scope.categorys = categorys;
+                    $scope.clickMsg = "点击查看全部";
+                });
             var flag = true;
             $scope.showAllCategory = function(){
                 if(flag)
-                    indexCategoryService.getAllCategory(function(categorys){
-                        $scope.categorys = categorys;
-                        $scope.clickMsg = "点击收起";
-                        flag = !flag;
-                    });
+                    indexCategoryService.getAllCategory()
+                        .then(function(categorys){
+                            console.log(categorys);
+                            $scope.categorys = categorys;
+                            $scope.clickMsg = "点击收起";
+                        });
                 else
-                    indexCategoryService.getCategory(function(categorys){
-                        $scope.categorys = categorys;
-                        $scope.clickMsg = "点击查看全部";
-                        flag = !flag;
-                    });
-            }
+                    indexCategoryService.getCategory()
+                        .then(function(categorys){
+                            console.log("part:"+categorys);
+                            $scope.categorys = categorys;
+                            $scope.clickMsg = "点击查看全部";
+                        });
+                flag = !flag;
+            };
+
     }]);
 })(angular);
