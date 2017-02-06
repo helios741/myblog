@@ -51,7 +51,6 @@ Article.updateArticle = function(fields,aid){
         })(0);
     });
 };
-
 Article.createArticle = function(fields,aid,res){
     return new Promise(function(resolve,reject){
         var newCateGoryArr =  fields.newCategory.split(","),
@@ -99,7 +98,6 @@ Article.createArticle = function(fields,aid,res){
     })(0);
     });
 };
-
 Article.delArticle = function(result,_id){
     return new Promise(function(resolve,reject){
         var category = result.category,
@@ -137,7 +135,6 @@ Article.delArticle = function(result,_id){
     });
 
 };
-
 Article.getList = function(result){
     return new Promise(function(resolve,reject){
         var listTot = result.list.length,

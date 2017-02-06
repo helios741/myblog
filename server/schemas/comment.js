@@ -32,11 +32,14 @@ CommentSchema.pre("save",function(next){
     next();
 });
 
-CommentSchema.static = {
-    getBy_id :　function(id,cb){
-        return find({_id:id})
-            .exec(cb);
+CommentSchema.statics = {
+    findData : function(id,cb){
+        return this
+            .find({article:id})
+            .populate("from","nick")
+            .populate("reply.from reply.to","nick")
+            .exec(cb)
     }
-}
+};
 
 module.exports = CommentSchema;

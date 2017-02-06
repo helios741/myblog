@@ -3,12 +3,8 @@ var Comment  =require("../models/comment"),
 exports.save = function (req,res) {
     var form = formidable.IncomingForm();
     form.parse(req,function (err,fields) {
-        if(err){
-            console.log(err);
-            return ;
-        }
+        if(err) throw err;
         if(fields.cid){
-            //console.log(fields);
             Comment.find({_id:fields.cid},function(err,comment){
                 if(err){
                     console.log(err);
@@ -20,7 +16,6 @@ exports.save = function (req,res) {
                     to:fields.tid,
                     content:fields.content
                 };
-                console.log(comment);
                 comment[0].reply.push(reply);
                 comment[0].save(function(err,commentMsg){
                     if(err){
@@ -45,19 +40,11 @@ exports.save = function (req,res) {
     });
 };
 exports.getAll = function(req,res){
-    Comment.find({article:req.query.id})
-        .populate("from","nick")
-        .populate("reply.from reply.to","nick")
-        .exec(function(err,comments){
-            if(err){
-                console.log(err);
-                res.send("-1");
-                return ;
-            }
-            res.send(comments);
-        })
+    Comment.findData(req.query.id,function(err,comments){
+        if(err){
+            console.log(err);
+            res.send("-1");
+        }
+        res.send(comments);
+    });
 };
-
-
-
-

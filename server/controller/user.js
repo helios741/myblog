@@ -13,7 +13,6 @@ exports.save = function(req,res){
             }
             if(userMsg.length>0) {
                 res.send("-1");  //用户昵称已经存在
-                return ;
             }
             new User({
                 nick:fields.nick,
@@ -41,4 +40,4 @@ exports.getNick = function(req,res){
         res.send(users[0]);
 
     })
-}
+};
