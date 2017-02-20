@@ -30,7 +30,7 @@
         <h3>文章分类</h3>
         <ul>
             <li ng-repeat="category in categorys">
-                <a href="http://localhost:3000/#!/category/{{category.id}}/1?title={{category.name}}">{{category.name}} ({{category.list.length}})</a>
+                <a href="http://{{url}}/#!/category/{{category.id}}/1?title={{category.name}}">{{category.name}} ({{category.list.length}})</a>
             </li>
         </ul>
         <button class="all-category-btn" ng-click="showAllCategory()">{{clickMsg}}</button>
