@@ -1,4 +1,4 @@
-(function(angular){
+;(function(angular){
     var indexCategoryShow  = angular.module("myBlog.controllers.indexCategoryShow",[]);
     indexCategoryShow.controller("indexCategoryShow",[
         "$scope","$location","indexCategoryService",
@@ -10,13 +10,11 @@
                     $scope.categorys = categorys;
                     $scope.clickMsg = "点击查看全部";
                 });
-
             var flag = true;
             $scope.showAllCategory = function(){
                 if(flag){
                     indexCategoryService.getAllCategory()
                         .then(function(categorys){
-                           // debugger;
                             $scope.categorys = categorys;
                             $scope.clickMsg = "点击收起";
                         });

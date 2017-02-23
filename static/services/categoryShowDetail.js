@@ -1,10 +1,10 @@
-(function(angular){
+;(function(angular){
     var categoryDetail = angular.module("myBlog.services.categoryDetail",[]);
     categoryDetail.service("categoryDetailService",["$http","$q",function($http,$q){
         this.getAllArticle = function(cid){
             var deferred = $q.defer(),
                 promise = deferred.promise;
-            $http({
+            $http({  
                 method:"get",
                 url:"/admin/article/getAll?cid="+cid
             }).then(function success(articles){

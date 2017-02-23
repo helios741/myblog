@@ -1,4 +1,4 @@
-(function(angular){
+;(function(angular){
     var categoryShowDetail = angular.module("myBlog.controllers.categoryShowDetail",["ngRoute"]);
     categoryShowDetail.config(["$routeProvider",function($routeProvider){
         $routeProvider.when("/category/:id/:page",{
@@ -22,8 +22,6 @@
                 $scope.list = list.slice(start,start+count);
                 $scope.totPage = Math.ceil(list.length/count);
             });
-        //categoryDetailService.getPageArticles($scope.currentPage,start,count);
-
         //点击上一页和下一个的执行函数
         $scope.go = function(page){
             if(page<1 || page>$scope.totPage) return ;

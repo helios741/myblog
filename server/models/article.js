@@ -144,11 +144,12 @@ Article.getList = function(result){
                 resolve(articleArr);
                 return ;
             }
-            Article.findById(result.list[i],function(err,article){
-                if(err) throw err;
-                if(article)  articleArr.push(article);
-                iterator(i+1);
-            });
+            Article.findById(result.list[i])
+                .then(((article)=>{
+                    if(article)  articleArr.push(article);
+                    iterator(i+1);
+                }))
+                .catch((err)=>console.error(err));
         })(0);
     });
 

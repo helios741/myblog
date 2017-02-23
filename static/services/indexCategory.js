@@ -1,4 +1,4 @@
-(function(angular){
+;(function(angular){
     var indexCategory = angular.module("myBlog.services.indexCategory",[]);
     indexCategory.service("indexCategoryService",["$http","AppConfig",function($http,AppConfig){
 
@@ -17,7 +17,7 @@
         };
         this.getAllCategory = function(){
             return new Promise(function(resolve,reject){
-                $http({
+                $http({    
                     method:"get",
                     url:"/admin/category/indexGet"
                 }).then(function successCallback(categorys){
