@@ -1,9 +1,9 @@
-var Article = require("../models/article");
-var DB = require("../models/db");
-var formidable  = require("formidable");
-var mongoose = require("mongoose");
-var Category = require("../models/category");
-var fs = require("fs");
+var Article = require("../models/article"),
+    DB = require("../models/db"),
+    formidable  = require("formidable"),
+    mongoose = require("mongoose"),
+    Category = require("../models/category"),
+    fs = require("fs");
 mongoose.Promise = require('bluebird');
 //展示管理员界面
 exports.ArticleList = function(req,res){
