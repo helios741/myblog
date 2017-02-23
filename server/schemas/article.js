@@ -51,15 +51,15 @@ ArticleSchema.statics = {
             .sort("meta.updateAt")
             .exec()
     },
-    findById:function(id,cb){
+    findById:function(id){
         return this
             .findOne({articleId:id})
-            .exec(cb)
+            .exec()
     },
-    findBy_Id:function(id,cb){
+    findBy_Id:function(id){
         return this
             .findOne({_id:id})
-            .exec(cb)
+            .exec()
     },
     removeBy_Id:function(id,cb){
         return this
@@ -68,18 +68,18 @@ ArticleSchema.statics = {
             .exec(cb)
     },
     //用户分页
-    findByData:function(data,cb){
+    findByData:function(data){
         return this
             .find({"hidden":false,isdel:false})
             .skip(data.start)
             .limit(data.count)
             .sort({ "meta.updateAt" : -1 })
-            .exec(cb)
+            .exec()
     },
-    countAllData:function(cb){
+    countAllData:function(){
         return this
             .find({"hidden":false,isdel:false})
-            .exec(cb)
+            .exec()
     },
 
     getSameCategoryById : function(cid,cb){

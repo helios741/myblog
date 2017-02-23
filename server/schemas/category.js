@@ -37,7 +37,7 @@ CategorySchema.statics = {
             .exec();
     },
 
-    findById(id,cb){
+    findById(id,cb){ //不改
         return this
             .findOne({id:id})
             .exec(cb)

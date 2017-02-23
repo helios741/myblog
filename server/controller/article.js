@@ -75,97 +75,86 @@ exports.doNewArticle = function(req,res){
     })
 };
 exports.delArticle = function(req,res){
-    var _id = req.query._id;
-    Article.findBy_Id(_id,function(err,result){
-        if(err) throw err;
-        Article.delArticle(result,_id)
-            .then(function(status){
-                res.send(status)
-            },function(status){
-                res.send(status);
-            });
-    });
+    let _id = req.query._id;
+    Article.findBy_Id(_id)
+        .then((article)=>Article.delArticle(article,_id))
+        .then((status)=>res.send(status))
+        .catch((err)=>console.error("error:"+err));
 };
 exports.getArticleDetail = function(req,res){
     var articleId = parseInt(req.params.id.slice(1));
-    Article.update({articleId:articleId}, {$inc: {pv: 1}}, function(err) {
-        if (err) throw err;
-    });
-    Article.findById(articleId,function(err,result){
-        if(err){
-            console.log(err);
-            res.send("-1");
-            return ;
-        }
-        res.send(result);
-    })
-}
+    Article.update({articleId:articleId}, {$inc: {pv: 1}}, (err)=>console.error(err));
+    Article.findById(articleId)
+        .then((article)=>res.send(article))
+        .then((err)=>console.error(err));
+};
 exports.getArticleList = function(req,res){
-    Article.findByData(req.query,function(err,result){
-        if(err) throw err;
-        res.send(result);
-    });
-}
+    Article.findByData(req.query)
+        .then((article)=>res.send(article))
+        .catch((err)=>console.error(err));
+};
 exports.getAllArticle =  function(req,res){
-    Article.countAllData(function(err,result){
-        if(err) throw err;
-        res.send(result);
-    })
-}
+    Article.countAllData()
+        .then((count)=>res.send(count))
+        .catch((err)=>console.error(err));
+};
 exports.editArticle  =function(req,res){
-    var _id = req.params._id;
-    Article.findBy_Id(_id,function(err,result){
-        if(err) throw err;
-        Category.fetch(function(err,result2){
-            if(err){
-                console.log(err);
-                return ;
-            }
+    let _id = req.params._id,
+    _article;
+    Article.findBy_Id(_id)
+        .then( ( (article)=>{
+            _article = article;
+            return Category.fetch()
+        } ))
+        .then((categorys)=>
             res.render("index",{
                 type:"newArticle",
                 title:"编辑文章",
-                categoryList:result2,
-                article:result,
+                categoryList:categorys,
+                article:_article,
                 saveBtn:"保存"
-            });
-        })
-    });
-}
+            })
+        )
+        .catch((err)=>console.error(err));
+};
 exports.articlePreview = function(req,res){
-    var _id = req.params._id;
-    Article.findBy_Id(_id,function(err,article){
-        if(err) throw err;
-        Category.fetch(function(err,categorys){
-            if(err) throw err;
+    var _id = req.params._id,
+        _article;
+    Article.findBy_Id(_id)
+        .then(((article)=>{
+            _article = article;
+            return Category.fetch();
+        }))
+        .then((categorys)=>
             res.render("index",{
                 type:"preview",
                 title:"文章预览",
                 categoryList:categorys,
-                article:article,
+                article:_article,
                 saveBtn:"保存"
-            });
-        })
-    });
-}
+            })
+        )
+        .catch((err)=>console.error(err));
+};
 exports.showDelArticle  = function(req,res){
-    Article.findData({isdel:true},function (err,result) {
-        if(err) throw err;
-        res.render("index",{
-            type:"delArticle",
-            list:result
-        })
-    })
+    Article.findData({isdel:true})
+        .then((list)=>
+            res.render("index",{
+                type:"delArticle",
+                list:list
+            })
+        )
+        .catch((err)=>console.error(err));
 };
 exports.getAll = function(req,res){
-    Category.findById(req.query.cid,function(err,result){
-        if(err) throw err;
-        if(!result) return ;
-        Article.getList(result)
-            .then(function(list){
-                res.send(list);
-            });
+    Category.findById(req.query.cid)
+        .then(((category)=>{
+            if(!category) return ;
+            return Article.getList(category);
+        }))
+        .then((list)=>res.send(list))
+        .catch((err)=>console.error(err));
 
-    });
 }
 exports.getArticleDetailCategoryList = function(req,res){
     var form = new formidable.IncomingForm();

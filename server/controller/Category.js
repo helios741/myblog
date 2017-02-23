@@ -13,13 +13,14 @@ exports.save = function(req,res){
     })
 };
 exports.Show = function(req,res){
-    Category.fetch(function(err,result){
-        if(err) throw err;
-        res.render("index",{
-            type:"categoryShow",
-            categoryList:result
-        });
-    });
+    Category.fetch()
+        .then((categorys)=>
+            res.render("index",{
+                type:"categoryShow",
+                categoryList:categorys
+            })
+        )
+        .catch((err)=>console.error(err));
 };
 exports.showCategoryDetail = function(req,res){
     id  = parseInt(req.params.id);

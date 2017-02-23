@@ -63,16 +63,17 @@ Category.getArticleList = function(categorys,Article){
     return new Promise(function(resolve,reject){
         var listTot = categorys.list.length,
             articleArr = [];
+        console.log(categorys.list);
         (function iterator(i){
             if(i>=listTot){
                 resolve(articleArr);
                 return ;
             }
-            Article.findById(categorys.list[i],function(err,article){
-                if(err) throw err;
-                if(article)  articleArr.push(article);
-                iterator(i+1);
-            });
+            Article.findById(categorys.list[i])
+                .then(((article)=>{
+                    if(article)  articleArr.push(article);
+                    iterator(i+1);
+                }));
         })(0);
     });
 
