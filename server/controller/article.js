@@ -7,35 +7,37 @@ var Article = require("../models/article"),
 mongoose.Promise = require('bluebird');
 //展示管理员界面
 exports.ArticleList = function(req,res){
-    var data ={isdel:false};
+    let data ={isdel:false};
+    let  categoryList;
     if(req.query.hidden){
         data.hidden = req.query.hidden;
     }
-    Category.fetch(function(err,categorys){
-        if(err) throw err;
-        Article.findData(data,function(err,list){
-            if(err) throw err;
+    Category.fetch()
+        .then( ((categorys)=>{
+            categoryList = categorys;
+            return Article.findData(data);
+        }))
+        .then( (list)=>
             res.render("index",{
                 type:"articleList",
                 title:"文章列表",
                 articleList:list,
-                categoryList:categorys
-            });
-        })
-    })
-
+                categoryList:categoryList
+            })
+        );
 };
 exports.newArticle  = function(req,res){
-    Category.fetch(function(err,result){
-        if(err) throw err;
-        res.render("index",{
-            type:"newArticle",
-            title:"新建文章",
-            categoryList:result,
-            saveBtn:"发表",
-            article:""
-        });
-    })
+    Category.fetch()
+        .then((result)=>
+            res.render("index",{
+                type:"newArticle",
+                title:"新建文章",
+                categoryList:result,
+                saveBtn:"发表",
+                article:""
+            })
+        );
+
 };
 exports.doNewArticle = function(req,res){
     var form = new formidable.IncomingForm();

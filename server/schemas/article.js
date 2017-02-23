@@ -45,11 +45,11 @@ ArticleSchema.statics = {
             .sort({ "meta.updateAt" : 1 })
             .exec(cb)
     },
-    findData:function(data,cb){
+    findData:function(data){
         return this
             .find(data)
             .sort("meta.updateAt")
-            .exec(cb)
+            .exec()
     },
     findById:function(id,cb){
         return this
@@ -81,7 +81,7 @@ ArticleSchema.statics = {
             .find({"hidden":false,isdel:false})
             .exec(cb)
     },
-    
+
     getSameCategoryById : function(cid,cb){
         return this
             .find({

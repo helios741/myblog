@@ -11,15 +11,10 @@ foo(5)
     });
 
 function foo(num){
-    return new Promise(function(resolve,reject){
+    return new Promise(((resolve,reject)=>{
         ++num;
-        if(resolve){
-            resolve(num);
-        }
-        if(reject){
-            reject("4444");
-        }
-    });
+        resolve(num);
+    }));
 }
 function bar(sum){
     return new Promise(function(resolve,reject){
