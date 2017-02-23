@@ -17,7 +17,6 @@
             };
             $scope.dirname = $location.$$absUrl;
             //$scope.dirname = "/#!"+$location.$$path;
-            //debugger;
             var aid = $routeParams.articleid;  //文章的ID
                 //tid = "",                           //评论回复给的那个人的ID
                 //cid = "";                           //该条评论ID

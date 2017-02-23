@@ -6,7 +6,7 @@
                 .get("/admin/article/getArticle/:"+aid)
                 .then(function(res){
                     cb(res.data);
-                },
+                }, 
                 function(){
                     console.log("读取文章详细错误");
                 });
@@ -18,7 +18,7 @@
                 .get("admin/comment/getAll?id="+_id)
                 .then(function(comments){
                         cb(comments.data);
-                    },
+                    }, 
                     function(){
                         console.log("获取评论失败");
                     }

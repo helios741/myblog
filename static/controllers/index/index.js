@@ -19,7 +19,7 @@
         //正在加载资源
          $scope.loading = true;
          getArticleService.getArticle($scope.currentPage,start,count)
-             .then(function(list){
+             .then(function(list){ 
                  $scope.articleList  =list;
                  return getArticleService.getArticleCount();
              })
@@ -33,8 +33,6 @@
             if(page<1 || page>$scope.totPage) return ;
             $route.updateParams({page:page});
         }
-
-
     }]);
 
 })(angular);

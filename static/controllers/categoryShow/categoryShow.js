@@ -5,7 +5,7 @@
             templateUrl:"./controllers/categoryShow/view.html",
             controller:"categoryShowDetailCtrl"
         });
-    }]);
+    }]);   
     categoryShowDetail.controller("categoryShowDetailCtrl",[
     "$scope","$routeParams","$route","categoryDetailService","getArticleService","AppConfig",
     function($scope,$routeParams,$route,categoryDetailService,getArticleService,AppConfig){

@@ -1,8 +1,8 @@
-var mongoose  = require("mongoose");
-var Category = require("./category");
-var ArticleSchema = require("../schemas/article").ArticleSchema;
-var Article = mongoose.model("Article",ArticleSchema);
-var fs = require("fs");
+var mongoose  = require("mongoose"),
+    Category = require("./category"),
+    ArticleSchema = require("../schemas/article").ArticleSchema,
+    Article = mongoose.model("Article",ArticleSchema),
+    fs = require("fs");
 
 Article.createOneArticle = function(data,cb){
     new Article(data).save(cb);
@@ -105,32 +105,34 @@ Article.delArticle = function(result,_id){
             aid = result.articleId;
         (function iterator(i){
             if(i>=categoryTot) {
-                Article.removeBy_Id(_id,function(err,delMsg){
-                    if(err) throw err;
-                    if( (1==delMsg.ok && delMsg.n==0) || !delMsg.ok ) {
-                        reject("0");
-                        return ''
-                    }
-                    resolve("1");
-                });
+                Article.removeBy_Id(_id)
+                    .then(((delMsg)=>{
+                        if( (1==delMsg.ok && delMsg.n==0) || !delMsg.ok ) {
+                            reject("0");
+                            return ''
+                        }
+                        resolve("1");
+                    }))
+                    .catch((err)=>console.error(err));
                 return ;
             }
-            Category.findById(category[i],function(err,delCategory){
-                if(err) throw err;
-                if(!delCategory || delCategory.list.indexOf(aid)==-1 ){
-                    iterator(i+1);
-                    return ;
-                }
-                var list = delCategory.list;
-                list.splice(delCategory.list.indexOf(aid),1);
-                Category.where({id:category[i]}).update({list:list},function (err) {
-                    if(err){
-                        csonole.log(err);
+            Category.findById(category[i])
+                .then(((delCategory)=>{
+                    if(!delCategory || delCategory.list.indexOf(aid)==-1 ){
+                        iterator(i+1);
                         return ;
                     }
-                    iterator(i+1);
-                });
-            })
+                    var list = delCategory.list;
+                    list.splice(delCategory.list.indexOf(aid),1);
+                    Category.where({id:category[i]}).update({list:list},function (err) {
+                        if(err){
+                            csonole.log(err);
+                            return ;
+                        }
+                        iterator(i+1);
+                    });
+                }))
+                .catch((err)=>console.error(err));
         })(0);
     });
 
@@ -164,11 +166,12 @@ Article.getArticlesByCategory = function(fields){
                 resolve(articles);
                 return ;
             }
-            Article.findById(list[i],function(err,article){
-                if(err) throw err;
-                articles.push(article);
-                iterator(i+1);
-            });
+            Article.findById(list[i])
+                .then(((article)=>{
+                    articles.push(article);
+                    iterator(i+1);
+                }))
+                .catch((err)=>console.log(err));
         })(0);
     });
 

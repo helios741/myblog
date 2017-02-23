@@ -64,7 +64,6 @@ exports.del = function(req,res,next){
 exports.indexGet = function(req,res){
     Category.indexGet(req.query,function(err,category){
         if(err) throw err;
-       // console.log(category);
         res.send(category);
     });
 };

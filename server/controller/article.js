@@ -83,12 +83,13 @@ exports.delArticle = function(req,res){
 };
 exports.getArticleDetail = function(req,res){
     var articleId = parseInt(req.params.id.slice(1));
-    Article.update({articleId:articleId}, {$inc: {pv: 1}}, (err)=>console.error(err));
+    Article.update({articleId:articleId}, {$inc: {pv: 1}}, (err)=>err?console.error(err):null);
     Article.findById(articleId)
         .then((article)=>res.send(article))
-        .then((err)=>console.error(err));
+        .catch((err)=>console.error(err));
 };
 exports.getArticleList = function(req,res){
+    console.log(req.query);
     Article.findByData(req.query)
         .then((article)=>res.send(article))
         .catch((err)=>console.error(err));

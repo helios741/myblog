@@ -61,11 +61,11 @@ ArticleSchema.statics = {
             .findOne({_id:id})
             .exec()
     },
-    removeBy_Id:function(id,cb){
+    removeBy_Id:function(id){
         return this
             .where({_id:id})
             .update({isdel:true})
-            .exec(cb)
+            .exec()
     },
     //用户分页
     findByData:function(data){
