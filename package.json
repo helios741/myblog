@@ -28,6 +28,7 @@
     "formidable": "^1.0.17",
     "gulp": "^3.9.1",
     "gulp-less": "^3.3.0",
+    "gulp-minify-css": "^1.2.4",
     "highlight.js": "^9.9.0",
     "mongoose": "^4.7.6",
     "seajs": "^3.0.2",

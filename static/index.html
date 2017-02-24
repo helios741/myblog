@@ -8,16 +8,7 @@
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="css/article.css">
     <link rel="stylesheet" href="/highlight.js/styles/googlecode.css">
-    <script src="/angular/angular.js"></script>
-    <script src="/jQuery/tmp/jquery.js"></script>
-    <script src="/angular-route/angular-route.js"></script>
-    <script src="/angular-local-storage/dist/angular-local-storage.min.js"></script>
-    <script src="/seajs/dist/sea.js"></script>
-    <script src="/marked/marked.min.js"></script>
-    <script src="/highlight.js/lib/highlight.js"></script>
-    <script>
-        seajs.use("./public/js/main.js");
-    </script>
+
     <!--[if lte IE 9]>
     <![endif]-->
 </head>
@@ -35,6 +26,20 @@
     </div>
 </article>
 <div ng-include="'./public/index-footer.html'"></div>
+<!--lib-->
+
+<script src="http://cdn.bootcss.com/angular.js/1.6.1/angular.min.js"></script>
+<script src="http://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://cdn.bootcss.com/angular.js/1.6.1/angular-route.min.js"></script>
+<script src="/angular-local-storage/dist/angular-local-storage.min.js"></script>
+<script src="http://cdn.bootcss.com/seajs/3.0.2/sea.js"></script>
+<script src="http://cdn.bootcss.com/marked/0.3.4/marked.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
+<script>
+    seajs.use("./public/js/main.js");
+</script>
+<!--lib ending-->
+
 <script src="apps.js"></script>
 <script src="public/js/header.js"></script>
 <script src="public/js/detail.js"></script>
