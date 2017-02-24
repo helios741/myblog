@@ -8,7 +8,7 @@
             $http.get("/admin/category/getInfo/"+aid)
                 .then(function(article){
                         category = article.data.category;
-                        deferred.resolve(category.length>1?category[0]:"-1");
+                        deferred.resolve( (category.length>=1&&category[0])?category[0]:"-1");
                     },
                     function(){
                         console.error("获取文章类型失败");
@@ -21,6 +21,8 @@
                 promise = deferred.promise;
             $http.get("/admin/category/getCategoryInfo/"+cid)
                 .then(function(category){
+                    console.log(6666);
+                        console.log(category);
                         deferred.resolve(category);
                     },
                     function(){

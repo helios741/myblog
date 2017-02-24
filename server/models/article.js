@@ -59,6 +59,10 @@ Article.createArticle = function(fields,aid,res){
             existCategory = fields.category.split(","),
             existCategoryLen = existCategory.length,
             unCategoryStr = fields.unCategoryStr;
+        for(let i=0;i<existCategoryLen;i++) {
+            if(existCategory[i]=="") continue;
+            categoryArr.push(parseInt(existCategory[i]));
+        }
         (function iterator(i){
         if(i>=newCategoryLen || (newCategoryLen==1 && newCateGoryArr[0]=="") ){
             Article.createOneArticle({

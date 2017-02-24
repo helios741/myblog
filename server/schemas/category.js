@@ -42,23 +42,23 @@ CategorySchema.statics = {
             .findOne({id:id})
             .exec()
     },
-    removeBy_Id(id,cb){
+    removeBy_Id(id){
         return this
             .remove({_id:id})
-            .exec(cb)
+            .exec()
     },
     removeById(id,cb){
         return this
             .remove({id:id})
             .exec(cb)
     },
-    indexGet(data,cb){
+    indexGet(data){
         return this
             .find({})
             .sort({ "meta.updateAt" : 1 })
             .skip(data.start)
             .limit(data.count)
-            .exec(cb)
+            .exec()
     }
 
 };

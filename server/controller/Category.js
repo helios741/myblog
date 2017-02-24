@@ -2,6 +2,7 @@ var Category = require("../models/category"),
     Article  =require("../models/article");
 
 exports.save = function(req,res){
+    console.log(req.query);
     Category.saveCategory(req,Article);
     Article.saveNewCategory(req.query.aid,req.query.category.split(","),function(err){
         if(err){
@@ -23,61 +24,52 @@ exports.Show = function(req,res){
         .catch((err)=>console.error(err));
 };
 exports.showCategoryDetail = function(req,res){
-    id  = parseInt(req.params.id);
+    let id  = parseInt(req.params.id),
+        _categorys;
     if(!id) {
         res.send("-1");
         return ;
     }
-    Category.findById(id,function(err,categorys){
-        if(err){
-            next();
-            return ;
-        }
-        if(!categorys) return ;
-        Category.getArticleList(categorys,Article)
-            .then(function(articleArr){
-                res.render("index",{
-                    type:"categoryDetail",
-                    title:categorys.name,
-                    articleDetailList : articleArr
-                });
-            });
-    });
+    Category.findById(id)
+        .then(((categorys)=>{
+            if(!categorys) return ;
+            _categorys = categorys;
+            return Category.getArticleList(categorys,Article);
+        }))
+        .then((articleArr)=>
+            res.render("index",{
+                type:"categoryDetail",
+                title:_categorys.name,
+                articleDetailList : articleArr
+            })
+        )
+        .catch((err)=>console.error(err));
 };
 exports.del = function(req,res,next){
-    var id = req.params.id;
-    Category.findById(id,function (err,categorys) {
-        if(err){
-            console.log(err);
-            next();return ;
-        }
-        Category.del(categorys,Article,id);
-        Category.removeById(id,function(err){
-            if(err){
-                console.log(err);
-                res.send("-1");
-            }
-            res.send("1");
-        });
-    })
+    let id = req.params.id;
+    Category.findById(id)
+        .then(((categorys)=>{
+            Category.del(categorys,Article,id);
+            return Category.removeById(id);
+
+        }))
+        .then((err)=>err?res.send("1"):res.send("-1"))
+        .catch((err)=>console.error(err));
 };
 exports.indexGet = function(req,res){
-    Category.indexGet(req.query,function(err,category){
-        if(err) throw err;
-        res.send(category);
-    });
+    Category.indexGet(req.query)
+        .then((category)=>res.send(category))
+        .catch((err)=>console.log(err));
 };
 exports.getInfo = function(req,res){
     var aid = req.params.aid;
-    Article.findById(aid,function(err,article){
-        if(err) throw err;
-        res.send(article);
-    });
+    Article.findById(aid)
+        .then((article)=>res.send(article))
+        .catch((err)=>console.error(err));
 };
 exports.getCategoryInfo = function(req,res){
     var cid = req.params.cid;
-    Category.findById(cid,function(err,category){
-        if(err) throw err;
-        res.send(category);
-    })
-}
+    Category.findById(cid)
+        .then((category)=>res.send(category))
+        .catch((err)=>console.error(err));
+};

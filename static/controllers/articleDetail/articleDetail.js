@@ -74,7 +74,7 @@
                     return articleDetailCategory.getCategoryOtherArticle(cid)
                 })
                 .then(function(category){
-                    if(!category.data) return [];   
+                    if(!category.data) return [];
                     var aList = category.data.list.splice(0,5);
                     $scope.catgoryName = category.data.name;
                     return articleDetailCategory.getArticleList(aList);
