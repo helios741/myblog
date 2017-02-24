@@ -19,7 +19,7 @@
             //$scope.dirname = "/#!"+$location.$$path;
             var aid = $routeParams.articleid;  //文章的ID
                 //tid = "",                           //评论回复给的那个人的ID
-                //cid = "";                           //该条评论ID
+                //cid = "";                               //该条评论ID
 
             $scope.replayComment = function($event){
                 cid = $($event.target).data("cid");

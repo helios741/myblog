@@ -5,13 +5,13 @@
             templateUrl:"./controllers/categoryShow/view.html",
             controller:"categoryShowDetailCtrl"
         });
-    }]);   
+    }]);
     categoryShowDetail.controller("categoryShowDetailCtrl",[
     "$scope","$routeParams","$route","categoryDetailService","getArticleService","AppConfig",
     function($scope,$routeParams,$route,categoryDetailService,getArticleService,AppConfig){
         $scope.currentPage = parseInt($routeParams.page);
         $scope.articleList = [];
-        var cid = $routeParams.id;
+        var cid = $routeParams.id;   
         $scope.title = $routeParams.title;
         //后台发送的参数
         var count = AppConfig.pageSize,

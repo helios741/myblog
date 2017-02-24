@@ -6,6 +6,6 @@
             replace:true,
             transclude:true,
             template:' <div  id="marked" class="detail-content">{{article.content}}</div>',
-        }
+        } 
     }]);
 })(angular);
