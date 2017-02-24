@@ -49,8 +49,15 @@ gulp.task("services",function(){
         .pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest("static/services/"));
 });
+gulp.task("public",function(){
+    gulp.src("static/public/js/*.js")
+        .pipe(uglify())
+        .pipe(rename({suffix: '.min'}))
+        .pipe(gulp.dest("static/public/js/"));
+});
 gulp.task("watch",function(){
     gulp.watch(["style"]);
     gulp.watch("static/css/*.css",["css"]);
 });
-gulp.task("js",["controllers","directives","services"]);
+
+gulp.task("js",["controllers","directives","services","public"]);
