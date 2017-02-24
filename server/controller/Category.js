@@ -2,7 +2,6 @@ var Category = require("../models/category"),
     Article  =require("../models/article");
 
 exports.save = function(req,res){
-    console.log(req.query);
     Category.saveCategory(req,Article);
     Article.saveNewCategory(req.query.aid,req.query.category.split(","),function(err){
         if(err){

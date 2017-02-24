@@ -6,25 +6,18 @@ var formidable = require("formidable"),
 exports.save = function(req,res){
     var form = new formidable.IncomingForm();
     form.parse(req,function(err,fields){
-        User.findByNick(fields.nick,function(err,userMsg){
-            if(err){
-                console.log("保存用户失败");
-                return ;
-            }
-            if(userMsg.length>0) {
-                res.send("-1");  //用户昵称已经存在
-            }
-            new User({
-                nick:fields.nick,
-                email:fields.email
-            }).save(function(err,msg){
-                if(err){
-                    console.log("保存用户失败");
-                    return ;
+        User.findByNick(fields.nick)
+            .then(((userMsg)=>{
+                if(userMsg.length>0) {
+                    res.send("-1");  //用户昵称已经存在
                 }
-                res.send(msg);
-            });
-        })
+                new User({
+                    nick:fields.nick,
+                    email:fields.email
+                }).save()
+                    .then((msg)=>res.send(msg));
+            }))
+            .catch((err)=>console.error(err));
 
     })
 };

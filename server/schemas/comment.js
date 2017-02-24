@@ -33,12 +33,12 @@ CommentSchema.pre("save",function(next){
 });
 
 CommentSchema.statics = {
-    findData : function(id,cb){
+    findData (id){
         return this
             .find({article:id})
             .populate("from","nick")
             .populate("reply.from reply.to","nick")
-            .exec(cb)
+            .exec()
     }
 };
 

@@ -23,16 +23,16 @@ UserSchema.pre("save",function(next){
     next();
 });
 UserSchema.statics = {
-    fetch:function(cb){
+    fetch(cb){
         return this
             .find()
             .sort({ "meta.updateAt" : 1 })
             .exec(cb)
     },
-    findByNick:function(nick,cb){
+    findByNick(nick){
         return this
             .find({nick:nick})
-            .exec(cb)
+            .exec()
     }
 }
 module.exports = UserSchema;

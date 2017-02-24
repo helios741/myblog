@@ -17,34 +17,28 @@ exports.save = function (req,res) {
                     content:fields.content
                 };
                 comment[0].reply.push(reply);
-                comment[0].save(function(err,commentMsg){
-                    if(err){
-                        console.log(err);
+                comment[0].save()
+                    .then((commentMsg)=>res.send(commentMsg))
+                    .catch(((err)=>{
+                        console.error(err);
                         res.send("-1");
-                        return ;
-                    }
-                    res.send(commentMsg);
-                });
+                    }));
+                
             });
             return ;
         }
+        
         var comment = new Comment(fields);
-        comment.save(function(err,comment){
-            if(err){
-                console.log(err);
+        comment.save()
+            .then((comment)=>res.send(comment))
+            .catch(((err)=>{
+                console.error(err);
                 res.send("-1");
-                return ;
-            }
-            res.send(comment);
-        });
+            }));
     });
 };
 exports.getAll = function(req,res){
-    Comment.findData(req.query.id,function(err,comments){
-        if(err){
-            console.log(err);
-            res.send("-1");
-        }
-        res.send(comments);
-    });
+    Comment.findData(req.query.id)
+        .then((comments)=>res.send(comments))
+        .catch((err)=>console.error(err));
 };
