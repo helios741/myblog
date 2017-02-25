@@ -44,7 +44,7 @@ gulp.task("directives",function(){
         .pipe(uglify())
         .pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest("static/directives/"));
-})
+});
 gulp.task("services",function(){
     gulp.src("static/services/*.js")
         .pipe(uglify())
@@ -59,7 +59,7 @@ gulp.task("public",function(){
 });
 gulp.task("watch",function(){
     gulp.watch("static/less/*.less",["style"]);
-    //ulp.watch("static/css/*.css",["css"]);
+    gulp.watch("static/css/*.css",["css"]);
 });
 
 
