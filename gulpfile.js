@@ -58,8 +58,8 @@ gulp.task("public",function(){
         .pipe(gulp.dest("static/public/js/"));
 });
 gulp.task("watch",function(){
-    gulp.watch(["style"]);
-    gulp.watch("static/css/*.css",["css"]);
+    gulp.watch("static/less/*.less",["style"]);
+    //ulp.watch("static/css/*.css",["css"]);
 });
 
 
