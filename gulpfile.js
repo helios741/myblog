@@ -5,6 +5,8 @@ var less = require("gulp-less");
 var rename = require("gulp-rename");
 var minifyCSS = require('gulp-minify-css');
 var uglify = require('gulp-uglify');
+var gulpif = require("gulp-if");
+var spritesmith=require('gulp.spritesmith');
 gulp.task("style",function(){
     gulp.src("static/less/*.less")
         .pipe(less())
@@ -60,4 +62,16 @@ gulp.task("watch",function(){
     gulp.watch("static/css/*.css",["css"]);
 });
 
+
+gulp.task('default', function () {
+    return gulp.src('static/img/*.jpg')//需要合并的图片地址
+        .pipe(spritesmith({
+            imgName: 'sprite.png',//保存合并后图片的地址
+            cssName: 'static/test/sprite.css',//保存合并后对于css样式的地址
+            padding:5,//合并时两个图片的间距
+            algorithm: 'binary-tree',//注释1
+            cssTemplate:"css/handlebarsStr.css"//注释2
+        }))
+        .pipe(gulp.dest('static'));
+});
 gulp.task("js",["controllers","directives","services","public"]);

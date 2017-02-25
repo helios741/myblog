@@ -42,4 +42,4 @@
             }
         }
     }])
-})(angular);
+})(angular)
