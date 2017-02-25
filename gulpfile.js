@@ -1,12 +1,13 @@
 'use strict';
 
-var gulp = require('gulp');
-var less = require("gulp-less");
-var rename = require("gulp-rename");
-var minifyCSS = require('gulp-minify-css');
-var uglify = require('gulp-uglify');
-var gulpif = require("gulp-if");
-var spritesmith=require('gulp.spritesmith');
+var gulp = require('gulp'),
+    less = require("gulp-less"),
+    rename = require("gulp-rename"),
+    minifyCSS = require('gulp-minify-css'),
+    uglify = require('gulp-uglify'),
+    gulpif = require("gulp-if"),
+    spritesmith=require('gulp.spritesmith'),
+    concat = require("gulp-concat");
 gulp.task("style",function(){
     gulp.src("static/less/*.less")
         .pipe(less())
@@ -14,9 +15,11 @@ gulp.task("style",function(){
 });
 gulp.task("css",function(){
     gulp.src("static/css/*.css")
+        .pipe(concat("all.css"))
+        .pipe(gulp.dest("static/public/css/"))
+         .pipe(rename({suffix: '.min'}))
         .pipe(minifyCSS())
-       // .pipe(rename({suffix: '.min'}))
-        .pipe(gulp.dest("static/css/"));
+        .pipe(gulp.dest("static/public/css/"));
 });
 gulp.task("controllers",function(){
     gulp.src("static/controllers/*.js")
@@ -57,6 +60,18 @@ gulp.task("public",function(){
         .pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest("static/public/js/"));
 });
+
+gulp.task("minifyjs",function(){
+    gulp.src(["static/controllers/*.js","static/controllers/articleDetail/*.js","static/controllers/index/*.js",
+        "static/controllers/categoryShow/*.js","static/directives/*.js","static/services/*.js"])
+        .pipe(concat("all.js"))
+        .pipe(gulp.dest("static/public/all/"))
+        .pipe(rename({suffix: '.min'}))
+        .pipe(uglify())
+        .pipe(gulp.dest("static/public/all/"));
+
+});
+
 gulp.task("watch",function(){
     gulp.watch("static/less/*.less",["style"]);
     gulp.watch("static/css/*.css",["css"]);
