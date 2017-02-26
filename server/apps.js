@@ -11,10 +11,10 @@ app.use(session({
 /**
  * 设置中间件
  */
-//app.use(express.compress());
 app.use(express.static("./public"));
 app.use(express.static("../node_modules"));
 app.use(express.static("../static"));
 app.use(express.static("./uploads"));
+//app.use(express.compress());
 require('./config/router')(app);
 app.listen(PORT);
