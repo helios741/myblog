@@ -36,7 +36,54 @@ module.exports = function(app){
     app.get("/admin/category/indexGet",Category.indexGet);    //前台展示一部分的文章
     app.get("/admin/category/detail/:id",Category.showCategoryDetail);//展示分类下的所有文章
     app.get("/admin/category/getInfo/:aid",Category.getInfo);  //得到某一篇文章的详细信息
-    app.get("/admin/category/getCategoryInfo/:cid",Category.getCategoryInfo);//按照cid得到特定的分类
+    app.get("/admin/category/getCategoryInfo/:cid",Category.getCategor
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    yInfo);//按照cid得到特定的分类
     /*文章分类路由结束*/
     /*评论用户路由*/
     app.post("/admin/user/save",User.save);//保存用户到数据库
