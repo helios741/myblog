@@ -1,1 +1,0 @@
-exports.dbName = "blog";
