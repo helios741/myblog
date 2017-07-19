@@ -1,4 +1,4 @@
-node_modules
-bower_components
+node_modules/
+build/
 .idea
 static/css
