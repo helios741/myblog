@@ -73,6 +73,7 @@ mongodb
 - [服务器渲染小demo](https://github.com/chenxsan/react-server-render)
 ### 好处
 
-1. SEC，让搜索引擎更容易读取页面的内容 sd 
+1. SEC，让搜索引擎更容易读取页面的内容 sd
 2. 首屏的渲染速度更快，无需等待js文件的下载执行过程
 3. 更易于维护，前后端共享一部分代码
+d
