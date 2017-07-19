@@ -8,7 +8,7 @@ var OpenBrowserPlugin = require('open-browser-webpack-plugin');
 // console.log(process.env.NODE_ENV)
 
 module.exports = {
-    entry: path.resolve(__dirname, 'static/index.jsx'),
+    entry: path.resolve(__dirname, 'src/static/index.jsx'),
     output: {
         path: __dirname + "/build",
         filename: "bundle.js"
@@ -43,7 +43,7 @@ module.exports = {
     plugins: [
         // html 模板插件
         new HtmlWebpackPlugin({
-            template: __dirname + '/static/index.tmpl.html'
+            template: __dirname + '/src/static/index.tmpl.html'
         }),
 
         // 热加载插件
@@ -69,7 +69,7 @@ module.exports = {
             secure: false
           }
         },
-        contentBase: "./public", //本地服务器所加载的页面所在的目录
+        contentBase: "./src/public", //本地服务器所加载的页面所在的目录
         colors: true, //终端中输出结果为彩色
         historyApiFallback: true, //不跳转
         inline: true, //实时刷新
