@@ -1,6 +1,2 @@
-require('babel-polyfill');
-require('babel-register')({
-    presets: ['es2015','stage-0'],
-    plugins: ['add-module-exports']
-})
+require('babel-register')({presets: ['es2015', 'react']});
 require('./server');
