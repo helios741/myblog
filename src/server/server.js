@@ -1,8 +1,8 @@
 import Koa from 'koa'
-const fs = require('fs')
+import fs from 'fs'
+import Router from 'koa-router'
 const app = new Koa()
 
-const Router = require('koa-router')
 
 let home = new Router()
 
