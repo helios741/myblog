@@ -6,6 +6,8 @@ import configureStore from './store/configureStore'
 import RouteMap from './routes'
 
 const store = configureStore();
+const preloadedState = window.__INITIAL_STATE__
+console.log(preloadedState)
 
 render(
 	<Provider store={store}>

@@ -10,20 +10,22 @@ import {renderToString} from 'react-dom/server'
 import {match, RouterContext} from 'react-router'
 import routes from './routes'
 import rootReducer from '../static/reducers'
+import Home from '../components/Home'
 const app = new Koa()
 const home = new Router()
 const router = new Router()
-const store = createStore(rootReducer)
+// const store = createStore(rootReducer)
 
 app.use(koaStatic(
 	path.join(__dirname, '../../build')
 ))
-// console.log(__dirname)
 
 function handleRender(req, res) {
-	// const store = createStore()
+	const store = createStore()
+
 }
-function renderFullPage(html) {
+
+function renderFullPage(html, preloadedState) {
   return `
     <!doctype html>
     <html>
@@ -33,6 +35,7 @@ function renderFullPage(html) {
       <body>
         <div id="root">${html}</div>
         <script>
+        window.__INITIAL_STATE__ = 'fghgfhfghfg'
         </script>
         <script src="/bundle.js"></script>
       </body>
@@ -43,30 +46,36 @@ function renderFullPage(html) {
  //window.__INITIAL_STATE__ = ${JSON.stringify(preloadedState)}
 // app.use(handleRender);
 
-
-// TODO 因为没有吧redux中的state传进去，所以后台不会console
-// 回家或者明天改
-
 app.use(async (ctx, next) => {
+	console.log("test")
 	let _renderProps;
-	console.log('sssss')
+	const store = createStore()
+	const preloadedState = store.getState()
+	console.log(preloadedState)
+	const html = renderToString(
+			<Provider store={store}>
+				<Home />
+			</Provider>
+		)
 	match({routes, location: ctx.url}, (err, redirectLocation, renderProps) => {
 		console.log("redirectLocation: +", redirectLocation)
 		 _renderProps = renderProps
 	})
-	console.log(_renderProps);
-	if (_renderProps) {
-		await ctx.render('index', {
-			root: renderToString(
-				<Provider>
-					<RouterContext {..._renderProps} />
-				</Provider>
-			),
-			state: store.getState()
-		})
-	} else {
-		await next()
-	}
+	console.log(_renderProps)
+	ctx.body = renderFullPage(html, preloadedState)
+	
+	// if (_renderProps) {
+	// 	await ctx.render('index', {
+	// 		root: renderToString(
+	// 			<Provider>
+	// 				<RouterContext {..._renderProps} />
+	// 			</Provider>
+	// 		),
+	// 		state: store.getState()
+	// 	})
+	// } else {
+	// 	await next()
+	// }
 })
 
 
@@ -76,6 +85,7 @@ home.get('/', async ( ctx )=>{
 	const html = renderToString(
 		<h1>dsdsd</h1>
 	)
+	console.log(1)
 	ctx.body = renderFullPage(html)
 })
 
