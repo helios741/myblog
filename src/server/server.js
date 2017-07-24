@@ -11,9 +11,11 @@ import {match, RouterContext} from 'react-router'
 import routes from './routes'
 import rootReducer from '../static/reducers'
 import Home from '../components/Home'
+import reducer from '../static/reducers'
 const app = new Koa()
 const home = new Router()
 const router = new Router()
+
 // const store = createStore(rootReducer)
 
 app.use(koaStatic(
@@ -21,7 +23,7 @@ app.use(koaStatic(
 ))
 
 function handleRender(req, res) {
-	const store = createStore()
+	// const store = createStore()
 
 }
 
@@ -35,7 +37,7 @@ function renderFullPage(html, preloadedState) {
       <body>
         <div id="root">${html}</div>
         <script>
-        window.__INITIAL_STATE__ = 'fghgfhfghfg'
+        window.__INITIAL_STATE__ = ${JSON.stringify(preloadedState)}
         </script>
         <script src="/bundle.js"></script>
       </body>
@@ -47,11 +49,9 @@ function renderFullPage(html, preloadedState) {
 // app.use(handleRender);
 
 app.use(async (ctx, next) => {
-	console.log("test")
 	let _renderProps;
-	const store = createStore()
+	const store = createStore(reducer)
 	const preloadedState = store.getState()
-	console.log(preloadedState)
 	const html = renderToString(
 			<Provider store={store}>
 				<Home />

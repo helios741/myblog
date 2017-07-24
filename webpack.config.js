@@ -63,9 +63,9 @@ module.exports = {
             }
         }),
         // html 模板插件
-        new HtmlWebpackPlugin({
-            template: __dirname + '/src/static/index.tmpl.html'
-        }),
+        // new HtmlWebpackPlugin({
+        //     template: __dirname + '/src/static/index-test.tmpl.html'
+        // }),
 
         // 热加载插件
         new webpack.HotModuleReplacementPlugin(),
