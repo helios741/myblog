@@ -16,16 +16,11 @@ const app = new Koa()
 const home = new Router()
 const router = new Router()
 
-// const store = createStore(rootReducer)
 
 app.use(koaStatic(
 	path.join(__dirname, '../../build')
 ))
 
-function handleRender(req, res) {
-	// const store = createStore()
-
-}
 
 function renderFullPage(html, preloadedState) {
   return `
@@ -45,11 +40,35 @@ function renderFullPage(html, preloadedState) {
     `
 }
 
- //window.__INITIAL_STATE__ = ${JSON.stringify(preloadedState)}
-// app.use(handleRender);
+//window.__INITIAL_STATE__ = ${JSON.stringify(preloadedState)}
 
 app.use(async (ctx, next) => {
 	let _renderProps;
+	
+	match({routes, location: ctx.url}, (err, redirectLocation, renderProps) => {
+		console.log("redirectLocation: +", redirectLocation)
+		_renderProps = renderProps
+	})
+	console.log(_renderProps)
+	
+	if (_renderProps) {
+		await ctx.render('index-test', {
+			root: renderToString(
+				<Provider>
+					<RouterContext {..._renderProps} />
+				</Provider>
+			),
+			state: store.getState()
+		})
+	} else {
+		await next()
+	}
+})
+
+
+
+// 子路由1
+home.get('/', async ( ctx )=>{
 	const store = createStore(reducer)
 	const preloadedState = store.getState()
 	const html = renderToString(
@@ -57,36 +76,7 @@ app.use(async (ctx, next) => {
 				<Home />
 			</Provider>
 		)
-	match({routes, location: ctx.url}, (err, redirectLocation, renderProps) => {
-		console.log("redirectLocation: +", redirectLocation)
-		 _renderProps = renderProps
-	})
-	console.log(_renderProps)
 	ctx.body = renderFullPage(html, preloadedState)
-	
-	// if (_renderProps) {
-	// 	await ctx.render('index', {
-	// 		root: renderToString(
-	// 			<Provider>
-	// 				<RouterContext {..._renderProps} />
-	// 			</Provider>
-	// 		),
-	// 		state: store.getState()
-	// 	})
-	// } else {
-	// 	await next()
-	// }
-})
-
-
-
-// 子路由1
-home.get('/', async ( ctx )=>{
-	const html = renderToString(
-		<h1>dsdsd</h1>
-	)
-	console.log(1)
-	ctx.body = renderFullPage(html)
 })
 
 

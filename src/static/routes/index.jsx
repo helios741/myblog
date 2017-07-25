@@ -10,7 +10,7 @@ export default class RouterMap extends React.Component {
 		return (
 			<Router history={this.props.history}>
 				<Route path='/' component={Home} />
-				<Route path='/home' component={Common} />
+				<Route path='/common' component={Common} />
 				<Route path='/explore' component={Explore} />
                 <Route path='/about' component={About}/>
 			</Router>
