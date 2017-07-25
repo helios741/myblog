@@ -8,7 +8,7 @@ import {createStore} from 'redux'
 import {Provider} from 'react-redux'
 import {renderToString} from 'react-dom/server'
 import {match, RouterContext} from 'react-router'
-import routes from './routes'
+import routes from '../static/routes'
 import rootReducer from '../static/reducers'
 import Home from '../components/Home'
 import reducer from '../static/reducers'
@@ -44,22 +44,19 @@ function renderFullPage(html, preloadedState) {
 
 app.use(async (ctx, next) => {
 	let _renderProps;
-	
+	const store = createStore(reducer)
+	console.log(ctx.url)
 	match({routes, location: ctx.url}, (err, redirectLocation, renderProps) => {
-		console.log("redirectLocation: +", redirectLocation)
 		_renderProps = renderProps
 	})
 	console.log(_renderProps)
 	
 	if (_renderProps) {
-		await ctx.render('index-test', {
-			root: renderToString(
-				<Provider>
+		ctx.body = renderToString(
+				<Provider store={store}>
 					<RouterContext {..._renderProps} />
 				</Provider>
-			),
-			state: store.getState()
-		})
+			)
 	} else {
 		await next()
 	}
@@ -68,16 +65,16 @@ app.use(async (ctx, next) => {
 
 
 // 子路由1
-home.get('/', async ( ctx )=>{
-	const store = createStore(reducer)
-	const preloadedState = store.getState()
-	const html = renderToString(
-			<Provider store={store}>
-				<Home />
-			</Provider>
-		)
-	ctx.body = renderFullPage(html, preloadedState)
-})
+// home.get('/', async ( ctx )=>{
+// 	const store = createStore(reducer)
+// 	const preloadedState = store.getState()
+// 	const html = renderToString(
+// 			<Provider store={store}>
+// 				<Home />
+// 			</Provider>
+// 		)
+// 	ctx.body = renderFullPage(html, preloadedState)
+// })
 
 
 router.use('/', home.routes(), home.allowedMethods())

@@ -1,17 +1,24 @@
 import React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
-import { hashHistory } from 'react-router';
+import {Router} from 'react-router'
+import { hashHistory, match, browserHistory } from 'react-router';
 import configureStore from './store/configureStore'
-import RouteMap from './routes'
+import routes from './routes'
 
 const store = configureStore();
 const preloadedState = window.__INITIAL_STATE__
 console.log(preloadedState)
 
-render(
-	<Provider store={store}>
-		<RouteMap history={hashHistory} />
-	</Provider>,
-	document.getElementById('root')
-)
+
+match({history: browserHistory, routes}, (error, redirectLocation, renderProps) => {
+	console.log("renderProps:",renderProps)	
+	console.log(routes)
+	render(
+		<Provider store={store}>
+			<Router {...renderProps} />
+		</Provider>,
+		document.getElementById('root')
+	)
+})
+// <RouteMap history={hashHistory} />
