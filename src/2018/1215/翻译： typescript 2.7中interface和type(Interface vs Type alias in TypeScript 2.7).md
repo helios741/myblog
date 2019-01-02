@@ -1,3 +1,8 @@
+***
+[首发地址](https://github.com/helios741/myblog/issues/28)
+
+****
+
 原文： [Interface vs Type alias in TypeScript 2.7](https://medium.com/@martin_hotell/interface-vs-type-alias-in-typescript-2-7-2a8f1777af4c)
 
 译者注：
