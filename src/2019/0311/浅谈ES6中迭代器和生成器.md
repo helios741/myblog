@@ -100,9 +100,9 @@ for (let item in students[xiaoming].fav) {
 const num = [5, 6, 7]
 for (let i in  num) {console.log(i + 1)}
 
-// 51
-// 61
-// 71
+// 01
+// 11
+// 21
 
 ```
 
@@ -185,6 +185,94 @@ Axel Rauschmaye大神的图简直不能再清晰了。
 
 再文章的最开始我们已经说了再前ES6的时候，如何去遍历。
 现在我们说说ES6新增的`for...of`的作用。
+
+### for...in
+
+在前面也已经说了，在ES6之前遍历object的时候用`for...in`循环，`for...in`会遍历对象上所有可枚举的值（包括原型(prototype)上的属性），比如下面这样：
+
+```javascript
+function foo() {
+    this.name = 'helios'
+}
+
+foo.prototype.sayName = function() {
+    return this.name;
+}
+var o = new foo();
+for (var i in o) {
+    console.log(i)
+}
+// name
+// sayName
+```
+
+如果我们只想遍历对象自身的属性，可以使用`hasOwnProperty`，如下：
+
+```javasacript
+
+function foo() {
+    this.name = 'helios'
+}
+
+foo.prototype.sayName = function() {
+    return this.name;
+}
+var o = new foo();
+for (var i in o) {
+    if (!o.hasOwnProperty(i)) continue;
+    console.log(i)
+}
+```
+
+如果我们不想让一个对象的属性，在`for...in`中不被遍历出来，可是使用`Object.defineProperty`来定义对象上的属性是否可别枚举（更多的属性请看：[Object.defineProperty()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty)），具体如下面代码：
+
+```javascript
+var obj = {name: 'helios'}
+
+Object.defineProperty(obj, 'age', {
+    enumerable: false
+})
+
+for (var i in obj) {
+    console.log(i)
+}
+
+```
+
+在这一小节的最后我们来说说`for...in`中的in操作符的含义：
+
+`prop in obj`：
+- 含义： 判断prop是否在obj中
+- prop：对象的key属性的类型（string / Symbol）
+- 返回值： boolean
+
+我们来看一组例子：
+
+```javascript
+var o = {
+    name: 'heliso'
+}
+console.log('name' in o) // true
+console.log(Symbol.iterator in o) // false
+console.log('toString' in o)  // true
+
+```
+
+
+这个操作符虽然也适用于数组，但是尽量还是不要用在数组中，因为会比较奇怪,如下代码：
+
+```javascript
+var arr = [6, 7,8]
+
+console.log(7 in arr)  // false
+console.log(1 in arr)  // true
+console.log('length' in arr)  // true
+
+```
+
+主要是前两个比较奇怪对不对，因为对于数组`prop`代表的是数组的索引而为其存在的值。
+按照这样的思路，正在看的读者你能思考一下`in`操作符在字符串中是怎么的模式么？
+
 
 ### for...of能遍历的集合
 
@@ -335,7 +423,7 @@ for (let it of obj) {
 
 也并不说是`map`就肯定比对象字面量（object）好，`map`也有如下的缺点：
 
-- 不能通过...去解构
+- 不能使用对象解构
 - 不能`JSON.stringify`/`JSON.parse`
 
 
