@@ -118,9 +118,9 @@ for (let i in arr) {
     console.log(i)
 }
 
-// 5
-// 6
-// 7
+// 0
+// 1
+// 2
 // foo !!!
 
 ```
@@ -224,7 +224,7 @@ for (var i in o) {
 }
 ```
 
-如果我们不想让一个对象的属性，在`for...in`中不被遍历出来，可是使用`Object.defineProperty`来定义对象上的属性是否可别枚举（更多的属性请看：[Object.defineProperty()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty)），具体如下面代码：
+如果我们不想让一个对象的属性在`for...in`中被遍历出来，可是使用`Object.defineProperty`来定义对象上的属性是否可别枚举（更多的属性请看：[Object.defineProperty()](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty)），具体如下面代码：
 
 ```javascript
 var obj = {name: 'helios'}
@@ -409,7 +409,7 @@ for (let it of obj) {
 
 对于什么时候用对象字面量（object）什么时候使用map我们可以做一下总结：
 
-- 对象字面量（object）应该是静态的，也就是说我们应该已经知道了里面有多少个，和对象的属性有什么
+- 对象字面量（object）应该是静 态的， 也就是说我们应该已经知道了里面有多少个，和对象的属性有什么
 
 - 使用对象字面量（object）的一般场景有：
   + 不需要去遍历对象字面量（object）的所有属性的时候
