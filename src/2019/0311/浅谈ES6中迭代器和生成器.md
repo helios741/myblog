@@ -347,7 +347,7 @@ const obj = {
 
 ```
 
-如果`iterable`和`iterable`是一个对象的话，上面的代码可以简化为：
+如果`iterable`和`iterator`是一个对象的话，上面的代码可以简化为：
 
 ```javascript
 
