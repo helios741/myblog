@@ -5,6 +5,5 @@
 
 - [浅谈ES6中迭代器和生成器](https://github.com/helios741/myblog/issues/35)
 
-dsd
-dsd
-dddd
+
+- [【翻译】图解OSI模型（The Layers of the OSI Model Illustrated）](https://github.com/helios741/myblog/issues/47)
