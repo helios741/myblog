@@ -18,6 +18,7 @@ GOPATH（可以有多个工作区） -> 某个特定的工作区  -> src目录 -
 
 静态链接库（.a）和pkg目录之间，还有一级目录，叫平台相关目录。形如：构建的操作系统_目标操作系统(linux_amd64)
 
+![](https://static001.geekbang.org/resource/image/2f/3c/2fdfb5620e072d864907870e61ae5f3c.png)
 
 ## 理解构建和安装GO程序的过程
 
