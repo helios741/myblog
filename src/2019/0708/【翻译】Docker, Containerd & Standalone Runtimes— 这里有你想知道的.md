@@ -1,3 +1,10 @@
+[原文地址](https://medium.com/faun/docker-containerd-standalone-runtimes-heres-what-you-should-know-b834ef155426)
+
+
+****************
+[文章首发](https://github.com/helios741/myblog/issues/57)
+****************
+
 这片文章旨在想您介绍Containerd在docker架构中的集成。
 
 
