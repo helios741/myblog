@@ -1,8 +1,24 @@
 # Go语言操作K8S的API
 
-
-
 [client-go](https://github.com/kubernetes/client-go)
+
+## 每个目录的主要作用
+
+- discovery: 用来发现被K8S的API服务支持的API
+
+
+## 三种client的区别
+
+https://fankangbest.github.io/2017/07/15/RESTClient-DynamicClient%E5%92%8CClientSet-Demo/
+
+### REST client
+
+### dynamic client
+
+
+### client set
+
+
 
 - [k8s.io/client-go/kubernetes](https://godoc.org/k8s.io/client-go/kubernetes): 访问K8S API的一系列clinet
 - [k8s.io/apimachinery/pkg/apis/meta/v1](https://godoc.org/k8s.io/apimachinery/pkg/apis/meta/v1): 获取一个资源的meta信息
