@@ -1,3 +1,9 @@
+[原文](https://medium.com/programming-kubernetes/building-stuff-with-the-kubernetes-api-part-4-using-go-b1d0e3c1c899)
+
+-----------------
+[文章首发](https://github.com/helios741/myblog/blob/new/learn_go/src/2019/0804/%E3%80%90%E7%BF%BB%E8%AF%91%E3%80%91%E4%BD%BF%E7%94%A8KubernetesAPI%E6%9E%84%E5%BB%BA%E4%B8%80%E4%BA%9B%E4%B8%9C%E8%A5%BF-%E4%BD%BF%E7%94%A8GO.md)
+-----------------
+
 ![image](https://user-images.githubusercontent.com/12036324/62411695-d0880400-b629-11e9-9971-c2569d854b31.png)
 
 在本系列文章的第四部分将要介绍使用官方client的K8S API的可编程性。本篇文章使用[client-go](https://github.com/kubernetes/client-go)去实践一个简单的PVC的watch程序，这个程序在前面的文章里面已经使用[python](https://medium.com/programming-kubernetes/building-stuff-with-the-kubernetes-api-part-3-using-python-aea5ab16f627)和[java](https://medium.com/programming-kubernetes/building-stuff-with-the-kubernetes-api-part-2-using-java-ceb8a5ff7920)实现过了。
