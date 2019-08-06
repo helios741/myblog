@@ -19,7 +19,7 @@ https://fankangbest.github.io/2017/07/15/RESTClient-DynamicClient%E5%92%8CClient
 ### client set
 
 
-
+- [kube-controller-manager源码分析（三）之 Informer机制](https://www.huweihuang.com/kubernetes-notes/code-analysis/kube-controller-manager/sharedIndexInformer.html)
 - [k8s.io/client-go/kubernetes](https://godoc.org/k8s.io/client-go/kubernetes): 访问K8S API的一系列clinet
 - [k8s.io/apimachinery/pkg/apis/meta/v1](https://godoc.org/k8s.io/apimachinery/pkg/apis/meta/v1): 获取一个资源的meta信息
 - [k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset](https://godoc.org/k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset): 自定义资源的clinetset
