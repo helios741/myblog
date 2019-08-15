@@ -1,4 +1,3 @@
-# 第二章习题
 
 [主机规划与磁盘分区](http://cn.linux.vbird.org/linux_basic/0130designlinux_4.php)
 
@@ -22,12 +21,24 @@
 
 ## 请写下下列配备中，在 Linux 的设备文件名：
 
-- IDE 硬盘（Integrated Drive Electronics）：电子集成驱动器 
-- SATA硬盘（Serial Advanced Technology Attachment）：串行接口硬盘，机械硬盘
-- CDROM：
-- 打印机： 
-- 软盘机：
-- 网络卡：
+- IDE 硬盘（Integrated Drive Electronics）：电子集成驱动器 /dev/hd[a-d]
+- SATA硬盘（Serial Advanced Technology Attachment）：串行接口硬盘，机械硬盘 /dev/cdrom
+- CDROM（Compact Disc Read-Only Memory）：只读光盘，电脑上使用的光盘，这种光盘只能写入一次数据，使用的时候通过光盘驱动器读出数据。/dev/cdrom
+- 打印机：电脑的输出设备一种，可以讲电脑内存储的资料按照文字或者影像的方式输出到纸张，透明胶带，或其他平面媒体上 /dev/lp[0-2]
+- 网络卡： /dev/eth[0-n]
+
+## 如果系统常常死机，又找不到解决的方法，解决思路是什么？
+
+0. 确保软件没有问题
+1. 先检测系统没有没超频
+2. 查阅当系统运行时，系统内温度会不会过高，因为过高的温度也会常常造成死机
+3. 检查CPU的温度
+4. 检查是否插了多条内存，因为不同厂牌的内存很容易造成系统不稳定
+5. 电源供应器是否合乎标准
 
 
-## 目前在个人计算机上面常见的硬盘与主板的连接介面有哪两个？
+## 目前在个人计算机上面常见的硬盘与主板的连接接口有哪两个？
+
+SATA接口
+IDE接口
+
