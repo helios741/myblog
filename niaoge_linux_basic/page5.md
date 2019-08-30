@@ -8,10 +8,14 @@
 ## 早期的 Unix 系统文件名最多允许 14 个字符，而新的 Unix 与 Linux 系统中，文件名最多可以容许几个字符？
 
 ## 我需要将一个文件的权限改为 -rwxr-xr-- 请问该如何下达指令？
-
+chmod 754 xxx
 ## 若我需要更改一个文件的拥有者与群组，该用什么指令？
+- chgrp更改用户组
+- chown更改用户
 
 ## 请问底下的目录与主要放置什么数据：/etc/, /etc/init.d, /boot, /usr/bin, /bin, /usr/sbin, /sbin, /dev, /var/log
+
+- /etc/ : 
 
 ## FHS是什么，有什么用处
 
