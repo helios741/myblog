@@ -23,21 +23,29 @@ root账户的umask是022，普通用户的umask是002
 - 目录：733
 
 
-## 什么是 SUID ？
+## 什么是 SUID 和SGID ？
+- SUID：比如（-rwsr-xr-x） 用户在执行过程中获得拥有者的权限
+- SGID：比如（-rwx-rwsr-x）用户在执行过程中获得用户组的权限
+
+
 
 
 ## 当我要查询 /usr/bin/passwd 这个文件的一些属性时(1)传统权限；(2)文件类型与(3)文件的隐藏属性，可以使用什么命令来查询？
 
+ll /usr/bin/passwd; lsattr /usr/bin/passwd
 
 ## 尝试用 find 找出目前 linux 系统中，所有具有 SUID 的文件有哪些？
-
+find / -perm 4000
 
 ## 找出 /etc 底下，文件大小介於 50K 到 60K 之间的文件，并且将权限完整的列出 (ls -l)：
+
+find /etc/ -size +50k -size -60k
 
 
 ## 找出 /etc 底下，文件容量大於 50K 且文件所属人不是 root 的档名，且将权限完整的列出 (ls -l)；
 
+find /etc/ -size +50k -size -60k !  -user root  -exec ls -l {} \;
 
 ## 找出 /etc 底下，容量大於 1500K 以及容量等於 0 的文件：
 
-
+find /etc/ -size +1500k -o -size 0
