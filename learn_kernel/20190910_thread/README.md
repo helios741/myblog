@@ -6,7 +6,7 @@
 
 - 创建进程太浪费资源
 - 进程间通信太费劲
-
+![](https://user-images.githubusercontent.com/12036324/64664218-0ddd7e00-d481-11e9-8559-2f4d6b3b0c1d.png)
 ## 如何创建进程
 
 可以参考同级目录下的*download.c*
@@ -26,12 +26,12 @@
 ```shell
 gcc download.c -lpthread
 ```
-
-
-github图
+![](https://user-images.githubusercontent.com/12036324/64664211-074f0680-d481-11e9-8cb7-024a630c0895.png)
 
 
 ## 线程数据
+
+![](https://user-images.githubusercontent.com/12036324/64664206-01f1bc00-d481-11e9-9185-21364a8c8c79.png)
 
 1. 线程栈上的本地数据
 可以通过下面函数修改`pthread_attr_t`，修改线程栈的大小：
@@ -65,7 +65,9 @@ void *pthread_getspecific(pthread_key_t key)
 
 ## 数据保护
 
-### 通过互斥锁：
+### 通过互斥锁
+
+![](https://user-images.githubusercontent.com/12036324/64664200-fb634480-d480-11e9-9e6d-d9031b3a200a.png)
 可以查看同级目录下面的`mutex.c`,使用下面的命令进行编译看看：
 ```shell
 gcc mutex.c -lpthread
@@ -73,6 +75,7 @@ gcc mutex.c -lpthread
 https://garlicspace.com/2019/06/20/posix-threads-api-%E6%95%B4%E7%90%86/
 
 ### 通过条件变量
+![](https://user-images.githubusercontent.com/12036324/64664197-f69e9080-d480-11e9-9283-567467ed6253.png)
 
 可以查看同级目录下的`coder.c`,是用下面的命令编译查看：
 ```shell
@@ -84,8 +87,12 @@ pthread_cond_wait() 必须与pthread_mutex配套使用。pthread_cond_wait()函�
 - pthread_cond_signal: 唤醒一个等待进程
 - pthread_cond_broadcast: 唤醒所有进行
 
+### 条件变量和互斥锁的区别
+两个线程操作同一临界区时，通过互斥锁保护，若A线程已经加锁，B线程再加锁时候会被阻塞，直到A释放锁，B再获得锁运行，进程B必须不停的主动获得锁、检查条件、释放锁、再获得锁、再检查、再释放，一直到满足运行的条件的时候才可以（而此过程中其他线程一直在等待该线程的结束），这种方式是比较消耗系统的资源的。而条件变量同样是阻塞，还需要通知才能唤醒，线程被唤醒后，它将重新检查判断条件是否满足，如果还不满足，该线程就休眠了，应该仍阻塞在这里，等待条件满足后被唤醒，节省了线程不断运行浪费的资源。这个过程一般用while语句实现。当线程B发现被锁定的变量不满足条件时会自动的释放锁并把自身置于等待状态，让出CPU的控制权给其它线程。其它线程 此时就有机会去进行操作，当修改完成后再通知那些由于条件不满足而陷入等待状态的线程。这是一种通知模型的同步方式，大大的节省了CPU的计算资源，减少了线程之间的竞争，而且提高了线程之间的系统工作的效率。这种同步方式就是条件变量。
 
+## 总结
 
+![](https://user-images.githubusercontent.com/12036324/64664190-f0a8af80-d480-11e9-8720-047773a702c5.png)
 
 
 
