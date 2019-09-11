@@ -65,10 +65,27 @@ void *pthread_getspecific(pthread_key_t key)
 
 ## 数据保护
 
-
+### 通过互斥锁：
 可以查看同级目录下面的`mutex.c`,使用下面的命令进行编译看看：
 ```shell
 gcc mutex.c -lpthread
 ```
 https://garlicspace.com/2019/06/20/posix-threads-api-%E6%95%B4%E7%90%86/
+
+### 通过条件变量
+
+可以查看同级目录下的`coder.c`,是用下面的命令编译查看：
+```shell
+gcc coder.c -lpthread
+```
+解释一下几个名词：
+- pthread_cond_wait: 用于阻塞当前线程，等待别的线程使用pthread_cond_signal()或pthread_cond_broadcast来唤醒它
+pthread_cond_wait() 必须与pthread_mutex配套使用。pthread_cond_wait()函数一进入wait状态就会自动release mutex。当其他线程通过pthread_cond_signal()或pthread_cond_broadcast，把该线程唤醒
+- pthread_cond_signal: 唤醒一个等待进程
+- pthread_cond_broadcast: 唤醒所有进行
+
+
+
+
+
 
