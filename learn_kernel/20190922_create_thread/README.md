@@ -1,5 +1,5 @@
 [线程的创建：如何执行一个新子项目](https://time.geekbang.org/column/article/94479)
-
+[Linux 线程实现机制分析](https://www.ibm.com/developerworks/cn/linux/kernel/l-thread/index.html)
 
 创建一个线程线程调用的是*pthread_create*,这说的是他的机制。
 
