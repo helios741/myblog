@@ -1,4 +1,9 @@
 # 浅谈python中的多线程编程
+----
+[本文首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/1001_about_mult_thread)
+----
+
+# 浅谈python中的多线程编程
 
 ## 一、python中的GIL
 注：本小节基于cpython解释器。
