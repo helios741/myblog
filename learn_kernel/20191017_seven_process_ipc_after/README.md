@@ -364,11 +364,161 @@ would_block:
 - 让出CPU的时候，设置进程的状态为*TASK_INTERUPTIBLE*，循环结束后通过*singal_pending*查看是否收到过信号，这说明这个等待信号量的进程是可以被中断的，即一个等待信号量的进程是可以被kill杀掉的
 4. 如果不需要等待
 
-如果不需要等待则说明对于信号量的操作完成了。
+如果不需要等待则说明对于信号量的操作完成了,也改变了信号量的值。
+
+接下来就是一个标准流程：
+1. 通过*DEFINE_WAKE_Q(wake_q)*声明一个wake_q；
+2. 调用do_smart_update，看看这次对于信号量的值的改变，可以影响并激活等待队列中的哪些*struct sem_queue*
+3. 把它们放在wake_q中，调用wake_up_q唤醒这些进程
+
+所有的信号量操作都会涉及这三个操作。
+do_smart_update的实现如下（do_smart_update ->  update_queue）：
+
+```c
+static int update_queue(struct sem_array *sma, int semnum, struct wake_q_head *wake_q)
+{
+	struct sem_queue *q, *tmp;
+	struct list_head *pending_list;
+	int semop_completed = 0;
+
+	if (semnum == -1)
+		pending_list = &sma->pending_alter;
+	else
+		pending_list = &sma->sems[semnum].pending_alter;
+
+again:
+	list_for_each_entry_safe(q, tmp, pending_list, list) {
+		int error, restart;
+......
+		error = perform_atomic_semop(sma, q);
+
+		/* Does q->sleeper still need to sleep? */
+		if (error > 0)
+			continue;
+
+		unlink_queue(sma, q);
+......
+		wake_up_sem_queue_prepare(q, error, wake_q);
+......
+	}
+	return semop_completed;
+}
+
+static inline void wake_up_sem_queue_prepare(struct sem_queue *q, int error,
+					     struct wake_q_head *wake_q)
+{
+	wake_q_add(wake_q, q->sleeper);
+......
+}
+```
+- update_queue会循环整个信号量集合的等待队列*pending_alter*或者某个信号量的等待队列。
+- 试图在信号量值变的情况下，再次通过perform_atomic_semop进行信号量操作
+- 如果不成功，就尝试下一个，
+- 如果成功，调用unlink_queue从队列中取下来，然后调用wake_up_sem_queue_prepare将q->sleeper加到wake_q中
+- q->sleeper是一个task_struct，是等待在这个信号量操作上的进程
+
+
+接下来，wake_up_q就依次唤醒wake_q上的所有task_struct，调用的是*wake_up_process*：
+```c
+void wake_up_q(struct wake_q_head *head)
+{
+	struct wake_q_node *node = head->first;
+
+	while (node != WAKE_Q_TAIL) {
+		struct task_struct *task;
+
+		task = container_of(node, struct task_struct, wake_q);
+
+		node = node->next;
+		task->wake_q.next = NULL;
+
+		wake_up_process(task);
+		put_task_struct(task);
+	}
+}
+
+```
+
+
+## 信号量操作回退
+
+linux中有个机制叫*SEM_UNDO*，也即每个semop操作都会保存一个反向的*struct sem_undo*，当因为某个进程异常退出的时候，这个进程做的所有操作都会回退，从而保证其他进程可以顺利进行。
+
+我们写的程序里面的 semaphore_p 函数和 semaphore_v 函数，都把 sem_flg 设置为 SEM_UNDO，就是这个作用。
+
+
+等待队列上的每个*struct sem_queue*都有一个*struct sem_undo*，以此标记这次操作的反向操作：
+```c
+struct sem_queue {
+	struct list_head	list;	 /* queue of pending operations */
+	struct task_struct	*sleeper; /* this process */
+	struct sem_undo		*undo;	 /* undo structure */
+	int			pid;	 /* process id of requesting process */
+	int			status;	 /* completion status of operation */
+	struct sembuf		*sops;	 /* array of pending operations */
+	struct sembuf		*blocking; /* the operation that blocked */
+	int			nsops;	 /* number of operations */
+	bool			alter;	 /* does *sops alter the array? */
+	bool                    dupsop;	 /* sops on more than one sem_num */
+};
+```
+在进程的task_struct里面对于信号量的一个成员*struct sysv_sem*里面是一个*struct sem_undo_list*，将整个进程的semop的undo操作串起来。
+```c
+struct task_struct {
+......
+struct sysv_sem			sysvsem;
+......
+}
+
+struct sysv_sem {
+	struct sem_undo_list *undo_list;
+};
+
+struct sem_undo {
+	struct list_head	list_proc;	/* per-process list: *
+						 * all undos from one process
+						 * rcu protected */
+	struct rcu_head		rcu;		/* rcu struct for sem_undo */
+	struct sem_undo_list	*ulp;		/* back ptr to sem_undo_list */
+	struct list_head	list_id;	/* per semaphore array list:
+						 * all undos for one array */
+	int			semid;		/* semaphore set identifier */
+	short			*semadj;	/* array of adjustments */
+						/* one per semaphore */
+};
+
+struct sem_undo_list {
+	atomic_t		refcnt;
+	spinlock_t		lock;
+	struct list_head	list_proc;
+};
+```
+假设我们创建了两个信号量集合。一个叫 semaphore1，它包含三个信号量，初始化值为 3，另一个叫 semaphore2，它包含 4 个信号量，初始化值都为 4。初始化时候的信号量以及 undo 结构里面的值如图中 (1) 标号所示。
+![image](https://user-images.githubusercontent.com/12036324/67171921-dcdf5a00-f3eb-11e9-9565-3ca14a738fad.png)
+
 
 ## 总结
 
-## 问题
+![image](https://user-images.githubusercontent.com/12036324/67172191-ec12d780-f3ec-11e9-9d60-04554f4d7d7c.png)
 
+### 一、创建信号量
+- 1.1： 通过semget创建信号量
+- 1.2： findkey在基数树中找，如果找到就返回id
+- 1.3： 如果没找到就通过newary创建
+
+### 二、初始化信号量
+- 2.1：通过semctl初始化信号量
+- 2.2：通过sem_obtain_object_check从基数树中找到sem_array
+- 2.3：初始化信号量，即初始化sem_array中的sems[]成员
+
+### 三、操作信号量
+- 3.1：调用semop操作信号量
+- 3.2：创建信号量操作，放入*sem_queue*队列
+- 3.3：创建undo结构放入链表
+
+## 问题
+现在，我们的共享内存、信号量、消息队列都讲完了，你是不是觉得，它们的 API 非常相似。为了方便记忆，你可以自己整理一个表格，列一下这三种进程间通信机制、行为创建 xxxget、使用、控制 xxxctl、对应的 API 和系统调用。
+
+![image](https://user-images.githubusercontent.com/12036324/67062221-431e6f80-f195-11e9-9dd1-4353ebbc730c.png)
 
 
