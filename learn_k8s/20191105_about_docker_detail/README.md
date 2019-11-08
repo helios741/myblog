@@ -1,7 +1,141 @@
 
+## dockerd的作用是啥
+
+### var/run/docker.sock 的作用
+
+container和docker deamon之间通信的。
+
+![image](https://user-images.githubusercontent.com/12036324/68357900-cbb77c80-0151-11ea-9f8e-eea32b07b894.png)
+
+### 参考
+- [Docker源码分析（二）之Docker Daemon](https://www.huweihuang.com/article/docker/code-analysis/code-analysis-of-docker-daemon/)
+- [Docker 源码分析（三）：Docker Daemon 启动](https://www.infoq.cn/article/docker-source-code-analysis-part3)
+- [Docker命令行与守护进程如何交互？](https://blog.fundebug.com/2017/05/22/docker-cli-daemon/)
+- [关于/var/run/docker.sock](https://blog.fundebug.com/2017/04/17/about-docker-sock/)
+- [docker doc： 配置daemon](https://docs.docker.com/config/daemon/)
+
 
 ## docker默认开始了多少中namespace
 http://man7.org/linux/man-pages/man7/keyrings.7.html
+
+### 一、共享pid
+[pid](https://docs.docker.com/engine/reference/run/#pid-settings---pid)
+```shell
+docker run -ti -d --name helios docker-search.4pd.io/centos sleep 360
+docker run -ti --entrypoint=bash --pid=container:helios docker-search.4pd.io/centos
+[root@08f5f68fb0de /]# ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 01:39 pts/0    00:00:00 /usr/bin/coreutils --coreutils-prog-shebang=sleep /usr/bin/sleep 360
+root         6     0  2 01:40 pts/0    00:00:00 bash
+root        19     6  0 01:40 pts/0    00:00:00 ps -ef
+```
+
+### 二、共享hostname/domain
+[UTS](https://docs.docker.com/engine/reference/run/#pid-settings---pid)
+
+UNIX Time-sharing System: 用来隔离hostname以及NIS domain name。
+```shell
+docker run -ti --entrypoint=bash --hostname dajiahao docker-search.4pd.io/centos
+[root@dajiahao /]# exit
+```
+
+### 三、容器间通信
+
+[IPC](https://docs.docker.com/engine/reference/run/#ipc-settings---ipc)
+关于进程间通信，可以回顾一下：[Linux内核笔记：进程通信](https://github.com/helios741/myblog/tree/new/learn_go/learn_kernel/20191015_seven_process_ipc_pre#%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98)
+进程之间通信分为两个步骤：
+1. 创建唯一标识
+2. 通过唯一标识创建共享内存
+通过下面的程序演示一下：
+1. 在linux机器上通过gcc编译下面代码
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/msg.h>
+int main() {
+  int messagequeueid;
+  key_t key;
+  if((key = ftok("/root/messagequeue/messagequeuekey", 1024)) < 0)
+  {
+      perror("ftok error");
+      exit(1);
+  }
+  printf("Message Queue key: %d.\n", key);
+  if ((messagequeueid = msgget(key, IPC_CREAT|0777)) == -1)
+  {
+      perror("msgget error");
+      exit(1);
+  }
+  printf("Message queue id: %d.\n", messagequeueid);
+}
+2. 通过bind mount的方式，放在一个容器里面，同以ipc为shareable的方式时启动这个容器
+```shell
+docker run -d  --name=helios -v ~/a.out:/root/a.out --ipc=shareable docker-search.4pd.io/centos sleep 3600
+```
+3. 启动另一个容器，共享刚才上面启的容器，并且查看ipc
+```shell
+docker run -ti --entrypoint=bash --ipc=container:helios  docker-search.4pd.io/centos
+```
+```shell
+[root@917a252012ee /]# ipcs
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status
+
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems
+```
+4. 在主容器（被共享的那个）创建共享内存
+执行：*./a.out*
+查看ipc
+```shell
+pcs
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+0x00030350 0          root       777        0            0
+
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status
+
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems
+```
+5. 查看第二个容器的ipc，确认已经共享
+```shell
+[root@545ca6c969da /]# ipcs
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+0x00030350 0          root       777        0            0
+
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status
+
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems
+```
+
+### 四、network namespace
+
+[network-settings](https://docs.docker.com/engine/reference/run/#network-settings)
+
+
+### 五、mount namespace
+
+
+### 六、user namespace
+
+### 参考
+- [Isolate containers with a user namespace](https://docs.docker.com/engine/security/userns-remap/)
+- [Introduction to User Namespaces in Docker Engine](https://success.docker.com/article/introduction-to-user-namespaces-in-docker-engine)
+- [Docker Namespace and Cgroups](https://medium.com/@kasunmaduraeng/docker-namespace-and-cgroups-dece27c209c7)
+
+
+## namespace不能隔离的东西
 
 ## 为什么不敢把容器环境暴露到公网上
 
