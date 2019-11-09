@@ -18,6 +18,7 @@ container和docker deamon之间通信的。
 ## docker默认开始了多少中namespace
 http://man7.org/linux/man-pages/man7/keyrings.7.html
 
+
 ### 一、共享pid
 [pid](https://docs.docker.com/engine/reference/run/#pid-settings---pid)
 ```shell
@@ -126,14 +127,34 @@ key        semid      owner      perms      nsems
 
 ### 五、mount namespace
 
+这个应该就没啥了，理解chroot就行了。
 
 ### 六、user namespace
+
+
+### 七、cgroup namespace
+
+### 进入namespace的方法
+
+1. nsenter(进入一个已经存在的namespace)
+```shell
+nsenter --target 16289 --mount --uts --ipc --net --pid -- env --ignore-environment -- /bin/bash
+```
+2. unshare（创建一个进程，指定隔离哪些namespace）
+
+```shell
+unshare --mount --ipc --pid --mount-proc=/proc --fork /bin/bash
+```
+*mount*, *ipc*, *pid*都用了新的namespace。
+
+对于PID namespace就比较特殊了，因为getpid会根据调用者的当前所在的PID namespace的pid。但是对于用户态程序或者库函数来言，他们认为进程的pid是个常量，PID的变化会引起这些进程的崩溃。
 
 ### 参考
 - [Isolate containers with a user namespace](https://docs.docker.com/engine/security/userns-remap/)
 - [Introduction to User Namespaces in Docker Engine](https://success.docker.com/article/introduction-to-user-namespaces-in-docker-engine)
 - [Docker Namespace and Cgroups](https://medium.com/@kasunmaduraeng/docker-namespace-and-cgroups-dece27c209c7)
-
+- [中文：Linux Namespace : PID](https://www.cnblogs.com/sparkdev/p/9442208.html)
+- 容器与容器云3.1.1节
 
 ## namespace不能隔离的东西
 
@@ -165,18 +186,58 @@ key        semid      owner      perms      nsems
 
 
 ## Mount Namespace什么时候生效
+Mount Namespace修改的是容器进程对文件系统“挂载点”的认知。这也就意味着只有挂载这个操作发生之后，进程的试图才会被改变。在这之前，新创建的容器会直接继承宿主机的各个挂载点。
+
+![image](https://user-images.githubusercontent.com/12036324/68525751-df104680-030f-11ea-9078-16fdbc23dd2b.png)
+
+一个挂载状态可以有一下几种：
+- 共享挂载（shared）
+- 从属挂载（slave）
+- 共享 / 从属挂载（shared and slave）
+- 私有挂载（private）
+- 不可绑定挂载（unbindable）
+
+### 共享关系（share relationship）
+如果两个挂载对象具有共享关系，那么一个挂载对象中的挂载事件会传播到另一个挂载对象，反之亦然。
+### 从属关系（slave relationship）
+如果两个挂载对象形成从属关系，那么一个挂载对象中的挂载事件会传播到另一个挂载对象，但是反过来不行；在这种关系中，从属对象是事件的接收者。
+
+
+
+### 参考
+- [Docker 背后的内核知识——Namespace 资源隔离](https://www.infoq.cn/article/docker-kernel-knowledge-namespace-resource-isolation)
 
 
 ## chroot的原理和用法
+原理：改变进程的根目录到指定的目录
+用法：
+```shell
+mkdir -p ~/test_home
+mkdir -p ~/test_home/{bin,lib64,lib}
+cp -v /bin/{bash,ls} ~/test_home/bin/
+T=~/test_home
+list="$(ldd /bin/ls | egrep -o '/lib.*\.[0-9]')"
+cp /lib64/libtinfo.so.5 $T/lib64
+[root@172_27_132_95 ~]# chroot ~/test_home /bin/bash
+bash-4.2# /bin/ls
+bin  lib  lib64
+```
 
 
 ## Docker的核心原理（三个）
 
+1. 启动linux namespace的配置
+2. 设置指定的Cgroups参数
+3. 切换进程的根目录(chroot)
 
 ## 什么是rootfs
 
 
+
 ## pivot_root和chroot的区别
+
+- pivot_root: 把进程切换到一个新的目录，对之前的root文件系统不再有依赖，这样就能unmount原来的文件系统了。
+- chroot: 只是更改了root目录，还会依赖老的文件系统，主要的目的是为了先知用户的访问
 
 ## 什么是union File System
 
