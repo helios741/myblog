@@ -155,7 +155,7 @@ nginx
 我们就能看到我们设置的要跑在哪几个cpu上。
 内存的也就同理的，都是在*/sys/fs/cgroup*下面去找。
 
-
+![image](https://user-images.githubusercontent.com/12036324/68635549-e2841780-0533-11ea-8b6a-eabbf77c58b1.png)
 
 ## 内核中怎么实现的
 
@@ -530,4 +530,174 @@ struct kernfs_node *__kernfs_create_file(struct kernfs_node *parent,
 }
 ```
 
+从cgroup_setup_root返回后，接下来在cgroup1_mount中，要做的一件事情是cgroup_do_mount，调用kernfs_mount真的去mount这个文件系统，返回一个普通的dentry。这种特殊的文件系统对应的文件操作为kernfs_file_fops。
+```c
+
+const struct file_operations kernfs_file_fops = {
+  .read    = kernfs_fop_read,
+  .write    = kernfs_fop_write,
+  .llseek    = generic_file_llseek,
+  .mmap    = kernfs_fop_mmap,
+  .open    = kernfs_fop_open,
+  .release  = kernfs_fop_release,
+  .poll    = kernfs_fop_poll,
+  .fsync    = noop_fsync,
+};
+```
+当我们要写入CGroup文件来设置参数的时候，根据文件系统的操作kernfs_fop_write会被调用，在这里面会调用*kernfs_ops*的write函数，根据上面的定义*cgroup_file_write*，在这里调用的cftype的write函数。对于CPU和内存的write函数有下面不同的定义：
+```c
+
+static struct cftype cpu_files[] = {
+#ifdef CONFIG_FAIR_GROUP_SCHED
+    {
+        .name = "shares",
+        .read_u64 = cpu_shares_read_u64,
+        .write_u64 = cpu_shares_write_u64,
+    },
+#endif
+#ifdef CONFIG_CFS_BANDWIDTH
+    {
+        .name = "cfs_quota_us",
+        .read_s64 = cpu_cfs_quota_read_s64,
+        .write_s64 = cpu_cfs_quota_write_s64,
+    },
+    {
+        .name = "cfs_period_us",
+        .read_u64 = cpu_cfs_period_read_u64,
+        .write_u64 = cpu_cfs_period_write_u64,
+    },
+}
+
+
+static struct cftype mem_cgroup_legacy_files[] = {
+    {
+        .name = "usage_in_bytes",
+        .private = MEMFILE_PRIVATE(_MEM, RES_USAGE),
+        .read_u64 = mem_cgroup_read_u64,
+    },
+    {
+        .name = "max_usage_in_bytes",
+        .private = MEMFILE_PRIVATE(_MEM, RES_MAX_USAGE),
+        .write = mem_cgroup_reset,
+        .read_u64 = mem_cgroup_read_u64,
+    },
+    {
+        .name = "limit_in_bytes",
+        .private = MEMFILE_PRIVATE(_MEM, RES_LIMIT),
+        .write = mem_cgroup_write,
+        .read_u64 = mem_cgroup_read_u64,
+    },
+    {
+        .name = "soft_limit_in_bytes",
+        .private = MEMFILE_PRIVATE(_MEM, RES_SOFT_LIMIT),
+        .write = mem_cgroup_write,
+        .read_u64 = mem_cgroup_read_u64,
+    },
+}
+```
+如果设置的是cpu.shares，则调用的是cpu_shares_write_u64。在这里面，task_group的shares变量更新了，并且更新到CPU队列上的调度实体。
+```c
+
+int sched_group_set_shares(struct task_group *tg, unsigned long shares)
+{
+  int i;
+
+  shares = clamp(shares, scale_load(MIN_SHARES), scale_load(MAX_SHARES));
+
+  tg->shares = shares;
+  for_each_possible_cpu(i) {
+    struct rq *rq = cpu_rq(i);
+    struct sched_entity *se = tg->se[i];
+    struct rq_flags rf;
+
+    update_rq_clock(rq);
+    for_each_sched_entity(se) {
+      update_load_avg(se, UPDATE_TG);
+      update_cfs_shares(se);
+    }
+  }
+......
+}
+```
+还要将CPU目录下面的tasks写入进程号。写入一个进程号到tasks文件里面，按照cgroup1_base_files里面的定义，我们应该调用cgroup_tasks_write。
+
+
+接下来的调用链为：cgroup_tasks_write -> __cgroup_proces_write -> cgroup_attach_task -> cgroup_migrate -> cgroup_migrate_execute。将这个进程和一个cgroup关联起来，即将这个进程迁移到这个cgroup下面。
+```c
+
+static int cgroup_migrate_execute(struct cgroup_mgctx *mgctx)
+{
+  struct cgroup_taskset *tset = &mgctx->tset;
+  struct cgroup_subsys *ss;
+  struct task_struct *task, *tmp_task;
+  struct css_set *cset, *tmp_cset;
+......
+  if (tset->nr_tasks) {
+    do_each_subsys_mask(ss, ssid, mgctx->ss_mask) {
+      if (ss->attach) {
+        tset->ssid = ssid;
+        ss->attach(tset);
+      }
+    } while_each_subsys_mask();
+  }
+......
+}
+```
+每个cgroup子系统都会调用相应的attach函数。而CPU调用的是cpu_cgroup_attach -> sched_move_task -> sched_change_group。
+```c
+
+static void sched_change_group(struct task_struct *tsk, int type)
+{
+  struct task_group *tg;
+
+  tg = container_of(task_css_check(tsk, cpu_cgrp_id, true),
+        struct task_group, css);
+  tg = autogroup_task_group(tsk, tg);
+  tsk->sched_task_group = tg;
+
+#ifdef CONFIG_FAIR_GROUP_SCHED
+  if (tsk->sched_class->task_change_group)
+    tsk->sched_class->task_change_group(tsk, type);
+  else
+#endif
+    set_task_rq(tsk, task_cpu(tsk));
+}
+```
+sched_change_group中设置这个进程以这个task_group的方式参与调度，从而使得cpu.shares起作用。
+
+
+对于内存来讲，写入内存的限制使用函数 mem_cgroup_write->mem_cgroup_resize_limit 来设置 struct mem_cgroup 的 memory.limit 成员。
+
+
+
+在进程执行过程中，申请内存的时候，我们会调用 handle_pte_fault->do_anonymous_page()->mem_cgroup_try_charge()。
+
+```c
+
+int mem_cgroup_try_charge(struct page *page, struct mm_struct *mm,
+        gfp_t gfp_mask, struct mem_cgroup **memcgp,
+        bool compound)
+{
+  struct mem_cgroup *memcg = NULL;
+......
+  if (!memcg)
+    memcg = get_mem_cgroup_from_mm(mm);
+
+  ret = try_charge(memcg, gfp_mask, nr_pages);
+......
+}
+```
+在mem_cgroup_try_charge中，先是调用get_mem_cgroup_from_mm获得这个进程对应的mem_cgroup结构，然后在tey_charge中，根据mem_cgroup的限制，看看能都申请内存。
+
+
+## 总结
+
+![image](https://user-images.githubusercontent.com/12036324/68635112-7fde4c00-0532-11ea-9c1c-90a2f4d73997.png)
+
+
+1. 系统初始化的时候，初始化cgroup的各个子系统的操作函数，分配个各个子系统的数据结构
+2. mount cgroup文件系统，创建文件系统的树形结构以及操作函数。
+3. 写入cgroup文件，设置cpu和memory的相关参数，这个时候的文件系统的操作函数会调用到cgroup子系统的操作函数，从而将参数设置到cgroup子系统的数据结构
+4. 下入tasks文件，将进程交给某个cgroup进行管理，因为tasks文件也是一个cgroup文件，统一会调用文件系统的操作函数进而调用cgroup子系统的操作函数，将cgroup子系统的数据结构和进程关联起来。
+5. 对于cpu来讲，会修改scheduled entity放入相应的队列里面。从而下次调度的时候就起作用了。对于内存的cgroup的设定，只有申请内存的时候才起作用。
 
