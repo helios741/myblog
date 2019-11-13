@@ -1,6 +1,12 @@
 
 ## dockerd的作用是啥
 
+
+### 参考
+- [Understanding the Docker Internals](https://medium.com/@nagarwal/understanding-the-docker-internals-7ccb052ce9fe)
+- [Docker Namespace and Cgroups](https://medium.com/@kasunmaduraeng/docker-namespace-and-cgroups-dece27c209c7)
+
+
 ### var/run/docker.sock 的作用
 
 container和docker deamon之间通信的。
