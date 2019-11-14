@@ -1,4 +1,10 @@
 
+## docker的版本
+
+docker CE在17.3之前叫做Docker Engine，版本见：[Docker Engine release notes](https://docs.docker.com/release-notes/docker-engine/)
+
+在这之后就按照年月去命名了。每个季度会发一个版本。
+
 ## dockerd的作用是啥
 
 
