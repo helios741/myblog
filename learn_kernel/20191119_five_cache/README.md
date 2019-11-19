@@ -344,8 +344,58 @@ __INIT_DELAYED_WORK是初始化一个timer，到时候就执行delayed_work_time
 
 ## 带缓存的读操作
 
+```c
+
+static ssize_t generic_file_buffered_read(struct kiocb *iocb,
+    struct iov_iter *iter, ssize_t written)
+{
+  struct file *filp = iocb->ki_filp;
+  struct address_space *mapping = filp->f_mapping;
+  struct inode *inode = mapping->host;
+  for (;;) {
+    struct page *page;
+    pgoff_t end_index;
+    loff_t isize;
+    page = find_get_page(mapping, index);
+    if (!page) {
+      if (iocb->ki_flags & IOCB_NOWAIT)
+        goto would_block;
+      page_cache_sync_readahead(mapping,
+          ra, filp,
+          index, last_index - index);
+      page = find_get_page(mapping, index);
+      if (unlikely(page == NULL))
+        goto no_cached_page;
+    }
+    if (PageReadahead(page)) {
+      page_cache_async_readahead(mapping,
+          ra, filp, page,
+          index, last_index - index);
+    }
+    /*
+     * Ok, we have the page, and it's up-to-date, so
+     * now we can copy it to user space...
+     */
+    ret = copy_page_to_iter(page, offset, nr, iter);
+    }
+}
+```
+
+1. find_get_page: 先找page cache里面是否有缓存，如果没有进行下一步
+2. page_cache_sync_readahead: 读取一页并且预读，
+3. 预读完了，在找一把find_get_page缓存页
+4. 如果第一次找缓存页就找到了，我们还是要判断，是不是应该继续预读；如果需要，就调用 page_cache_async_readahead 发起一个异步预读。
+5. copy_page_to_iter: 会将内容从缓存页拷贝到用户内存空间
+
 
 ## 总结
 
+![image](https://user-images.githubusercontent.com/12036324/69117592-24c8ce00-0acb-11ea-899c-52ee0b7298ba.png)
 
 ## 问题
+
+你知道如何查询和清除文件系统缓存吗？
+
+通过free查看。
+
+- [How to Clear RAM Memory Cache, Buffer and Swap Space on Linux](https://www.tecmint.com/clear-ram-memory-cache-buffer-and-swap-space-on-linux/)
