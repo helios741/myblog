@@ -90,15 +90,65 @@ cluster-info   1      162d
 ### 六、安装默认插件
 Kubernetes 默认 kube-proxy 和 DNS 这两个插 件是必须安装的。它们分别用来提供整个集群的服务发现和 DNS 功能。其实，这两个插件也只是两个容器镜像而已，所以 kubeadm 只要用 Kubernetes 客户端创建两个 Pod 就可以了。
 
-
+### 参考：
+- [kubeadm init](https://kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/)
+- 
 
 ## kubeamd join工作流程
+kubeadm init 生成 bootstrap token 之后，你就可以在任意一台安装了kubelet 和 kubeadm 的机器上执行 kubeadm join 了。
 
+如果想要称为集群中的节点，就必须在集群的kube-apiserver上注册。要想和apiserver打交道，这台证书就必须要获取对应的证书文件（CA证书）。
+
+但是为了能一键安装，就不能让用户去master节点手动拷贝这些文件。
+
+
+所以kubeadm至少需要发起一次“不安全模式”的访问到apiserver，从而拿到保存在ConfigMap中的clustor-info（保存了APIServer的授权信息）。而bootstrap token扮演的就是这个过程中安全认证的角色。
+
+
+只要有了 cluster-info 里的 kube-apiserver 的地址、端口、证书，kubelet 就可以以“安全模 式”连接到 apiserver 上，这样一个新的节点就部署完成了。
 
 ## 配置 kubeadm 的部署参数
 
+```shell
+kubeadm init --config kubeadm.yaml
+```
+比如要指定apiserver的参数，那么只要加下面这段信息：
+```yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: v1.16.0
+apiServer:
+  extraArgs:
+    advertise-address: 192.168.0.103
+    anonymous-auth: "false"
+    enable-admission-plugins: AlwaysPullImages,DefaultStorageClass
+    audit-log-path: /home/johndoe/audit.log
+```
+然后，kubeadm 就会使用上面这些信息替换 /etc/kubernetes/manifests/kube-apiserver.yaml 里的 command 字段里的参数了。
+基本上这个参数什么都能改，国内用户还能改镜像地址之类的。
 
-## 总结
+
+### 参考：
+- [Customizing control plane configuration with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/control-plane-flags/#apiserver-flags)
 
 
-## 
+
+## 问题
+
+### 一、你是否使用其他工具部署过 Kubernetes 项目?经历如何?
+
+
+### 二、你是否知道 Kubernetes 项目当前(v1.11)能够有效管理的集群规模是多少个节点?你在生产 环境中希望部署或者正在部署的集群规模又是多少个节点呢?
+
+- No more than 5000 nodes
+- No more than 150000 total pods
+- No more than 300000 total containers
+- No more than 100 pods per node
+
+### 三、在 Linux 上为一个类似 kube-apiserver 的 Web Server 制作证书，你知道可以用哪些工具实 现吗?
+
+openssl
+还可以使用 GnuGPG，或者 keybase。
+### 四、回忆一下 Kubernetes 架构，你能够说出 Kubernetes 各个功能组件之 间(包含 Etcd)，都有哪些建立连接或者调用的方式吗?(比如:HTTP/HTTPS，远程调用等 等)
+
+https://www.huweihuang.com/article/kubernetes/kubernetes-architecture/
