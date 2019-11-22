@@ -137,6 +137,8 @@ apiServer:
 
 ### 一、你是否使用其他工具部署过 Kubernetes 项目?经历如何?
 
+- [kubespray](https://github.com/kubernetes-sigs/kubespray)
+- [kubeasz](https://github.com/easzlab/kubeasz)
 
 ### 二、你是否知道 Kubernetes 项目当前(v1.11)能够有效管理的集群规模是多少个节点?你在生产 环境中希望部署或者正在部署的集群规模又是多少个节点呢?
 
