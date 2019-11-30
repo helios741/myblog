@@ -1,5 +1,5 @@
 
-查找kernel5版本的bug: neighbour: arp_cache: neighbor table overflow!的过程 
+查找kernel5.0版本的bug: neighbour: arp_cache: neighbor table overflow!的过程 
 
 ## 问题现象
 
