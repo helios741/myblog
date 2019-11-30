@@ -13,3 +13,5 @@
 - [【翻译】使用KubernetesAPI构建一些东西-使用GO](https://github.com/helios741/myblog/blob/new/learn_go/src/2019/0804/%E3%80%90%E7%BF%BB%E8%AF%91%E3%80%91%E4%BD%BF%E7%94%A8KubernetesAPI%E6%9E%84%E5%BB%BA%E4%B8%80%E4%BA%9B%E4%B8%9C%E8%A5%BF-%E4%BD%BF%E7%94%A8GO.md)
 
 - [浅谈python中的多线程编程](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/1001_about_mult_thread)
+
+- [查找kernel 5.1 出现 bug: neighbour: arp_cache: neighbor table overflow! bug的过程](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/1130_kernel5_bug_neigh_table)
