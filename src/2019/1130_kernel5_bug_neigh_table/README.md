@@ -1,4 +1,12 @@
 
+------
+
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/1130_kernel5_bug_neigh_table)
+
+-----
+
+
+
 查找kernel5.0版本的bug: neighbour: arp_cache: neighbor table overflow!的过程 
 
 ## 问题现象
