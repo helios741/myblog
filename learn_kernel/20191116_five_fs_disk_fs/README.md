@@ -218,18 +218,118 @@ ino = ext4_find_next_zero_bit((unsigned long *)
 
 ### 对于块组描述符的备份
 
+对于块组描述符来讲，每个块组里面都包含完整的块组描述符表有点浪费。
 
+改进的思路就是引入*Meta Block Group*特性
+- 将所有的块组分组，称为元块组
+- 每个元块组里面的块组描述符表仅仅包含自己的（一个元块组包含64个块组，这样一个块组描述符表最多64项）
 
+比如我们一共又256个块组，分为四个元块组，每个元块组里面的块组描述符表就只有64项了。而且也都是自己备份自己的。
+
+![image](https://user-images.githubusercontent.com/12036324/69909947-fe495200-143d-11ea-8c4e-01ade7231ea2.png)
+
+根据上图，每个元块组包含64个块组，块组描述符也是64项。上图一共备份了三份（0，1，63）。
+
+在超级块ext4_super_block的定义中，我们可以看到寻址分为高位和低位，均为32位，其中有用的有48位，2^48个块就是1EB。
+```c
+
+struct ext4_super_block {
+......
+  __le32  s_blocks_count_lo;  /* Blocks count */
+  __le32  s_r_blocks_count_lo;  /* Reserved blocks count */
+  __le32  s_free_blocks_count_lo;  /* Free blocks count */
+......
+  __le32  s_blocks_count_hi;  /* Blocks count */
+  __le32  s_r_blocks_count_hi;  /* Reserved blocks count */
+  __le32  s_free_blocks_count_hi;  /* Free blocks count */
+......
+}
+```
 
 ## 目录的存储格式
+目录本身也是个文件，也有inode。和文件的inode是保存文件数据不同的是，目录的inode保存的是目录里面一项项的文件信息，这些信息我们称为ext4_dir_entry。从代码来看，有两个版本，在成员来讲几乎没有差别，只不过第二个版本 ext4_dir_entry_2 是将一个 16 位的 name_len，变成了一个 8 位的 name_len 和 8 位的 file_type。
+```c
+
+struct ext4_dir_entry {
+  __le32  inode;      /* Inode number */
+  __le16  rec_len;    /* Directory entry length */
+  __le16  name_len;    /* Name length */
+  char  name[EXT4_NAME_LEN];  /* File name */
+};
+struct ext4_dir_entry_2 {
+  __le32  inode;      /* Inode number */
+  __le16  rec_len;    /* Directory entry length */
+  __u8  name_len;    /* Name length */
+  __u8  file_type;
+  char  name[EXT4_NAME_LEN];  /* File name */
+};
+```
+在目录的块中，最简单的保存格式是列表，就是将一项项的ext4_dir_entry_2列在那。
+
+
+
+有时候，如果一个目录下面的文件太多的时候，我们想在这个目录下找一个文件，按照列表一个个去找，太慢了，于是我们就添加了索引的模式。
+
+
+如果在 inode 中设置 EXT4_INDEX_FL 标志，则目录文件的块的组织形式将发生变化，变成了下面定义的这个样子：
+
+```c
+
+struct dx_root
+{
+  struct fake_dirent dot;
+  char dot_name[4];
+  struct fake_dirent dotdot;
+  char dotdot_name[4];
+  struct dx_root_info
+  {
+    __le32 reserved_zero;
+    u8 hash_version;
+    u8 info_length; /* 8 */
+    u8 indirect_levels;
+    u8 unused_flags;
+  }
+  info;
+  struct dx_entry  entries[0];
+};
+```
+dx_root_info中最重要的成员是indirect_levels，表示间接索引的层数。
+
+dx_entry是文件名的哈希值和数据块的一个映射
+```c
+
+struct dx_entry
+{
+  __le32 hash;
+  __le32 block;
+};
+```
+如果我们要查找一个目录下面的文件名，可以通过名称取哈希。如果哈希能够匹配上，就说明这个文件的信息在相应的块里面。然后打开这个块，如果里面不再是索引，而是索引树的叶子节点的话，那里面还是 ext4_dir_entry_2 的列表，我们只要一项一项找文件名就行。通过索引树，我们可以将一个目录下面的 N 多的文件分散到很多的块里面，可以很快地进行查找。
+![image](https://user-images.githubusercontent.com/12036324/69910098-8d576980-1440-11ea-923f-9036f1de6f19.png)
 
 
 ## 软链接和硬链接的存储格式
 
+```shell
+ ln [参数][源文件或目录][目标文件或目录]
+```
+
+ln -s 创建的是软链接，不带 -s 创建的是硬链接。它们有什么区别呢？在文件系统里面是怎么保存的呢？
+
+![image](https://user-images.githubusercontent.com/12036324/69910134-3736f600-1441-11ea-8b51-91680fd83ab8.png)
+
+如图：
+- 硬链接： 与原始文件公用一个inode，但是inode是不能跨文件系统的，每个文件系统都有自己的inode列表，因而硬链接是没办法跨文件系统的
+- 软链接：相当于重新创建了inode。
+
 ## 总结
 
+![image](https://user-images.githubusercontent.com/12036324/69910189-05725f00-1442-11ea-8c30-89ea47a794c6.png)
 
+
+[第4章 ext文件系统机制原理剖析](https://www.cnblogs.com/f-ck-need-u/p/7016077.html)写的很好。
 ## 问题
 
 如何查看inode的内容和文件夹的内容：
 
+df -i xxx
