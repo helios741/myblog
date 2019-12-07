@@ -1,10 +1,14 @@
-
+# 浅谈docker中镜像和容器在本地的存储
 --------
 
-[文章首发]()
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191206_docker_disk_storage)
 -------
 
-## docker拉取镜像的过程
+## 一、docker拉取镜像的过程
+
+如果对manifest和image config不了解的可以去看一下：[manifest spec](https://github.com/opencontainers/image-spec/blob/master/manifest.md) 和[Image Configuration](https://github.com/opencontainers/image-spec/blob/master/config.md)。
+简单的来说前者描述一个镜像在registry上的存储，后者描述的是在本地磁盘的存储。
+
 ![image](https://user-images.githubusercontent.com/12036324/70367494-646d2380-18db-11ea-992a-d2bca4cbfeb0.png)
 
 dockerd和registry的通信过程：[Docker Registry HTTP API V2](https://docs.docker.com/registry/spec/api/)
@@ -35,9 +39,8 @@ Digest: sha256:134c7fe821b9d359490cd009ce7ca322453f4f2d018623f849e580a89a685e5d
 Status: Downloaded newer image for docker-search.4pd.io/ubuntu:18.04
 ```
 
-## docker镜像在本地磁盘上的存储
-
-![](https://docs.docker.com/storage/storagedriver/images/container-layers.jpg)
+## 二、 docker镜像在本地磁盘上的存储
+![image](https://user-images.githubusercontent.com/12036324/70367675-19eca680-18dd-11ea-9121-4f1f6853cdc3.png)
 ### 1、docker和存储有关信息
 
 
@@ -295,7 +298,7 @@ ll image/overlay2/layerdb/sha256/4fc26b0b0c6903db3b4fe96856034a1bd9411ed963a96c1
 
 上面我们通过chainid知道了真的layer层的数据目录地址，/var/lib/docker/overlay2/就是layer数据存放的目录，比如每个chainid里面cache-id都回应这个目录下面的一个目录。
 
-## 容器在磁盘上的存储
+## 三、 容器在磁盘上的存储
 
 容器的文件系统分为三层:
 - r/o层：也就是镜像层

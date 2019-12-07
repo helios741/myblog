@@ -15,3 +15,5 @@
 - [浅谈python中的多线程编程](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/1001_about_mult_thread)
 
 - [查找kernel 5.1 出现 bug: neighbour: arp_cache: neighbor table overflow! bug的过程](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/1130_kernel5_bug_neigh_table)
+
+- [浅谈docker中镜像和容器在本地的存储](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191206_docker_disk_storage)
