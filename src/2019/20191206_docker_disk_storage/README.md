@@ -321,3 +321,106 @@ ll image/overlay2/layerdb/sha256/4fc26b0b0c6903db3b4fe96856034a1bd9411ed963a96c1
 -rw-r--r-- 1 root root 71 12月  7 10:07 parent   # 基于哪个layer
 ```
 
+## 四、 docker中的overlayFS
+
+上图展示了overlayFS的两个特征：
+- 上下合并
+- 同名遮盖
+
+### 1、 挂载一个overlayFS
+我们来mount一个overlayfs看看：
+首先我们先建立几个目录和文件，如下：
+```shell
+# tree -L 2
+.
+├── lower1
+│   ├── common.txt
+│   └── ower1.sh
+├── lower2
+│   ├── common.txt
+│   └── ower2.sh
+├── lower3
+│   ├── common.txt
+│   └── ower3.sh
+├── merged
+├── upper
+│   ├── ower2.sh
+│   └── up.txt
+└── work
+    └── work
+```
+
+*common.txt*分别存放不同的内容，比如lower1下面common.txt内容是lower1，lower2下面common.txt内容是lower2，lower3下面common.txt内容是lower3，upper目录有个和lower2/ower2.sh同名的目录，我们通过下面的命令进行挂载
+```shell
+mount -t overlay overlay -o lowerdir=lower1:lower2:lower3,upperdir=upper,workdir=work merged
+```
+- lowerdir: 代表lower层，可以有多个，优先级依次降低，也就是说lower1 > lower2 > lower3
+- upperdir: 代表upper层，会覆盖lower层
+- workdir: 工作目录，用于存放临时文件
+- merged: 挂载点
+我们看看操作之后的目录：
+```shell
+# tree -L 2
+.
+├── lower1
+│   ├── common.txt
+│   └── ower1.sh
+├── lower2
+│   ├── common.txt
+│   └── ower2.sh
+├── lower3
+│   ├── common.txt
+│   └── ower3.sh
+├── merged
+│   ├── common.txt
+│   ├── ower1.sh
+│   ├── ower2.sh
+│   ├── ower3.sh
+│   └── up.txt
+├── upper
+│   ├── ower2.sh
+│   └── up.txt
+└── work
+    └── work
+```
+不用解释了，很清晰。我们演示几个对挂载后的目录的操作：
+1. 删除的文件是upper的，并且这个文件在lower层不存在（up.txt）
+直接删除就行了
+2. 删除的文件来自于lower层，upper层没有对应的文件（ower3.sh）
+
+overlayFS通过一种叫whiteout的机制。
+这种机制是用于屏蔽底层的同名文件，在upper层创建一个主次设备号（mknod <name> c 0 0）都是0的设备，当在merge层去找的时候，overlayFS会自动过滤掉和whiteout文件自身以及和他同名的lower层的文件，从而达到隐藏的目的。
+3. 删除的是upper覆盖lower的文件（ower2.sh）
+依然创建一个whiteout文件
+4. 创建一个upper和lower都没有的目录
+直接在upper中新增一个
+5. 创建一个在lower层已经存在且在upper层有whiteout文件的同名文件
+删了whiteout文件，重新创建一个
+6. 创建一个lower层存在并且upper层已经有对应white文件的目录
+如果这个时候单纯的删除white文件，那么lower层对应目录里面的文件就会显示出来。
+overlayFS引入了一种Opaque的属性，通过设置upper层上对应的目录上设置"trusted.overlay.opaque"为y来实现（前提是upper所在的文件系统支持xattr属性），overlayFS在读取上下层存在同名目录的时候，如果upper层的目录被设置了Opaque的属性，他会忽这个目录下层的所有同名目录项，来保证新建的是个空目录。
+![image](https://user-images.githubusercontent.com/12036324/70370561-88445f80-1903-11ea-900a-d0edf7ee04f0.png)
+
+### 2、 docker 如何使用的overlayFS
+
+我们还能通过mount -l 查看一下，存储驱动是怎么挂载的目录
+```shell
+...
+overlay on /var/lib/docker/overlay2/9b91ec851967fcda41268ce1009039fdb702fbc892634909c5fe579d866cbb9a/merged type overlay (rw,relatime,lowerdir=/var/lib/docker/overlay2/l/UMGH7INAYYKZ3IVM26WAZUGG5Z:/var/lib/docker/overlay2/l/QUTMSPCEDYYMF2332AQEV3IW2S:/var/lib/docker/overlay2/l/QNBTVPJO3Q6H5D74FP33P2VPNB:/var/lib/docker/overlay2/l/NXN4RV53IHVSFPY6OFMSS2RADC:/var/lib/docker/overlay2/l/Z2IVPR3KQGCUWCIJJPJL4NWTWJ,upperdir=/var/lib/docker/overlay2/9b91ec851967fcda41268ce1009039fdb702fbc892634909c5fe579d866cbb9a/diff,workdir=/var/lib/docker/overlay2/9b91ec851967fcda41268ce1009039fdb702fbc892634909c5fe579d866cbb9a/work)
+...
+```
+不妨可以对照一下。
+其中lowerdir就是image layer的四层加上init层，upperdir层是r/w层是diff目录也就是挂载点，workdir是挂载之后的工作目录。
+
+可能会困惑QUTMSPCEDYYMF2332AQEV3IW2S这些有是啥，这些是为了避免mount命令太长而导致的错误，所有故意搞短一点，我们看下*/var/lib/docker/overlay2/l/*就能明白了：
+```shell
+# ll /var/lib/docker/overlay2/l/
+总用量 24
+lrwxrwxrwx 1 root root 72 12月  7 10:07 2N6YI5FPX3UPR7KSIJAQ6DMZKO -> ../9b91ec851967fcda41268ce1009039fdb702fbc892634909c5fe579d866cbb9a/diff
+lrwxrwxrwx 1 root root 72 12月  6 23:31 NXN4RV53IHVSFPY6OFMSS2RADC -> ../b09910db9cb326762459b6a2026b6bb770f1c5adc89ca5a9439a045b13e2e761/diff
+lrwxrwxrwx 1 root root 72 12月  6 23:31 QNBTVPJO3Q6H5D74FP33P2VPNB -> ../f44837475b84093c93e668e8f58d97dcbf29fd0684f84ce5222662d07ac9eae7/diff
+lrwxrwxrwx 1 root root 72 12月  6 23:31 QUTMSPCEDYYMF2332AQEV3IW2S -> ../6503b66a9c0e64f8ed41d7c4552e75e9a633d44fd178a5632124bf7045bf2476/diff
+lrwxrwxrwx 1 root root 77 12月  7 10:07 UMGH7INAYYKZ3IVM26WAZUGG5Z -> ../9b91ec851967fcda41268ce1009039fdb702fbc892634909c5fe579d866cbb9a-init/diff
+lrwxrwxrwx 1 root root 72 12月  6 23:31 Z2IVPR3KQGCUWCIJJPJL4NWTWJ -> ../4e9cc7f0a41dd78da652cc42f0325454a5c1fa35abff84065511d016387912d6/diff
+```
+l也即是link的缩写，这里面就是一坨指向真正层数据的软链。
