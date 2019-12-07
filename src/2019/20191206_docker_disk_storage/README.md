@@ -323,6 +323,8 @@ ll image/overlay2/layerdb/sha256/4fc26b0b0c6903db3b4fe96856034a1bd9411ed963a96c1
 
 ## 四、 docker中的overlayFS
 
+![image](https://user-images.githubusercontent.com/12036324/70374553-9d82b380-192e-11ea-98e6-204618002363.png)
+
 上图展示了overlayFS的两个特征：
 - 上下合并
 - 同名遮盖
@@ -383,7 +385,13 @@ mount -t overlay overlay -o lowerdir=lower1:lower2:lower3,upperdir=upper,workdir
 └── work
     └── work
 ```
-不用解释了，很清晰。我们演示几个对挂载后的目录的操作：
+不用解释了，很清晰的说明了overlayFS的上面两个特征
+
+### 2、 overlayFS的另一个特征COW
+
+这个特征叫写时复制，也就只对于只读的lower层的操作，当用到它时候会把它复制到upper层，然后在对upper的进行曹祖，
+
+我们演示几个对挂载后的目录的操作，就能很明白这个过程了：
 1. 删除的文件是upper的，并且这个文件在lower层不存在（up.txt）
 直接删除就行了
 2. 删除的文件来自于lower层，upper层没有对应的文件（ower3.sh）
@@ -401,7 +409,7 @@ overlayFS通过一种叫whiteout的机制。
 overlayFS引入了一种Opaque的属性，通过设置upper层上对应的目录上设置"trusted.overlay.opaque"为y来实现（前提是upper所在的文件系统支持xattr属性），overlayFS在读取上下层存在同名目录的时候，如果upper层的目录被设置了Opaque的属性，他会忽这个目录下层的所有同名目录项，来保证新建的是个空目录。
 ![image](https://user-images.githubusercontent.com/12036324/70370561-88445f80-1903-11ea-900a-d0edf7ee04f0.png)
 
-### 2、 docker 如何使用的overlayFS
+### 3、 docker 如何使用的overlayFS
 
 我们还能通过mount -l 查看一下，存储驱动是怎么挂载的目录
 ```shell
