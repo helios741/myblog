@@ -6,8 +6,6 @@
 
 ## 一、docker拉取镜像的过程
 
-如果对manifest和image config不了解的可以去看一下：[manifest spec](https://github.com/opencontainers/image-spec/blob/master/manifest.md) 和[Image Configuration](https://github.com/opencontainers/image-spec/blob/master/config.md)。
-简单的来说前者描述一个镜像在registry上的存储，后者描述的是在本地磁盘的存储。
 
 ![image](https://user-images.githubusercontent.com/12036324/70367494-646d2380-18db-11ea-992a-d2bca4cbfeb0.png)
 
@@ -16,6 +14,8 @@ dockerd和registry的通信过程：[Docker Registry HTTP API V2](https://docs.d
 为什么要拉取两种配置文件（这里可以先有个感性的认知，后面会深入说）：
 - [manifes](https://github.com/opencontainers/image-spec/blob/master/manifest.md)是针对registry服务端的配置信息
 - [image config](https://github.com/opencontainers/image-spec/blob/master/config.md)是针对本地镜像的描述
+
+如果对manifest和image config要深入了解可以看：[manifest spec](https://github.com/opencontainers/image-spec/blob/master/manifest.md) 和[Image Configuration](https://github.com/opencontainers/image-spec/blob/master/config.md)。
 
 为什么要有digest：
 
