@@ -1,4 +1,6 @@
-
+----
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191210_translate_k8s_tls_bootstrapping)
+----
 # 【翻译】：Kubernetes TLS bootstrapping
 
 [原文地址](https://medium.com/@toddrosner/kubernetes-tls-bootstrapping-cf203776abc7)

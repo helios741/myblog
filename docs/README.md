@@ -17,3 +17,5 @@
 - [查找kernel 5.1 出现 bug: neighbour: arp_cache: neighbor table overflow! bug的过程](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/1130_kernel5_bug_neigh_table)
 
 - [浅谈docker中镜像和容器在本地的存储](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191206_docker_disk_storage)
+
+- [翻译：Kubernetes TLS bootstrapping](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191210_translate_k8s_tls_bootstrapping)
