@@ -6,16 +6,16 @@
 [原文地址](https://medium.com/@toddrosner/kubernetes-tls-bootstrapping-cf203776abc7)
 
 译者注：
-本文会把bootstrapping翻译为引导，但是为了给一些不适应的朋友体验，在涉及到bootstrapping的时候都会又*引导（bootstrapping）*的标注。
+本文会把bootstrapping翻译为引导，但是为了给一些不适应的朋友体验，在涉及到bootstrapping的时候都会有*引导（bootstrapping）*的标注。
 
 
 
-本文是介绍在k8s集群中节点和kubelet基于引导（bootstrapping）TLS通信的。这里（[kubelet-tls-bootstrapping](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/)）有k8s的官方文档去介绍如何支持TLS引导（bootstrapping），并且这也是你必须去读的，但是并非始终的依靠它来满足你需求。您可能会通过github issue或者Stack Overflow中搜寻你遇到的问题。也就是说写这篇文章的目的不是为了替代k8s的官方文档，而是为了解答您可能遇到的问题。
+本文介绍在k8s集群中kubelet和节点是如何基于引导（bootstrapping）TLS通信的。这里（[kubelet-tls-bootstrapping](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/)）有k8s的官方文档去介绍如何支持TLS引导（bootstrapping），这也是你必须去读的，但是这它可能不满满足你所有的需求。您可能会通过github issue或者Stack Overflow中搜寻你遇到的问题。也就是说写这篇文章的目的不是为了替代k8s的官方文档，而是为了解答您可能遇到的问题。
 
 注：本文是基于k8s 1.9版本的，如果你使用的版本小于1.9 ，您可能需要去寻找让*引导（bootstrapping）*生效的特殊要求。
 
 
-当然，本文基于你已经使用cfssl工具创建了CA，相关的信息已经配置在etcd，api-server，kube-controller-manager，也就是说他们之间数据传输传输都要加密，以及身份验证。
+当然，本文基于你已经使用cfssl工具创建了CA，相关的信息已经配置在etcd，api-server，kube-controller-manager，也就是说他们之间数据传输传输都要加密以及身份验证。
 
 
 ## 目标
@@ -24,7 +24,7 @@
 *引导（bootstrapping）*旨在简化将节点安全加入master的功能，还包括节点的扩缩容的问题。如果你不使用*引导（bootstrapping）*要么worker节点和master节点之间不加密通信，要么您必须手动更新TLS CSR的主机名和IP，然后重新生成证书和密钥并将其分发给每个master节点和worker节点。下图展示了TLS *引导（bootstrapping）*的流程：
 ![image](https://user-images.githubusercontent.com/12036324/70534302-ba6cf000-1b95-11ea-9207-1f08ba804619.png)
 
-kubelet首先会去寻找kubeconfig文件，如果又kubeconfig文件，那么说明该节点和kubelet可能已经配置过认证信息，并且在启动的时候加入集群。如果kubeconfig文件不存在，kubelet将要使用bootstrap.kubeconfig文件，建立认证请求，当*引导（bootstrapping）*成功的时候动态的建立kubeconfig文件。
+kubelet首先会去寻找kubeconfig文件，如果有kubeconfig文件，那么说明该节点和kubelet可能已经配置过认证信息，并且在启动的时候加入集群。如果kubeconfig文件不存在，kubelet将要使用bootstrap.kubeconfig文件，建立认证请求，当*引导（bootstrapping）*成功的时候动态的建立kubeconfig文件。
 
 下图展示了每个节点的kubelet-bootstrap用户和每个节点本身的CSR。kubelet-bootstrap 用户的CSR会被自动approved，节点的CSR等待cluster-admin去approved。
 ![image](https://user-images.githubusercontent.com/12036324/70535105-6b27bf00-1b97-11ea-984f-044610e01897.png)
@@ -33,7 +33,7 @@ kubelet首先会去寻找kubeconfig文件，如果又kubeconfig文件，那么�
 *kubectl get nodes*命令没有节点返回，这是因为*system:node*的CSR还没有被approved。
 
 
-现在已经建立了目标示例，让我们来看看实现这个目标的重要组成部分。
+看完目标示例让我们来看看实现这个目标的重要组成部分。
 
 
 ## token认证
@@ -96,7 +96,7 @@ kube-apiserver的host配置用于进行kubelet的认证和授权，这是为了�
 
 ## kube-controller-manager
 
-如前面所述，*kube-controller-manager*负责给所有的CSR签名因为扮演了很重要的角色。下面的配置需要加加到kube-controller-manager配置文件中：
+如前面所述，*kube-controller-manager*负责给所有的CSR签名因为扮演了很重要的角色。下面的配置需要加到kube-controller-manager配置文件中：
 ```shell
 --cluster-signing-cert-file=/etc/path/to/kubernetes/ca/ca.pem \
 --cluster-signing-key-file=/etc/path/to/kubernetes/ca/ca.key \
@@ -117,7 +117,7 @@ kubectl create clusterrolebinding node-client-auto-renew-crt \
   --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient \
   --group=system:nodes
 ```
-完成以上步骤后，就可以配置kube-apiserver，kube-controller-manager和kubelet，kubelet在启动的时候想apiserver发起引导（bootstrap）程序请求，然后授权回发生在kubelet和controller-manager之间。
+完成以上步骤后，就可以配置kube-apiserver，kube-controller-manager和kubelet，kubelet在启动的时候想apiserver发起引导（bootstrap）程序请求，然后授权会发生在kubelet和controller-manager之间。
 
 如果你不熟悉RBAC，请确保你的admin（在token.csv中）用户和cluster-admin的clusterrole进行 cluster role binding。如果您不这样做，那么您将很难在以后建立几种RBAC配置。
 ```shell
@@ -134,7 +134,7 @@ kubectl create clusterrolebinding cluster-admin-users \
 
 ## Auto Scaling
 
-你可以还在想如何实现节点和kubelet的全自动伸缩，将*system:authenticated*组和cluster-admin进行进行bind能实现。但是这是不推荐和k8s的安全性、扩展性相悖的。通过kubernetes进行扩展的模式是一种安全且可控的模式，而TLS引导（bootstrapping)为了避免必须更新CSR、重新生成证书和从新分发的需求。手动approved CSR为集群增加安全性和控制性，而且集群角色（cluster role）可能会提供安全的自动approved和节点CSR的轮换。
+你可以还在想如何实现节点和kubelet的全自动伸缩，将*system:authenticated*组和cluster-admin进行进行bind能实现。但是这是不推荐的，因为和k8s的安全性、扩展性相悖的。通过kubernetes进行扩展的模式是一种安全且可控的模式，而TLS引导（bootstrapping)为了避免必须更新CSR、重新生成证书和从新分发的需求。手动approved CSR为集群增加安全性和控制性，而且集群角色（cluster role）可能会提供安全的自动approved和节点CSR的轮换。
 
 ## 总结
 
