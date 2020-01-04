@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  ...
+  name: coredns
+  namespace: kube-system
+secrets:
+- name: coredns-token-6t842
