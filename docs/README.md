@@ -1,4 +1,6 @@
 
+## 2019
+
 - [Typescript配合React实践](https://github.com/helios741/myblog/blob/1.1/src/2018/1015/Typescript%E9%85%8D%E5%90%88React%E5%AE%9E%E8%B7%B5.md)
 - [翻译： typescript 2.7中interface和type(Interface vs Type alias in TypeScript 2.7)](https://github.com/helios741/myblog/blob/1.1/src/2018/1215/%E7%BF%BB%E8%AF%91%EF%BC%9A%20typescript%202.7%E4%B8%ADinterface%E5%92%8Ctype(Interface%20vs%20Type%20alias%20in%20TypeScript%202.7).md)
 - [浅谈前后端分离中的跨资源共享（CORS）](https://github.com/helios741/myblog/blob/1.1/src/2018/1225/%E6%B5%85%E8%B0%88%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB%E4%B8%AD%E7%9A%84%E8%B7%A8%E8%B5%84%E6%BA%90%E5%85%B1%E4%BA%AB%EF%BC%88CORS%EF%BC%89.md)
@@ -19,3 +21,6 @@
 - [浅谈docker中镜像和容器在本地的存储](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191206_docker_disk_storage)
 
 - [翻译：Kubernetes TLS bootstrapping](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191210_translate_k8s_tls_bootstrapping)
+
+## 2020
+- [解析k8s中工作节点组件和集群通信原理](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0104_k8s_component_communication)
