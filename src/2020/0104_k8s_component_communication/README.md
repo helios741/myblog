@@ -97,12 +97,12 @@ k8s通过RBAC将权限的使用者和角色分离，提供四个新的资源，�
 
 1. 创建证书签名请求[kube-proxy-csr.json](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy-csr.json)
 2. 通过ca的证书、私钥以及上一步的证书签名请求生成kube-proxy的私钥和证书
-    + ```shell
-    cfssl gencert -ca=/opt/k8s/work/ca.pem \
+```shell
+cfssl gencert -ca=/opt/k8s/work/ca.pem \
   -ca-key=/opt/k8s/work/ca-key.pem \
   -config=/opt/k8s/work/ca-config.json \
   -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy
-  ```
+```
 3. 通过set-cluster设置集群信息（比如设置为kubernetes），放在kube-proxy.kubeconfig文件中(这个时候的kube-proxy.kubeconfig的内容：[kube-proxy1.kubeconfig](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy1.kubeconfig))
 4. 设置访问集群的用户为kube-proxy，放在kube-proxy.kubeconfig文件中(这个时候的kube-proxy.kubeconfig的内容：[kube-proxy2.kubeconfig](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy2.kubeconfig))
 5. 创建上下文（将第4步和第5部的进行绑定即，用kube-proxy去访问kubernetes集群），使用kube-proxy.kubeconfig文件中。(这个时候的kube-proxy.kubeconfig的内容：[kube-proxy3.kubeconfig](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy3.kubeconfig))
