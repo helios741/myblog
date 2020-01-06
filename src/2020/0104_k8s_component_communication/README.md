@@ -1,3 +1,7 @@
+---
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0104_k8s_component_communication)
+---
+
 
 # 解析k8s中工作节点组件和集群通信原理
 
@@ -268,6 +272,9 @@ kubectl config use-context default --kubeconfig=kubelet-bootstrap-${node_name}.k
 4. 真正给颁发证书的还是controller-manager
 5. kubelet通过watch看到创建的CSR变为了issued状态，就通过拿CSR中status.certificate的字段,然后base64解码变为本地文件
 
+## 文章讨论入口
+
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您到[这里](https://github.com/helios741/myblog/issues/73)提出。我会很感谢您的建议也会解答您的问题。
 
 ## 参考：
 - [【翻译】：Kubernetes TLS bootstrapping](https://github.com/helios741/myblog/tree/new/learn_go/src/2019/20191210_translate_k8s_tls_bootstrapping)
