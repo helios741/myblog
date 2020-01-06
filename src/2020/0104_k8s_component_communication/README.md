@@ -48,7 +48,8 @@ CA收到证书签名请求（CSR）之后，会生成一个证书，证书内容
 
 ## 二、各司其职：RBAC是什么
 
-RBAC的本质就是给不同的用户不同的角色，角色代表的权限，用户代表的访问集群的“人”。
+RBAC的本质就是给不同的用户不同的角色，角色代表的权限，是由k8s本身定义的，用户代表的访问集群的“人”。
+
 所以要理解RBAC就要理解k8s中有几种用户，角色怎么控制权限，以及用户和角色之间如何绑定的，下面我们就来一个个的看。
 
 ### 2.1 k8s中的用户
@@ -56,8 +57,10 @@ RBAC的本质就是给不同的用户不同的角色，角色代表的权限，�
 在k8s中，用户从宏观上就可以分为两种，集群内的用户以及集群外的用户：
 - 集群内的用户：serviceAccount
 - 集群外的用户：User
+
+
 集群外的user就是能通过HTTP请求体中拿到，
-对于集群内的用户认证信息怎么拿到呢，我们来看个kube-system命名空间下面的coredns这个serviceAccount的[定义](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/coredns-sa.yaml)我们能看到它有一个secrets字段，这个字段的name字段就是指定的secrets的名字，也就是说如果某个POD生命使用了这个serviceAccount，就会把这个serviceAccount对应的secrets挂载到POD里面，这个secrets对应的定义[在这里](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/coredns-secrets.yaml)。在POD中挂载的目录为：*/var/run/secrets/kubernetes.io/serviceaccount/*，我们可以使用下面命令查看这个pod有没有访问某个api的权限：
+对于集群内的用户认证信息怎么拿到呢，我们来看个kube-system命名空间下面的coredns这个serviceAccount的[定义](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/coredns-sa.yaml),我们能看到它有一个secrets字段，这个字段的name字段就是指定的secrets的名字，也就是说如果某个POD声明使用了这个serviceAccount，就会把这个serviceAccount对应的secrets挂载到POD里面，这个secrets对应的定义[在这里](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/coredns-secrets.yaml)。在POD中挂载的目录为：*/var/run/secrets/kubernetes.io/serviceaccount/*，我们可以使用下面命令查看这个pod有没有访问某个api的权限：
 ```shell
 kubectl  exec -ti centosb -n helios-ns bash
 CA_CERT=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -80,7 +83,7 @@ k8s通过RBAC将权限的使用者和角色分离，提供四个新的资源，�
 - clusterrolebindings/clusterroles： 除了针对rolebindings/roles的功能外，还有集群级别的资源，比如说namespace、pvc等
 
 我们可以看一下*system:coredns*这个clusterrolebinding的yaml定义：[yaml文件地址](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/coredns-crb.yaml)
-上述就是ClusterRoleBinding就是将用户为kube-system的coredns用户和system:coredns进行绑定使之有对应的权限。
+上述的ClusterRoleBinding就是将kube-system下面的coredns用户（ServiceAccount）和system:coredns进行绑定使之有对应的权限。
 
 现在对于RBAC的基本概念就解释完了，其实RBAC还是很容易理解的，这里提出两个问题供读者思考：
 - rolebindings能和clusterroles绑定么
@@ -94,6 +97,11 @@ k8s通过RBAC将权限的使用者和角色分离，提供四个新的资源，�
 
 1. 创建证书签名请求[kube-proxy-csr.json](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy-csr.json)
 2. 通过ca的证书、私钥以及上一步的证书签名请求生成kube-proxy的私钥和证书
+    + ```shell
+    cfssl gencert -ca=/opt/k8s/work/ca.pem \
+  -ca-key=/opt/k8s/work/ca-key.pem \
+  -config=/opt/k8s/work/ca-config.json \
+  -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy```
 3. 通过set-cluster设置集群信息（比如设置为kubernetes），放在kube-proxy.kubeconfig文件中(这个时候的kube-proxy.kubeconfig的内容：[kube-proxy1.kubeconfig](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy1.kubeconfig))
 4. 设置访问集群的用户为kube-proxy，放在kube-proxy.kubeconfig文件中(这个时候的kube-proxy.kubeconfig的内容：[kube-proxy2.kubeconfig](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy2.kubeconfig))
 5. 创建上下文（将第4步和第5部的进行绑定即，用kube-proxy去访问kubernetes集群），使用kube-proxy.kubeconfig文件中。(这个时候的kube-proxy.kubeconfig的内容：[kube-proxy3.kubeconfig](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/0104_k8s_component_communication/kube-proxy3.kubeconfig))
