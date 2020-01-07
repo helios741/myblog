@@ -1,3 +1,7 @@
+---
+[翻译：In-depth introduction to Kubernetes admission webhooks](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0107_translate_k8s_admission_webhook)
+---
+
 # 翻译：In-depth introduction to Kubernetes admission webhooks
 
 写在前面[原文传送门](https://banzaicloud.com/blog/k8s-admission-webhooks/)
@@ -17,7 +21,7 @@ Kubernetes提供了许多方式去扩展它的内部功能。可能最常用的�
 ## 准入控制器
 在开始之前，让我们看一下k8s官网关于准入控制器的定义：
 ***
-准入控制器是一段在对象持久化之前，在认证和授权之后拦截对api server请求的代码。准入控制器包括验证（validating）和变更（mutating）。变更（mutating）控制器可能会修改请求的资源对象，验证（validating）控制器不会修改资源对象。如果任何一个阶段的控制器拒绝了请求，那么整个请求都会败拒绝并且返回给端用户。
+准入控制器是一段在对象持久化之前，在认证和授权之后拦截对api server请求的代码。准入控制器包括验证（validating）和变更（mutating）。变更（mutating）控制器可能会修改请求的资源对象，验证（validating）控制器不会修改资源对象。如果任何一个阶段的控制器拒绝了请求，那么整个请求都会失败并且把错误返回给用户。
 ***
 上面的意思就是k8s中会有特殊的控制器拦截K8s的api请求，并且能够根据自定义的逻辑去修改或者拒绝这个请求。这个[列表](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#what-does-each-admission-controller-do)是k8s已经实现的的控制器列表，你也可以根据自己的业务逻辑写自己的控制器。这些控制器听起来很强大，但需要编译到kube-apiserver中，并且只能在apiserver启动的时候开启。
 
@@ -53,11 +57,11 @@ kubectl api-versions
 ```
 
 ### 写webhook
-我们现在开始写我们的准入wenhook服务。在这个例子中，这个服务监听*validate*和*mutate*路径分别服务于validating和mutating webhook。接下来，我们将要弄清楚一个可以轻松实现的简单任务：
-k8s文档包含一组通用的[推荐label](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/)，这些标签允许工具相互操作，这些标签以所有都可以理解的通信方式描述对象。除了支撑工具外，这些推荐标签还把程序描述为可查询的。
+我们现在开始写我们的准入wenhook服务。在这个例子中，这个服务监听*/validate*和*/mutate*的路径分别服务于validating和mutating webhook。接下来，我们将要弄清楚一个可以轻松实现的简单任务：
+k8s文档包含一组允许工具相互操作的[推荐label](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/)，这些标签以所有工具都能理解的方式描述对象。除了支撑工具外，这些推荐标签还把程序描述为可查询的。
 
 
-在我们的validating webhook例子中，我们要求deployment和service必须包含这些标签，所有我们的validating webhook会拒绝不包含这些标签的deployment和service。接下来我们配置mutating webhook，mutating webhook将会给deployment和service增加上not_available这个label（如果没有这个label的话）。
+在我们的validating webhook例子中，我们要求deployment和service必须包含这些标签，我们所有的validating webhook会拒绝不包含这些标签的deployment和service。接下来我们配置mutating webhook，mutating webhook将会给deployment和service增加上值为not_available这个label（如果没有这个label的话）。
 
 
 代码可以在[github的这个地址](https://github.com/banzaicloud/admission-webhook-example)上获得。morvencao写的关于mutating准入webhook的指南是很好的，我fork了[这个项目](https://github.com/morvencao/kube-mutating-webhook-tutorial)，然后基于这个代码进行修改。
@@ -72,7 +76,7 @@ k8s文档包含一组通用的[推荐label](https://kubernetes.io/docs/concepts/
 
 
 ### 在集群中部署webserver
-为了部署这个服务，我们需要在集群中创建一个service和deployment。除了服务的TLS的配置，剩下的都很简单。如果你想检查*deployment.yaml*[文件](https://github.com/banzaicloud/admission-webhook-example/blob/blog/deployment/deployment.yaml)，您会发现从命令行中读取了证书和相应的私钥，并且这些文件来自于pod挂载的secret的volume。
+为了部署这个服务，我们需要在集群中创建一个service和deployment。除了服务的TLS的配置，剩下的都很简单。如果你看*deployment.yaml*[文件](https://github.com/banzaicloud/admission-webhook-example/blob/blog/deployment/deployment.yaml)，您会发现从命令行中读取了证书和相应的私钥，并且这些文件来自于pod挂载的secret的volume。
 ```yaml
       args:
         - -tlsCertFile=/etc/webhook/certs/cert.pem
@@ -111,7 +115,7 @@ $ kubectl get secret admission-webhook-example-certs
 NAME                              TYPE      DATA      AGE
 admission-webhook-example-certs   Opaque    2         2m
 ```
-一旦这个secret被创建，我们就能创建我们演示用的[deployment](https://github.com/banzaicloud/admission-webhook-example/blob/blog/deployment/deployment.yaml)和[service](https://github.com/banzaicloud/admission-webhook-example/blob/blog/deployment/service.yaml)。到目前位置，我们只创建了监听在443端口接受请求的HTTP服务器。
+一旦这个secret被创建，我们就能创建我们演示用的[deployment](https://github.com/banzaicloud/admission-webhook-example/blob/blog/deployment/deployment.yaml)和[service](https://github.com/banzaicloud/admission-webhook-example/blob/blog/deployment/service.yaml)。到目前位置，我们创建了监听443端口来接受请求的HTTP服务器。
 ```shell
 $ kubectl create -f deployment/deployment.yaml
 deployment.apps "admission-webhook-example-deployment" created
@@ -159,7 +163,7 @@ webhooks:
       matchLabels:
         admission-webhook-example: enabled
 ```
-Webhook的clientConfig指向的是我们先前部署的服务，服务的监听路径为*/validate*。我们针对validation wenbhook和mutation webhook创建了不同的路径。
+Webhook的clientConfig指向的是我们先前部署的服务，服务的监听路径为 `/validate`。我们针对validation wenbhook和mutation webhook创建了不同的路径。
 
 
 上面yaml文件的第二段包含了规则（rules字段）--执行的操作和对应的资源将会被validate webhook处理。当apiGroups和apiVersions下面的deployment（apps/v1）和service（v1）被创建（CREATE）的时候，这个请求将会被截获。我们也可以在这些字段中使用通配符（*）。
@@ -183,7 +187,7 @@ metadata:
   name: default
 ...
 ```
-最后创建这个validating webhook的配置。这会将webhook动态的添加到请求链中，一旦资源被创建，请求将要被我们配置的webhookserver拦截:
+最后创建这个validating webhook的配置。这会将webhook动态的添加到请求链中，一旦资源被创建，请求将要被我们配置的webhook server拦截:
 ```shell
 $ kubectl create -f deployment/validatingwebhook-ca-bundle.yaml
 validatingwebhookconfiguration.admissionregistration.k8s.io "validation-webhook-example-cfg" created
