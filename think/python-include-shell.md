@@ -1,0 +1,1 @@
+- python中嵌套shell过于恶心
