@@ -47,9 +47,125 @@ CNI的[SPEC](https://github.com/containernetworking/cni/blob/master/SPEC.md)兴�
 - 有关网络的配置通过STDIN的方式传递给CNI插件，其他的参数通过环境变量的方式传递
 - CNI插件是以可执行文件的方式实现的
 
+## 三、如何使用CNI
+
+通过下面的例子会对CNI有一个感性的了解。
+
+把CNI的插件来拉下来
+```shell
+[root@m7-qatest-k8s128118 opt]# mkdir cni
+[root@m7-qatest-k8s128118 opt]# cd cni/
+[root@m7-qatest-k8s128118 cni]# curl -O -L https://github.com/containernetworking/cni/releases/download/v0.4.0/cni-amd64-v0.4.0.tgz
+[root@m7-qatest-k8s128118 cni]# tar -xzvf cni-amd64-v0.4.0.tgz
+[root@m7-qatest-k8s128118 cni]# ll
+总用量 70756
+-rwxr-xr-x 1 root root  5924584 1月  14 2017 bridge
+-rw-r--r-- 1 root root 16066400 3月   2 21:59 cni-amd64-v0.4.0.tgz
+-rwxr-xr-x 1 root root  3614840 1月  14 2017 cnitool
+-rwxr-xr-x 1 root root 10354296 1月  14 2017 dhcp
+-rwxr-xr-x 1 root root  3684624 1月  14 2017 flannel
+-rwxr-xr-x 1 root root  4008016 1月  14 2017 host-local
+-rwxr-xr-x 1 root root  5308904 1月  14 2017 ipvlan
+-rwxr-xr-x 1 root root  5033704 1月  14 2017 loopback
+-rwxr-xr-x 1 root root  5334832 1月  14 2017 macvlan
+-rwxr-xr-x 1 root root  3400872 1月  14 2017 noop
+-rwxr-xr-x 1 root root  5910424 1月  14 2017 ptp
+-rwxr-xr-x 1 root root  3791288 1月  14 2017 tuning
+```
+创建一个namespace：
+```shell
+[root@m7-qatest-k8s128118 cni]# ip netns add 1234567890
+```
 
 
-## 三、CNI原理
+新增CNI的配置文件：
+```shell
+cat > mybridge.conf <<"EOF"
+{
+    "cniVersion": "0.2.0",
+    "name": "mybridge",
+    "type": "bridge",
+    "bridge": "cni_bridge0",
+    "isGateway": true,
+    "ipMasq": true,
+    "hairpinMode":true,
+    "ipam": {
+        "type": "host-local",
+        "subnet": "10.15.20.0/24",
+        "routes": [
+            { "dst": "0.0.0.0/0" },
+            { "dst": "1.1.1.1/32", "gw":"10.15.20.1"}
+        ]
+    }
+}
+EOF
+```
+其中：
+- cniVersion： CNI规范的版本
+- name： 这个网络的名字叫mybridge
+- type：使用brige插件
+- isGateway：如果是true，为网桥分配ip地址，以便连接到它的容器可以将其作为网关
+- ipMasq：在插件支持的情况的，设置ip伪装。当宿主机充当的网关无法路由到分配给容器的IP子网的网关的时候，这个参数是必须有的。
+- ipam：
+    + type：IPAM可执行文件的名字
+    + 要分配给容器的子网
+    + routes
+        + dst： 目的子网
+        + gw：到达目的地址的下一跳ip地址，如果不指定则为默认网关
+- hairpinMode: 让网络设备能够让数据包从一个端口发进来一个端口发出去
+更多配置信息请参考：[Network Configuration](https://github.com/containernetworking/cni/blob/master/SPEC.md#network-configuration)
+
+将刚才新建的1234567890的namespace加入到network上
+```shell
+[root@m7-qatest-k8s128118 cni]# CNI_COMMAND=ADD CNI_CONTAINERID=1234567890 CNI_NETNS=/var/run/netns/1234567890 CNI_IFNAME=eth12 CNI_PATH=`pwd` ./bridge < mybridge.conf
+2020/03/02 22:14:57 Error retriving last reserved ip: Failed to retrieve last reserved ip: open /var/lib/cni/networks/mybridge/last_reserved_ip: no such file or directory
+{
+    "ip4": {
+        "ip": "10.15.20.2/24",
+        "gateway": "10.15.20.1",
+        "routes": [
+            {
+                "dst": "0.0.0.0/0"
+            },
+            {
+                "dst": "1.1.1.1/32",
+                "gw": "10.15.20.1"
+            }
+        ]
+    },
+    "dns": {}
+}
+```
+查看新建的namespace的网络配置
+```shell
+[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890  ip a
+1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+3: eth12@if1137099: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 0a:58:0a:0f:14:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.15.20.2/24 scope global eth12
+       valid_lft forever preferred_lft forever
+    inet6 fe80::34da:9fff:febe:f332/64 scope link
+       valid_lft forever preferred_lft forever
+[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890 route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.15.20.1      0.0.0.0         UG    0      0        0 eth12
+1.1.1.1         10.15.20.1      255.255.255.255 UGH   0      0        0 eth12
+10.15.20.0      0.0.0.0         255.255.255.0   U     0      0        0 eth12
+[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890 ifconfig
+eth12: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.15.20.2  netmask 255.255.255.0  broadcast 0.0.0.0
+        inet6 fe80::34da:9fff:febe:f332  prefixlen 64  scopeid 0x20<link>
+        ether 0a:58:0a:0f:14:02  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 9  bytes 738 (738.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
+
+
+## 四、CNI原理
 
 CNI的原理主要分为两个部分：
 - 二进制插件配置POD的网络栈（runtime）：给POD插上网线
@@ -195,7 +311,7 @@ CNI的原理如下图：
 
 
 
-## 四、为什么有CNM还要有CNI呢
+## 五、为什么有CNM还要有CNI呢
 
 |特点|CNM|CNI|
 |:--:|:--:|:--:|
@@ -207,149 +323,32 @@ CNI的原理如下图：
 
 
 
-CNI的设计更加符合kubernetes的容器设计模式，即把一组容器看作一个整体，即POD。当POD启动的时候最先启动的肯定是infra容器，infra容器会创建network namespace，后续创建的容器都是加入这个network namespace。
-
-CNI的设计更加kubernetes的分层架构，具体来说就是遇到问题分一层，大家可能还会想到CRI的设计，PV/PVC。当然这也是架构设计中常用的方案，目的是解决各个模块（组件）之间的耦合。大家可以会想一给CRI的发展过程，以前在kubelet的代码中是有docker-shim和rkt两种容器的实现，每次新增特性还要加两套，如果有了最新的容器运行时（比如kata）那还得加入到kubelet的代码中么？所以就干脆搞一个接口，谁想把不同的容器运行时根据这个接口实现就行了，关于CRI的事情，我们在后面的文章中细谈。
-
-CNI的设计能够提供给不同插件相互组合的，比如在Main插件中，ipvlan和macvlan都能和IPAM中的插件使用。
-
-## 五、如何使用CNI
-
-通过下面的例子会对CNI有一个感性的了解。
-
-把CNI的插件来拉下来
-```shell
-[root@m7-qatest-k8s128118 opt]# mkdir cni
-[root@m7-qatest-k8s128118 opt]# cd cni/
-[root@m7-qatest-k8s128118 cni]# curl -O -L https://github.com/containernetworking/cni/releases/download/v0.4.0/cni-amd64-v0.4.0.tgz
-[root@m7-qatest-k8s128118 cni]# tar -xzvf cni-amd64-v0.4.0.tgz
-[root@m7-qatest-k8s128118 cni]# ll
-总用量 70756
--rwxr-xr-x 1 root root  5924584 1月  14 2017 bridge
--rw-r--r-- 1 root root 16066400 3月   2 21:59 cni-amd64-v0.4.0.tgz
--rwxr-xr-x 1 root root  3614840 1月  14 2017 cnitool
--rwxr-xr-x 1 root root 10354296 1月  14 2017 dhcp
--rwxr-xr-x 1 root root  3684624 1月  14 2017 flannel
--rwxr-xr-x 1 root root  4008016 1月  14 2017 host-local
--rwxr-xr-x 1 root root  5308904 1月  14 2017 ipvlan
--rwxr-xr-x 1 root root  5033704 1月  14 2017 loopback
--rwxr-xr-x 1 root root  5334832 1月  14 2017 macvlan
--rwxr-xr-x 1 root root  3400872 1月  14 2017 noop
--rwxr-xr-x 1 root root  5910424 1月  14 2017 ptp
--rwxr-xr-x 1 root root  3791288 1月  14 2017 tuning
-```
-创建一个namespace：
-```shell
-[root@m7-qatest-k8s128118 cni]# ip netns add 1234567890
-```
+CNI的设计更加符合kubernetes的容器设计模式，即把一组容器看作一个整体(POD)。当POD启动的时候最先启动的肯定是infra容器，infra容器会创建network namespace，后续创建的容器都是加入这个network namespace。
 
 
-新增CNI的配置文件：
-```shell
-cat > mybridge.conf <<"EOF"
-{
-    "cniVersion": "0.2.0",
-    "name": "mybridge",
-    "type": "bridge",
-    "bridge": "cni_bridge0",
-    "isGateway": true,
-    "ipMasq": true,
-    "hairpinMode":true,
-    "ipam": {
-        "type": "host-local",
-        "subnet": "10.15.20.0/24",
-        "routes": [
-            { "dst": "0.0.0.0/0" },
-            { "dst": "1.1.1.1/32", "gw":"10.15.20.1"}
-        ]
-    }
-}
-EOF
-```
-其中：
-- cniVersion： CNI规范的版本
-- name： 这个网络的名字叫mybridge
-- type：使用brige插件
-- isGateway：如果是true，为网桥分配ip地址，以便连接到它的容器可以将其作为网关
-- ipMasq：在插件支持的情况的，设置ip伪装。当宿主机充当的网关无法路由到分配给容器的IP子网的网关的时候，这个参数是必须有的。
-- ipam：
-    + type：IPAM可执行文件的名字
-    + 要分配给容器的子网
-    + routes
-        + dst： 目的子网
-        + gw：到达目的地址的下一跳ip地址，如果不指定则为默认网关
-- hairpinMode: 让网络设备能够让数据包从一个端口发进来一个端口发出去
-更多配置信息请参考：[Network Configuration](https://github.com/containernetworking/cni/blob/master/SPEC.md#network-configuration)
-
-将刚才新建的1234567890的namespace加入到network上
-```shell
-[root@m7-qatest-k8s128118 cni]# CNI_COMMAND=ADD CNI_CONTAINERID=1234567890 CNI_NETNS=/var/run/netns/1234567890 CNI_IFNAME=eth12 CNI_PATH=`pwd` ./bridge < mybridge.conf
-2020/03/02 22:14:57 Error retriving last reserved ip: Failed to retrieve last reserved ip: open /var/lib/cni/networks/mybridge/last_reserved_ip: no such file or directory
-{
-    "ip4": {
-        "ip": "10.15.20.2/24",
-        "gateway": "10.15.20.1",
-        "routes": [
-            {
-                "dst": "0.0.0.0/0"
-            },
-            {
-                "dst": "1.1.1.1/32",
-                "gw": "10.15.20.1"
-            }
-        ]
-    },
-    "dns": {}
-}
-```
-查看新建的namespace的网络配置
-```shell
-[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890  ip a
-1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-3: eth12@if1137099: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
-    link/ether 0a:58:0a:0f:14:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-    inet 10.15.20.2/24 scope global eth12
-       valid_lft forever preferred_lft forever
-    inet6 fe80::34da:9fff:febe:f332/64 scope link
-       valid_lft forever preferred_lft forever
-[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890 route -n
-Kernel IP routing table
-Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
-0.0.0.0         10.15.20.1      0.0.0.0         UG    0      0        0 eth12
-1.1.1.1         10.15.20.1      255.255.255.255 UGH   0      0        0 eth12
-10.15.20.0      0.0.0.0         255.255.255.0   U     0      0        0 eth12
-[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890 ifconfig
-eth12: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 10.15.20.2  netmask 255.255.255.0  broadcast 0.0.0.0
-        inet6 fe80::34da:9fff:febe:f332  prefixlen 64  scopeid 0x20<link>
-        ether 0a:58:0a:0f:14:02  txqueuelen 0  (Ethernet)
-        RX packets 0  bytes 0 (0.0 B)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 9  bytes 738 (738.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-```
-
-- http://www.dasblinkenlichten.com/understanding-cni-container-networking-interface/
-- http://www.dasblinkenlichten.com/using-cni-docker/
-
-## 六、不同CNI插件的选择
+CNI的设计更加kubernetes的分层架构，具体来说就是遇到问题分一层，大家可能还会想到CRI的设计，PV/PVC。当然这也是架构设计中常用的方案，目的是解决各个模块（组件）之间的耦合。大家可以回想一下CRI的发展过程，以前在kubelet的代码中是有docker-shim和rkt两种容器的实现，每次新增特性还要加两套，如果有了新的容器运行时（比如kata）那还得加入到kubelet的代码中么？所以就干脆搞一个接口，谁想用什么的容器运行时根据这个接口实现就行了，当然在kubelet中也集成了默认的CRI实现，即dockershim关于CRI的事情，我们在后面的文章中细谈。
 
 
-## 七、总结
+CNI的设计能够提供给不同插件相互组合的机会，比如在Main插件中，ipvlan和macvlan都能和IPAM中的插件使用。
 
-- 搞清楚CNM和CNI的区别
-    + CNM：https://github.com/docker/libnetwork/blob/master/docs/design.md
-    + CNI：https://github.com/containernetworking/cni/blob/master/CONVENTIONS.md
-    + https://kccncna19.sched.com/event/Uaif/introduction-to-cni-the-container-network-interface-project-bryan-boreham-weaveworks-dan-williams-red-hat
 
-- https://cizixs.com/2017/05/23/container-network-cni/
-- https://yucs.github.io/2017/12/06/2017-12-6-CNI/
-- https://www.cnblogs.com/YaoDD/p/7419383.html
-- https://www.cnblogs.com/YaoDD/p/7405725.htm
+
+## 六、总结
+
+
+
 
 
 ## 参考
 - [浅聊几种主流 Docker 网络的实现原理](https://www.infoq.cn/article/9vfPPfZPrXLM4ssLlxSR)
 - https://www.jianshu.com/p/3b9389084701
 - 极客时间《深入剖析kubernetes》
+- http://www.dasblinkenlichten.com/understanding-cni-container-networking-interface/
+- http://www.dasblinkenlichten.com/using-cni-docker/
+- https://cizixs.com/2017/05/23/container-network-cni/
+- https://yucs.github.io/2017/12/06/2017-12-6-CNI/
+- https://www.cnblogs.com/YaoDD/p/7419383.html
+- https://www.cnblogs.com/YaoDD/p/7405725.html
+- https://github.com/containernetworking/cni/blob/master/CONVENTIONS.md
+- https://github.com/docker/libnetwork/blob/master/docs/design.md
+- https://kccncna19.sched.com/event/Uaif/introduction-to-cni-the-container-network-interface-project-bryan-boreham-weaveworks-dan-williams-red-hat
