@@ -82,7 +82,83 @@ CNI的思想就是在kubelet启动infra容器后，就可以直接调用CNI插�
 注：
 一个Network Namespace的网络栈包括：网卡（Network interface）、回环设备（Loopback Device）、路由表（Routing Table）和iptables规则。
 
-suo
+通过这些插件我们就能看出，如果给kubernetes实现一个容器网络方案，有两部分要做（下面以flannel为例）：
+- （创建网络）实现网络方案本身。也就是实现flanneld进程，包括创建和配置flannel.1设备、配置宿主机路由、配置ARP和FDB表里面的信息
+- （将容器加入网络）实现该网络方案对应的CNI插件。配置infra容器的网络栈，并把它连接到CNI网桥上
+
+
+CNI的原理如下图：
+![](./cni-process.png)
+
+
+- 在宿主机安装网络方案本身：flannel启动后会在每台宿主机上生成它对应的CNI配置文件，来告诉k8s要用flannel作为容器网络方案
+```shell
+# cat /etc/cni/net.d/10-flannel.conflist
+{
+  "name": "cbr0",
+  "plugins": [
+    {
+      "type": "flannel",
+      "delegate": {
+        "hairpinMode": true,
+        "isDefaultGateway": true
+      }
+    },
+    {
+      "type": "portmap",
+      "capabilities": {
+        "portMappings": true
+      }
+    }
+  ]
+}
+```
+- kubelet： 网络的处理不是在kubelet的主干代码中，而是在具体的CRI中实现的
+- CRI(docker-shim)： docker-shim是kubelet的默认值CRI实现，在kubelet的代码中能找到它
+- CRI加载`/etc/cni/net.d`下的插件：目前不支持多个插件混用，但是允许在CNI的配置文件中通过plugins字段，定义多个插件合作
+    + 比如在第一步里面的*flannel*和*portmap*分别完成“配置容器网络”和“配置端口映射”的操作
+    + docker-shim把CNI配置文件加载之后把将列表中的第一个插件（flannel插件）作为默认插件
+- 准备CNI插件参数，包含两部分：
+    1. CRI设置的一组环境变量：
+        + CNI_COMMAND： ADD/DEL，ADD表示将容器加入网络，DEL则相反（通过veth pair实现）
+        + CNI_IFNAME：容器里网卡的名字，比如eth0
+        + CNI_NETNS：POD的Network Namespace文件路径
+        + CNI_CONTAINERID： 容器ID
+        + CNI_PATH： CNI插件的路径
+    2. CRI从CNI配置中加载信息（完整配置可参考[ Network Configuration](https://github.com/containernetworking/cni/blob/master/SPEC.md#network-configuration)）：
+        + docker-shim会把Network Configuration以json的数据格式，通过STDIN的方式传递给Flannel CNI插件
+        + 第一步中flannel插件配置文件中的delegate字段的意思是，CNI插件会调用delegate指定的某个CNI插件来完成（Flannel调用的Delegate插件就是CNI bridge插件）
+        + flannel CNI插件就是把dockershim传过来的配置文件进行补充，比如将Delegate的type设置为bridge，将Delegate的IPAM的字段设置为host-local
+        + 经过flannel CNI补充之后，完整的Delegate文件如下：
+```shell
+{
+	"hairpinMode":true,
+	"ipMasq":false,
+	"ipam":{
+		"routes":[
+			{
+				"dst":"10.244.0.0/16"
+			}
+		],
+		"subnet":"10.244.1.0/24",
+		"type":"host-local"
+	},
+	isDefaultGateway":true,
+	"isGateway":true,
+	"mtu":1410,
+	"name":"cbr0",
+	"type":"bridge"
+}
+```
+        + ipam字段里面的信息，比如*10.244.0.0/16*读取自Flannel在宿主机上生成的Flannel配置文件（/run/flannel/subnet.env ）
+- 传递给CNI插件：经过上述步骤后，得到CNI配置的参数，接下来，Flannel CNI插件就会调用CNI bridhe插件，有了上一步骤的两部分配置（环境变量+Network Configration），CNI brige插件就能代替Flannel CNI插件“执行将容器加入网络操作”
+- 执行将容器加入网络操作：
+    1. 检查CNI网桥是否存在，如果没有就创建
+
+    2. 
+
+
+
 
 
 ## 四、为什么有CNM还要有CNI呢
