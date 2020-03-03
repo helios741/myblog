@@ -1,4 +1,11 @@
 
+--------
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0204_about_docker_network)
+--------
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/76)提出。我会很感谢您的建议也会解答您的问题。
+
+# 深入浅出kubernetes中的CNI
+
 容器网络模型要解决的问题有两个：
 1. 为容器分配IP地址
 2. 不同容器之间的互通
@@ -338,17 +345,18 @@ CNI的设计能够提供给不同插件相互组合的机会，比如在Main插�
 本文从先介绍了docker的容器网络解决方案CNM，然后从CNI的起源介绍CNI的原理，最后介绍到为什么kubernetes选择了CNI不是选择CNM。本文作为一篇入门进阶文章没有对CNI具体网络插件（比如calico，flannel）进行详细的解释原理，以及不同的业务场景如何对他们进行选择，后续会写一遍这样的文章对不同的网络实现方案进行对比选择。下一遍文章会从k8s的源码级别解析CNI。
 
 
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/76)提出。我会很感谢您的建议也会解答您的问题。
 
 ## 参考
 - [浅聊几种主流 Docker 网络的实现原理](https://www.infoq.cn/article/9vfPPfZPrXLM4ssLlxSR)
-- https://www.jianshu.com/p/3b9389084701
+- [DEEP DIVE INTO DOCKER OVERLAY NETWORKS : PART 1（深入理解Docker的Overlay网络 1）](https://www.jianshu.com/p/3b9389084701)
 - 极客时间《深入剖析kubernetes》
-- http://www.dasblinkenlichten.com/understanding-cni-container-networking-interface/
-- http://www.dasblinkenlichten.com/using-cni-docker/
-- https://cizixs.com/2017/05/23/container-network-cni/
-- https://yucs.github.io/2017/12/06/2017-12-6-CNI/
-- https://www.cnblogs.com/YaoDD/p/7419383.html
-- https://www.cnblogs.com/YaoDD/p/7405725.html
-- https://github.com/containernetworking/cni/blob/master/CONVENTIONS.md
-- https://github.com/docker/libnetwork/blob/master/docs/design.md
-- https://kccncna19.sched.com/event/Uaif/introduction-to-cni-the-container-network-interface-project-bryan-boreham-weaveworks-dan-williams-red-hat
+- [Understanding CNI (Container Networking Interface)](http://www.dasblinkenlichten.com/understanding-cni-container-networking-interface/)
+- [Using CNI with Docker](http://www.dasblinkenlichten.com/using-cni-docker/)
+- [THE CONTAINER NETWORKING LANDSCAPE: CNI FROM COREOS AND CNM FROM DOCKER](https://thenewstack.io/container-networking-landscape-cni-coreos-cnm-docker/)
+- [Kubernetes网络插件CNI调研整理](https://yucs.github.io/2017/12/06/2017-12-6-CNI/)
+- [深入理解CNI](https://www.cnblogs.com/YaoDD/p/7419383.html)
+- [《CNI specification》翻译](https://www.cnblogs.com/YaoDD/p/7405725.html)
+- [Extension conventions](https://github.com/containernetworking/cni/blob/master/CONVENTIONS.md)
+- [CNM design](https://github.com/docker/libnetwork/blob/master/docs/design.md)
+- [introduction-to-cni](https://kccncna19.sched.com/event/Uaif/introduction-to-cni-the-container-network-interface-project-bryan-boreham-weaveworks-dan-williams-red-hat)
