@@ -14,7 +14,7 @@ docker的CNM网络模型中三个部分，分别为：
     + 一个sandbox可能包含多个endpoint。
     + 简单来说就是linux的namespace
 - endpoint：
-    + 一端属于网路一端属于sandbox
+    + 一端属于网络一端属于sandbox
     + 简单来说就是veth pair
 - network：
     + 一组能够相互通信的endpoint组成
@@ -32,14 +32,14 @@ docker的CNM网络模型中三个部分，分别为：
 
 如果有深入兴趣的可以读读[ Deep dive into docker overlay networks part](https://blog.d2si.io/2017/04/25/deep-dive-into-docker-overlay-networks-part-1/)系列文章，相信会有很大的收获。
 
-我们在下面会讨论CNM和CNI差别。
+CNM的设计可以参考[libnetwork Design](https://github.com/docker/libnetwork/blob/master/docs/design.md)， 我们在下面会讨论CNM和CNI差别。
 
 ## 二、CNI的介绍
 
 
 CNI的全称是Container Network Interface，Google和CoreOS联合定制的网络标准，这个标准基于[rkt](https://github.com/rkt/rkt)实现多容器通信的网络模型。
 
-生产中的网络环境可能是多种多样的，有可能是二层连通的，也有可能是用的公有云的环境，所以各个厂商的网络解决方案百花争鸣，这些解决方案也不能全都集成在kubelet的代码中，所以CNI就是能让各个网络厂商能对接进来的接口。
+生产中的网络环境可能是多种多样的，有可能是二层连通的，也可能用的公有云的环境，所以各个厂商的网络解决方案百花争鸣，这些解决方案也不能全都集成在kubelet的代码中，所以CNI就是能让各个网络厂商对接进来的接口。
 CNI的[SPEC](https://github.com/containernetworking/cni/blob/master/SPEC.md)兴趣的读者可以看看，下面是CNI规范重要的几点：
 - CNI插件负责连接容器
 - 容器就是linux network namespace
@@ -52,7 +52,7 @@ CNI的[SPEC](https://github.com/containernetworking/cni/blob/master/SPEC.md)兴�
 ## 三、CNI原理
 
 CNI的原理主要分为两个部分：
-- 二进制插件配置POD的网卡和IP（runtime）：给POD插上网线
+- 二进制插件配置POD的网络栈（runtime）：给POD插上网线
 - Deamon进程实现网络互通（plugin）： 给POD连上网络
 
 ![](./cni.png)
@@ -60,9 +60,9 @@ CNI的原理主要分为两个部分：
 cni的插件可以分为下面三类（这些插件官网已经独立出一个repo，有兴趣可以查看：[containernetworking/plugins](https://github.com/containernetworking/plugins/tree/master/plugins)）：
 - Main插件：用来创建具体的网络设备的二进制文件，包括：
     + bridge： 在宿主机上创建网桥然后通过veth pair的方式连接到容器
-    + macvlan：从虚拟出多个macvtap，每个macvtap都有不同的mac地址
+    + macvlan：虚拟出多个macvtap，每个macvtap都有不同的mac地址
     + ipvlan：和macvlan相似，也是通过一个主机接口虚拟出多个虚拟网络接口，不同的是ipvlan虚拟出来的是共享MAC地址，ip地址不同
-    + loopback： lo设备（将回环接口设置成uo）
+    + loopback： lo设备（将回环接口设置成up）
     + ptp： Veth Pair设备
     + vlan： 分配vlan设备
     + host-device： 移动宿主上已经存在的设备到容器中
@@ -114,7 +114,7 @@ CNI的原理如下图：
 }
 ```
 - kubelet： 网络的处理不是在kubelet的主干代码中，而是在具体的CRI中实现的
-- CRI(docker-shim)： docker-shim是kubelet的默认值CRI实现，在kubelet的代码中能找到它
+- CRI(docker-shim)： docker-shim是kubelet的默认值CRI实现，在kubelet的代码中能找到它，当然也可以使用其他的CRI实现（比如kata、rkt）我们后面文章专门说CRI
 - CRI加载`/etc/cni/net.d`下的插件：目前不支持多个插件混用，但是允许在CNI的配置文件中通过plugins字段，定义多个插件合作
     + 比如在第一步里面的*flannel*和*portmap*分别完成“配置容器网络”和“配置端口映射”的操作
     + docker-shim把CNI配置文件加载之后把将列表中的第一个插件（flannel插件）作为默认插件
@@ -130,27 +130,26 @@ CNI的原理如下图：
         + 第一步中flannel插件配置文件中的delegate字段的意思是，CNI插件会调用delegate指定的某个CNI插件来完成（Flannel调用的Delegate插件就是CNI bridge插件）
         + flannel CNI插件就是把dockershim传过来的配置文件进行补充，比如将Delegate的type设置为bridge，将Delegate的IPAM的字段设置为host-local
         + 经过flannel CNI补充之后，完整的Delegate文件如下：
-```shell
-{
-	"hairpinMode":true,
-	"ipMasq":false,
-	"ipam":{
-		"routes":[
-			{
-				"dst":"10.244.0.0/16"
-			}
-		],
-		"subnet":"10.244.1.0/24",
-		"type":"host-local"
-	},
-	isDefaultGateway":true,
-	"isGateway":true,
-	"mtu":1410,
-	"name":"cbr0",
-	"type":"bridge"
-}
-```
-
+        ```shell
+        {
+        	"hairpinMode":true,
+        	"ipMasq":false,
+        	"ipam":{
+        		"routes":[
+        			{
+        				"dst":"10.244.0.0/16"
+        			}
+        		],
+        		"subnet":"10.244.1.0/24",
+        		"type":"host-local"
+        	},
+        	isDefaultGateway":true,
+        	"isGateway":true,
+        	"mtu":1410,
+        	"name":"cbr0",
+        	"type":"bridge"
+        }
+        ```
         + ipam字段里面的信息，比如*10.244.0.0/16*读取自Flannel在宿主机上生成的Flannel配置文件（/run/flannel/subnet.env ）
 - 传递给CNI插件：经过上述步骤后，得到CNI配置的参数，接下来，Flannel CNI插件就会调用CNI bridhe插件，有了上一步骤的两部分配置（环境变量+Network Configration），CNI brige插件就能代替Flannel CNI插件“执行将容器加入网络操作”
 - 执行将容器加入网络操作：
