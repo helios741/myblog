@@ -154,42 +154,42 @@ CNI的原理如下图：
 - 传递给CNI插件：经过上述步骤后，得到CNI配置的参数，接下来，Flannel CNI插件就会调用CNI bridhe插件，有了上一步骤的两部分配置（环境变量+Network Configration），CNI brige插件就能代替Flannel CNI插件“执行将容器加入网络操作”
 - 执行将容器加入网络操作：
     1. 检查CNI网桥是否存在，如果没有就创建
-```shell
-# 宿主机
-ip link add cni0 type bridg
-ip link set cni0 up
-```
+    ```shell
+    # 宿主机
+    ip link add cni0 type bridg
+    ip link set cni0 up
+    ```
     2.  CNI bridge插件会通过infra容器的Network Namespace文件进入Network Namespace，创建veth pair设备
-```shell
-# 在容器里
-# 创建一对 Veth Pair 设备。其中一个叫作 eth0，另一个叫作 vethb4963f3
-ip link add eth0 type veth peer name vethb4963f3
+    ```shell
+    # 在容器里
+    # 创建一对 Veth Pair 设备。其中一个叫作 eth0，另一个叫作 vethb4963f3
+    ip link add eth0 type veth peer name vethb4963f3
 
-# 启动 eth0 设备
-ip link set eth0 up
+    # 启动 eth0 设备
+    ip link set eth0 up
 
-# 将 Veth Pair 设备的另一端(也就是 vethb4963f3 设备)放到宿主机(也就是 Host Namespace)里
-ip link set vethb4963f3 netns $HOST_NS
-# 通过 Host Namespace，启动宿主机上的 vethb4963f3 设备
-ip netns exec $HOST_NS ip link set vethb4963f3 up
-```
+    # 将 Veth Pair 设备的另一端(也就是 vethb4963f3 设备)放到宿主机(也就是 Host Namespace)里
+    ip link set vethb4963f3 netns $HOST_NS
+    # 通过 Host Namespace，启动宿主机上的 vethb4963f3 设备
+    ip netns exec $HOST_NS ip link set vethb4963f3 up
+    ```
     3. CNI bridge 插件就可以把 vethb4963f3 设备连接在 CNI 网桥上
-```shell
-# 在宿主机上
-ip link set vethb4963f3 master cni0
-```
+    ```shell
+    # 在宿主机上
+    ip link set vethb4963f3 master cni0
+    ```
     4. CNI bridge 插件会为cni0网桥设置Hairpin Mode
     5. 调用ipam插件从网段中分配一个ip，把ip添加到容器的eth0网卡同时设置默认路由
-```shell
-# 在容器里
-ip addr add 10.244.0.2/24 dev eth0
-ip route add default via 10.244.0.1 dev eth0
-```
+    ```shell
+    # 在容器里
+    ip addr add 10.244.0.2/24 dev eth0
+    ip route add default via 10.244.0.1 dev eth0
+    ```
     6. CNI Bridge插件为CNI网桥添加ip地址
-```shell
-# 在宿主机上
-ip addr add 10.244.0.1/24 dev cni0
-```
+    ```shell
+    # 在宿主机上
+    ip addr add 10.244.0.1/24 dev cni0
+    ```
     7. 所有操作结束之后，CNI插件会把容器的IP等信息返回给dockershim，然后被kubelet添加到POD的status字段
 
 
