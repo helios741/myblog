@@ -36,7 +36,6 @@ docker的CNM网络模型中三个部分，分别为：
 
 ## 二、CNI的介绍
 
-docker的CNM网络模型有一定的缺陷，比如说依赖docker的守护进程和一个KV数据库。
 
 CNI的全称是Container Network Interface，Google和CoreOS联合定制的网络标准，这个标准基于[rkt](https://github.com/rkt/rkt)实现多容器通信的网络模型。
 
@@ -78,6 +77,12 @@ cni的插件可以分为下面三类（这些插件官网已经独立出一个re
     + bandwidth：使用 Token Bucket Filter (TBF)来进行限流的二进制文件
     + firewall：通过iptables或者firewalled添加规则控制容器的进出流量
 
+CNI的思想就是在kubelet启动infra容器后，就可以直接调用CNI插件为这个infra容器的Network Namespace配置符合预期的网络栈。
+
+注：
+一个Network Namespace的网络栈包括：网卡（Network interface）、回环设备（Loopback Device）、路由表（Routing Table）和iptables规则。
+
+suo
 
 
 ## 四、为什么有CNM还要有CNI呢
@@ -101,6 +106,119 @@ CNI的设计能够提供给不同插件相互组合的，比如在Main插件中�
 ## 五、如何使用CNI
 
 通过下面的例子会对CNI有一个感性的了解。
+
+把CNI的插件来拉下来
+```shell
+[root@m7-qatest-k8s128118 opt]# mkdir cni
+[root@m7-qatest-k8s128118 opt]# cd cni/
+[root@m7-qatest-k8s128118 cni]# curl -O -L https://github.com/containernetworking/cni/releases/download/v0.4.0/cni-amd64-v0.4.0.tgz
+[root@m7-qatest-k8s128118 cni]# tar -xzvf cni-amd64-v0.4.0.tgz
+[root@m7-qatest-k8s128118 cni]# ll
+总用量 70756
+-rwxr-xr-x 1 root root  5924584 1月  14 2017 bridge
+-rw-r--r-- 1 root root 16066400 3月   2 21:59 cni-amd64-v0.4.0.tgz
+-rwxr-xr-x 1 root root  3614840 1月  14 2017 cnitool
+-rwxr-xr-x 1 root root 10354296 1月  14 2017 dhcp
+-rwxr-xr-x 1 root root  3684624 1月  14 2017 flannel
+-rwxr-xr-x 1 root root  4008016 1月  14 2017 host-local
+-rwxr-xr-x 1 root root  5308904 1月  14 2017 ipvlan
+-rwxr-xr-x 1 root root  5033704 1月  14 2017 loopback
+-rwxr-xr-x 1 root root  5334832 1月  14 2017 macvlan
+-rwxr-xr-x 1 root root  3400872 1月  14 2017 noop
+-rwxr-xr-x 1 root root  5910424 1月  14 2017 ptp
+-rwxr-xr-x 1 root root  3791288 1月  14 2017 tuning
+```
+创建一个namespace：
+```shell
+[root@m7-qatest-k8s128118 cni]# ip netns add 1234567890
+```
+
+
+新增CNI的配置文件：
+```shell
+cat > mybridge.conf <<"EOF"
+{
+    "cniVersion": "0.2.0",
+    "name": "mybridge",
+    "type": "bridge",
+    "bridge": "cni_bridge0",
+    "isGateway": true,
+    "ipMasq": true,
+    "hairpinMode":true,
+    "ipam": {
+        "type": "host-local",
+        "subnet": "10.15.20.0/24",
+        "routes": [
+            { "dst": "0.0.0.0/0" },
+            { "dst": "1.1.1.1/32", "gw":"10.15.20.1"}
+        ]
+    }
+}
+EOF
+```
+其中：
+- cniVersion： CNI规范的版本
+- name： 这个网络的名字叫mybridge
+- type：使用brige插件
+- isGateway：如果是true，为网桥分配ip地址，以便连接到它的容器可以将其作为网关
+- ipMasq：在插件支持的情况的，设置ip伪装。当宿主机充当的网关无法路由到分配给容器的IP子网的网关的时候，这个参数是必须有的。
+- ipam：
+    + type：IPAM可执行文件的名字
+    + 要分配给容器的子网
+    + routes
+        + dst： 目的子网
+        + gw：到达目的地址的下一跳ip地址，如果不指定则为默认网关
+- hairpinMode: 让网络设备能够让数据包从一个端口发进来一个端口发出去
+更多配置信息请参考：[Network Configuration](https://github.com/containernetworking/cni/blob/master/SPEC.md#network-configuration)
+
+将刚才新建的1234567890的namespace加入到network上
+```shell
+[root@m7-qatest-k8s128118 cni]# CNI_COMMAND=ADD CNI_CONTAINERID=1234567890 CNI_NETNS=/var/run/netns/1234567890 CNI_IFNAME=eth12 CNI_PATH=`pwd` ./bridge < mybridge.conf
+2020/03/02 22:14:57 Error retriving last reserved ip: Failed to retrieve last reserved ip: open /var/lib/cni/networks/mybridge/last_reserved_ip: no such file or directory
+{
+    "ip4": {
+        "ip": "10.15.20.2/24",
+        "gateway": "10.15.20.1",
+        "routes": [
+            {
+                "dst": "0.0.0.0/0"
+            },
+            {
+                "dst": "1.1.1.1/32",
+                "gw": "10.15.20.1"
+            }
+        ]
+    },
+    "dns": {}
+}
+```
+查看新建的namespace的网络配置
+```shell
+[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890  ip a
+1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+3: eth12@if1137099: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 0a:58:0a:0f:14:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.15.20.2/24 scope global eth12
+       valid_lft forever preferred_lft forever
+    inet6 fe80::34da:9fff:febe:f332/64 scope link
+       valid_lft forever preferred_lft forever
+[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890 route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.15.20.1      0.0.0.0         UG    0      0        0 eth12
+1.1.1.1         10.15.20.1      255.255.255.255 UGH   0      0        0 eth12
+10.15.20.0      0.0.0.0         255.255.255.0   U     0      0        0 eth12
+[root@m7-qatest-k8s128118 cni]# ip netns exec 1234567890 ifconfig
+eth12: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.15.20.2  netmask 255.255.255.0  broadcast 0.0.0.0
+        inet6 fe80::34da:9fff:febe:f332  prefixlen 64  scopeid 0x20<link>
+        ether 0a:58:0a:0f:14:02  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 9  bytes 738 (738.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
 
 - http://www.dasblinkenlichten.com/understanding-cni-container-networking-interface/
 - http://www.dasblinkenlichten.com/using-cni-docker/
