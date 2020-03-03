@@ -1,6 +1,6 @@
 
 --------
-[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0204_about_docker_network)
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0303_k8s_cni)
 --------
 如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/76)提出。我会很感谢您的建议也会解答您的问题。
 
@@ -12,7 +12,7 @@
 
 ## 一、docker的网络模型CNM
 
-![](./docker_network.png)
+![](./docker_model.jpg)
 
 
 docker的CNM网络模型中三个部分，分别为：
