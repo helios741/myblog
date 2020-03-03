@@ -25,3 +25,4 @@
 ## 2020
 - [解析k8s中工作节点组件和集群通信原理](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0104_k8s_component_communication)
 - [翻译：In-depth introduction to Kubernetes admission webhooks](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0107_translate_k8s_admission_webhook)
+- [深入浅出kubernetes中的CNI](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0303_k8s_cni)
