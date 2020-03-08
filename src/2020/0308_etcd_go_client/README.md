@@ -1,5 +1,5 @@
 ---
-[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0308_etcd_go_client)
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0308_etcd_go_client/README.md)
 ---
 如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/77)提出。我会很感谢您的建议也会解答您的问题。
 
