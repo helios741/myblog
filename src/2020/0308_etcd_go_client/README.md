@@ -79,7 +79,7 @@ helios2
 ```
 ### 1.2 关于集群的操作
 
-查看集群状态（如果单机的可以不用指定ENDPOINTS，如果是集群的话，通过逗号的形式加到ENDPOINTS后面）
+查看集群状态（如果单机的可以不用指定ENDPOINTS，如果是集群的话，通过分号的形式加到ENDPOINTS后面）
 ```shell
 [root@dajiahao03 etcd]# export ENDPOINTS="172.27.143.50:2379"
 [root@dajiahao03 etcd]# ./etcdctl --write-out=table --endpoints=$ENDPOINTS endpoint status
@@ -119,8 +119,6 @@ NEW_ETCD_HOST="172.27.140.172"
 Finished defragmenting etcd member[172.27.143.50:2379]
 ```
 备份当前的ETD集群
-```shell
-
 
 ```shell
 [root@dajiahao03 etcd]# ./etcdctl snapshot save snapshot.db
@@ -178,6 +176,7 @@ tar -C /usr/local/bin -xzf /home/yourname/Downloads/go1.12.4.linux-amd64.tar.gz
 # 修改bashrc重的PATH（我用的是zsh）
 vim ~/.zshrc
 export PATH=$PATH:/usr/local/bin/go/bin
+source ~/.zshrc
 ```
 
 ## 三、etcd ClientV3的使用
@@ -432,4 +431,83 @@ fmt.Println("数据value:", string(opResp.Get().Kvs[0].Value))
 数据value: helios
 ```
 可运行代码请查看[3.6.go](./3.6.go)
+
+### 3.7（选看） 通过txn实现分布式锁
+
+ETCD中的txn通过简单的"If-Then-Else"实现了原子操作。
+
+实现分布式锁主要分为三个步骤：
+1. 上锁，包括创建租约、自动续约、在租约时间内去抢一个key
+2. 抢到锁后执行业务逻辑，没有抢到退出
+3. 释放租约
+
+接下来我们看代码：
+```go
+
+// 1. 上锁
+// 1.1 创建租约
+lease = clientv3.NewLease(client)
+
+if leaseGrantResp, err = lease.Grant(context.TODO(), 5); err != nil {
+	panic(err)
+}
+leaseId = leaseGrantResp.ID
+
+// 1.2 自动续约
+// 创建一个可取消的租约，主要是为了退出的时候能够释放
+ctx, cancelFunc = context.WithCancel(context.TODO())
+
+// 3. 释放租约
+defer cancelFunc()
+defer lease.Revoke(context.TODO(), leaseId)
+
+if keepRespChan, err = lease.KeepAlive(ctx, leaseId); err != nil {
+	panic(err)
+}
+// 续约应答
+go func() {
+	for {
+		select {
+		case keepResp = <- keepRespChan:
+			if keepRespChan == nil {
+				fmt.Println("租约已经失效了")
+				goto END
+			} else {	// 每秒会续租一次, 所以就会受到一次应答
+				fmt.Println("收到自动续租应答:", keepResp.ID)
+			}
+		}
+	}
+END:
+}()
+
+// 1.3 在租约时间内去抢锁（etcd里面的锁就是一个key）
+kv = clientv3.NewKV(client)
+
+// 创建事物
+txn = kv.Txn(context.TODO())
+
+//if 不存在key， then 设置它, else 抢锁失败
+txn.If(clientv3.Compare(clientv3.CreateRevision("lock"), "=", 0)).
+	Then(clientv3.OpPut("lock", "g", clientv3.WithLease(leaseId))).
+	Else(clientv3.OpGet("lock"))
+
+// 提交事务
+if txnResp, err = txn.Commit(); err != nil {
+	panic(err)
+}
+
+if !txnResp.Succeeded {
+	fmt.Println("锁被占用:", string(txnResp.Responses[0].GetResponseRange().Kvs[0].Value))
+	return
+}
+
+// 2. 抢到锁后执行业务逻辑，没有抢到退出
+fmt.Println("处理任务")
+time.Sleep(5 * time.Second)
+
+// 3. 释放锁，步骤在上面的defer，当defer租约关掉的时候，对应的key被回收了
+
+```
+
+可运行代码请查看[3.7.go](./3.7.go)
 
