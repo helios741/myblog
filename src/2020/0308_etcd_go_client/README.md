@@ -406,3 +406,30 @@ for watchResp = range watchRespChan {
 ```
 
 可运行代码请查看[3.5.go](./3.5.go)
+
+### 3.6 通过op方法代替kv.Get/kv.Put/kv.Delete
+
+```go
+putOp = clientv3.OpPut("/school/class/students", "helios")
+
+if opResp, err = kv.Do(context.TODO(), putOp); err != nil {
+	panic(err)
+}
+fmt.Println("写入Revision:", opResp.Put().Header.Revision)
+
+getOp = clientv3.OpGet("/school/class/students")
+
+if opResp, err = kv.Do(context.TODO(), getOp); err != nil {
+	panic(err)
+}
+fmt.Println("数据Revision:", opResp.Get().Kvs[0].ModRevision)
+fmt.Println("数据value:", string(opResp.Get().Kvs[0].Value))
+```
+输出为：
+```shell
+写入Revision: 46
+数据Revision: 46
+数据value: helios
+```
+可运行代码请查看[3.6.go](./3.6.go)
+
