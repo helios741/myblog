@@ -1,4 +1,7 @@
-
+---
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0308_etcd_go_client)
+---
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/77)提出。我会很感谢您的建议也会解答您的问题。
 
 # ETCD golang ClientV3的基本使用
 
@@ -511,3 +514,6 @@ time.Sleep(5 * time.Second)
 
 可运行代码请查看[3.7.go](./3.7.go)
 
+
+
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/77)提出。我会很感谢您的建议也会解答您的问题。
