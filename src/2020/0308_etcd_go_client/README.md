@@ -29,34 +29,43 @@ nohup ./etcd --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls ht
 ```
 不要使用默认的监听地址，因为默认的监听的是localhost，通过外部无法访问。
 
+安装完可以通过`./etcdctl version`查看ETCD的版本。
+
 ## 一、etcdctl的基本使用
 
+### 1.1 关于数据的CRUD + Watch
+新增一条数据
 ```shell
-# 查看etcd的版本
-./etcdctl version
-
-# 新增一条数据
 ./etcdctl put "/school/class/name" "helios"
-
-# 获取一条数据
+```
+获取一条数据
+```shell
 [root@dajiahao03 etcd]# ./etcdctl get "/school/class/name"
 /school/class/name
 helios
-
-# 得到一组数据
+```
+得到一组数据
+```shell
 [root@dajiahao03 etcd]# ./etcdctl get "/school/class/" --prefix
 /school/class/name
 helios1
 /school/class/name1
 helios
-
-# 得到所有的key
+```
+得到所有的key
+```shell
 [root@dajiahao03 etcd]# ./etcdctl --prefix --keys-only=true get /
 /school/class/name
 
 /school/class/name1
-
-# watch的功能，这个功能要开两个终端哟
+```
+删除一条数据
+```shell
+[root@dajiahao03 etcd]# ./etcdctl del "/school/class/name2"
+1
+```
+watch的功能，这个功能要开两个终端哟
+```shell
 # 第一个终端：
 ./etcdctl watch "/school/class" --prefix
 # 第二个终端
@@ -67,13 +76,11 @@ OK
 PUT
 /school/class/name2
 helios2
+```
+### 1.2 关于集群的操作
 
-# 删除一条数据
-[root@dajiahao03 etcd]# ./etcdctl del "/school/class/name2"
-1
-
-
-# 查看集群状态（如果单机的可以不用指定ENDPOINTS，如果是集群的话，通过逗号的形式加到ENDPOINTS后面）
+查看集群状态（如果单机的可以不用指定ENDPOINTS，如果是集群的话，通过逗号的形式加到ENDPOINTS后面）
+```shell
 [root@dajiahao03 etcd]# export ENDPOINTS="172.27.143.50:2379"
 [root@dajiahao03 etcd]# ./etcdctl --write-out=table --endpoints=$ENDPOINTS endpoint status
 +--------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
@@ -81,31 +88,41 @@ helios2
 +--------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
 | 172.27.143.50:2379 | 8e9e05c52164694d |   3.4.4 |   20 kB |      true |      false |         3 |         13 |                 13 |        |
 +--------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
-
-# 查看集群成员
+```
+ 查看集群成员
+```shell
 [root@dajiahao03 etcd]# ./etcdctl --write-out=table --endpoints=$ENDPOINTS member list
 +------------------+---------+---------+-----------------------+---------------------+------------+
 |        ID        | STATUS  |  NAME   |      PEER ADDRS       |    CLIENT ADDRS     | IS LEARNER |
 +------------------+---------+---------+-----------------------+---------------------+------------+
 | 8e9e05c52164694d | started | default | http://localhost:2380 | http://0.0.0.0:2379 |      false |
 +------------------+---------+---------+-----------------------+---------------------+------------+
-
-# 删除集群成员
+```
+删除集群成员
+```shell
 MEMBER_ID=8e9e05c52164694d
 etcdctl --endpoints=$ENDPOINTS member remove ${MEMBER_ID}
+```
 
-# 添加成员
+添加成员
+```shell
 NEW_ETCD_NAME="new_etcd"
 NEW_ETCD_HOST="172.27.140.172"
 ./etcdctl --endpoints=$ENDPOINTS member add ${NEW_ETCD_NAME} --peer-urls=http://${NEW_ETCD_HOST}:2380
+```
 
+### 1.3 关于集群的备份和恢复
 
-# 磁盘碎片整理
+磁盘碎片整理
+```shell
 [root@dajiahao03 etcd]# ./etcdctl --endpoints=$ENDPOINTS defrag
 Finished defragmenting etcd member[172.27.143.50:2379]
+```
+备份当前的ETD集群
+```shell
 
 
-# 备份当前的ETD集群
+```shell
 [root@dajiahao03 etcd]# ./etcdctl snapshot save snapshot.db
 {"level":"info","ts":1583651900.406544,"caller":"snapshot/v3_snapshot.go:110","msg":"created temporary db file","path":"snapshot.db.part"}
 {"level":"info","ts":1583651900.4077375,"caller":"snapshot/v3_snapshot.go:121","msg":"fetching snapshot","endpoint":"127.0.0.1:2379"}
@@ -114,21 +131,25 @@ Finished defragmenting etcd member[172.27.143.50:2379]
 Snapshot saved at snapshot.db
 [root@dajiahao03 etcd]# ll snapshot.db
 -rw------- 1 root root 20512 3月   8 15:18 snapshot.db
-
-# 查看snapshot状态
+```
+查看snapshot状态
+```shell
 [root@dajiahao03 etcd]# ./etcdctl snapshot status snapshot.db
 21c0c96e, 8, 11, 20 kB
+```
 
-# 从备份中恢复集群
+从备份中恢复集群
+```shell
 [root@dajiahao03 etcd]# ./etcdctl snapshot save snapshot.db
 {"level":"info","ts":1583652044.0606484,"caller":"snapshot/v3_snapshot.go:110","msg":"created temporary db file","path":"snapshot.db.part"}
 {"level":"info","ts":1583652044.0613058,"caller":"snapshot/v3_snapshot.go:121","msg":"fetching snapshot","endpoint":"127.0.0.1:2379"}
 {"level":"info","ts":1583652044.0659368,"caller":"snapshot/v3_snapshot.go:134","msg":"fetched snapshot","endpoint":"127.0.0.1:2379","took":0.005182366}
 {"level":"info","ts":1583652044.0660565,"caller":"snapshot/v3_snapshot.go:143","msg":"saved","path":"snapshot.db"}
 Snapshot saved at snapshot.db
+```
 
-
-# 切换leader
+切换leader
+```shell
 # 先看状态
 etcdctl endpoint --cluster=true status  -w table
 # move-leader
@@ -159,22 +180,229 @@ vim ~/.zshrc
 export PATH=$PATH:/usr/local/bin/go/bin
 ```
 
-## 三、etcdctl的基本使用
+## 三、etcd ClientV3的使用
+
+### 3.1 连接ETCD
+
+```go
+
+var (
+	config clientv3.Config
+	client *clientv3.Client
+	err error
+)
+// 客户端配置
+config = clientv3.Config{
+	Endpoints: []string{"172.27.43.50:2379"},
+	DialTimeout: 5 * time.Second,
+}
+// 建立连接
+if client, err = clientv3.New(config); err != nil {
+	fmt.Println(err)
+	return
+}
+```
+
+可运行代码请查看[etcd-client.go](./etcd-client.go)
 
 
-## 四、etcd ClientV3的使用
+### 3.2 写入数据到ETCD
 
-### 4.1 连接ETCD
+```go
+    // 实例化一个用于操作ETCD的KV
+	kv = clientv3.NewKV(client)
+	if putResp, err = kv.Put(context.TODO(), "/school/class/students", "helios0", clientv3.WithPrevKV()); err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(putResp.Header.Revision)
+	if putResp.PrevKv != nil {
+		fmt.Printf("prev Value: %s \n CreateRevision : %d \n ModRevision: %d \n Version: %d \n",
+			string(putResp.PrevKv.Value), putResp.PrevKv.CreateRevision, putResp.PrevKv.ModRevision, putResp.PrevKv.Version)
+	}
+```
+输出为：
+```shell
+20
+prev Value: helios0
+ CreateRevision : 9
+ ModRevision: 19
+ Version: 11
+```
+可运行代码请查看[etcd-put.go](./etcd-put.go)。
+
+这里注意kv.Put的最后一个参数表示，返回上一次的数据，是个可选参数。在etcd的client中有很多这样的可选参数，更多的参数可以参考这个文档[clientv3 option](https://godoc.org/go.etcd.io/etcd/clientv3#OpOption)
+
+### 3.3 获取ETCD里面的数据
+
+```go
+// 实例化一个用于操作ETCD的KV
+kv = clientv3.NewKV(client)
+if getResp, err = kv.Get(context.TODO(), "/school/class/students"); err != nil {
+	fmt.Println(err)
+	return
+}
+// 输出本次的Revision
+fmt.Printf("Key is s %s \n Value is %s \n", getResp.Kvs[0].Key, getResp.Kvs[0].Value)
+```
+输出为：
+```shell
+Key is s /school/class/students
+Value is helios0
+```
+
+如果给kv.Get方法加上`clientv3.WithPrefix()`就能查找出以某个为前缀的所有KV。
+
+可运行代码请查看[etcd-get.go](./etcd-get.go)
+### 3.4 删除ETCD里面的数据
+
+```shell
+kv = clientv3.NewKV(client)
+_, err = kv.Put(context.TODO(), "/school/class/students", "helios1")
+
+if delResp, err = kv.Delete(context.TODO(), "/school/class/students", clientv3.WithPrevKV()); err != nil {
+	fmt.Println(err)
+	return
+}
+if len(delResp.PrevKvs) != 0 {
+	for _, kvpair = range delResp.PrevKvs {
+		fmt.Printf("delete key is: %s \n Value: %s \n", string(kvpair.Key), string(kvpair.Value))
+	}
+}
+```
+
+输出为：
+```shell
+delete key is: /school/class/students
+ Value: helios1
+```
+在Delete中还可以增加下面两个option：
+- clientv3.WithFromKey(): 从这个key开始
+- clientv3.WithLimit(n): 先知删除n条
+
+可运行代码请查看[etcd-delete.go](./etcd-delete.go)
+
+### 3.4 对租约的操作
+
+#### 3.4.1 申请一个10s的租约，定时查看是否过期
+
+```go
+// 申请一个租约
+lease = clientv3.NewLease(client)
+if leaseGrantResp, err = lease.Grant(context.TODO(), 10); err != nil {
+	fmt.Println(err)
+	return
+}
+leaseId = leaseGrantResp.ID
+
+// 获得kv API子集
+kv = clientv3.NewKV(client)
+
+if _, err = kv.Put(context.TODO(), "/school/class/students", "h", clientv3.WithLease(leaseId)); err != nil {
+	fmt.Println(err)
+	return
+}
+
+for {
+	if getResp, err = kv.Get(context.TODO(), "/school/class/students"); err != nil {
+		fmt.Println(err)
+		return
+	}
+	if getResp.Count == 0 {
+		fmt.Println("kv过期了")
+		break
+	}
+	fmt.Println("还没过期:", getResp.Kvs)
+	time.Sleep(2 * time.Second)
+}
+```
+输出：
+```shell
+还没过期: [key:"/school/class/students" create_revision:24 mod_revision:24 version:1 value:"h" lease:7587844869553529889 ]
+还没过期: [key:"/school/class/students" create_revision:24 mod_revision:24 version:1 value:"h" lease:7587844869553529889 ]
+还没过期: [key:"/school/class/students" create_revision:24 mod_revision:24 version:1 value:"h" lease:7587844869553529889 ]
+还没过期: [key:"/school/class/students" create_revision:24 mod_revision:24 version:1 value:"h" lease:7587844869553529889 ]
+还没过期: [key:"/school/class/students" create_revision:24 mod_revision:24 version:1 value:"h" lease:7587844869553529889 ]
+还没过期: [key:"/school/class/students" create_revision:24 mod_revision:24 version:1 value:"h" lease:7587844869553529889 ]
+kv过期了
+```
+可运行代码请查看[3.4.1.go](./3.4.1.go)
+
+#### 3.4.2 自动续租
+
+```go
+if keepRespChan, err = lease.KeepAlive(context.TODO(), leaseId); err != nil {
+	fmt.Println(err)
+	return
+}
+go func() {
+	for {
+		select {
+		case keepResp = <- keepRespChan:
+			if keepRespChan == nil {
+				fmt.Println("租约已经失效了")
+				goto END
+			} else {	// 每秒会续租一次, 所以就会受到一次应答
+				fmt.Println("收到自动续租应答:", keepResp.ID)
+			}
+		}
+	}
+END:
+}()
+```
+
+可运行代码请查看[3.4.2.go](./3.4.2.go)
 
 
-### 4.2 获取和写入数据到ETCD
+### 3.5 watch功能
 
+对某一个key进行监听5s:
+```go
+kv = clientv3.NewKV(client)
 
-### 4.3 删除ETCD里面的数据
+// 模拟KV的变化
+go func() {
+	for {
+		_ , err = kv.Put(context.TODO(), "/school/class/students", "helios1")
+		_, err = kv.Delete(context.TODO(), "/school/class/students")
+		time.Sleep(1 * time.Second)
+	}
+}()
 
+// 先GET到当前的值，并监听后续变化
+if getResp, err = kv.Get(context.TODO(), "/school/class/students"); err != nil {
+	fmt.Println(err)
+	return
+}
 
-### 4.4 对租约的操作
+// 现在key是存在的
+if len(getResp.Kvs) != 0 {
+	fmt.Println("当前值:", string(getResp.Kvs[0].Value))
+}
 
+// 获得当前revision
+watchStartRevision = getResp.Header.Revision + 1
+// 创建一个watcher
+watcher = clientv3.NewWatcher(client)
+fmt.Println("从该版本向后监听:", watchStartRevision)
 
-### 4.5 watch功能
+ctx, cancelFunc := context.WithCancel(context.TODO())
+time.AfterFunc(5 * time.Second, func() {
+	cancelFunc()
+})
 
+watchRespChan = watcher.Watch(ctx, "/school/class/students", clientv3.WithRev(watchStartRevision))
+// 处理kv变化事件
+for watchResp = range watchRespChan {
+	for _, event = range watchResp.Events {
+		switch event.Type {
+		case mvccpb.PUT:
+			fmt.Println("修改为:", string(event.Kv.Value), "Revision:", event.Kv.CreateRevision, event.Kv.ModRevision)
+		case mvccpb.DELETE:
+			fmt.Println("删除了", "Revision:", event.Kv.ModRevision)
+		}
+	}
+}
+```
+
+可运行代码请查看[3.5.go](./3.5.go)
