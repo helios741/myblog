@@ -139,7 +139,7 @@ if __name__ == "__main__":
 ```
 我们可以看到属性的查找顺序为A -> B -> C-> D 
 
-MRO(Method Resolution Order)是在类的层次上查找属性的顺序，在python3中对应的算法是C3算法。
+MRO(Method Resolution Order)是返回在类的层次上查找属性的顺序，在python3中是使用C3算法实现的。
 
 ### 2.2 静态方法、类方法和对象方法
 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
 ```
 - 实例方法：next_day，只有把对应的类实例化之后才能使用，能使用对应的self上的属性
 - 类方法：parse_str_to_date，既能通过实例化类的对象调用也能直接通过类调用，第一参数(cls)代表这个类，能解决硬编码的问题(通过cls代替Date)
-- 静态方法：valid_day，主要用在把类当作一个命令空间，不依赖类，其实拿出去搞个函数也行，这样做主要是为了聚合，Date类能做能多和日期相关的东西
+- 静态方法：valid_day，主要用在把类当作一个命令空间，不依赖类，其实拿出去搞个函数也行，这样做主要是为了聚合，Date类能做更多和日期相关的东西
 
 
 ### 2.3 计算属性
@@ -211,13 +211,128 @@ if __name__ == "__main__":
 
 ### 3.1 什么是属性描述符
 
+python描述符是为了更好的代替2.3节的计算属性，试想一下如果我们有很多属性要定义为计算属性，那代码写起来岂不是灾难。
+
+python的属性描述符是一种协议，包含下面几种方法：
+- __get__
+- __set__
+- __delete__
+
+如果一个对象同时定义了__get__和__set__，那么该对象被称为data descriptor；如果只实现了__get__那么被称为 non-data descriptors。
+如果一个对象（通常是类）定了上述的任何一个方法，便实现了描述符协议。看下面的例子
+```python
+class IntField:
+    def __init__(self):
+        self.value = None
+
+    def __get__(self, instance, owner):
+        return self.value
+    def __set__(self, instance, value):
+        if not isinstance(value, numbers.Integral):
+            raise ValueError("must int")
+        if value < 0:
+            raise ValueError(" must >= 0")
+        self.value = value
+
+class User:
+    age = IntField()
+
+if __name__ == "__main__":
+    u = User()
+    # u.age = "12" ValueError: must int
+    u.age = 23
+    print(u.age)
+```
+输出为：
+```shell
+23
+```
+上述代码中IntField就是一个属性描述符对象，
+- 当我们读age这个变量的时候就是调用IntField中的__get__魔法函数
+- 当我们对age这个变量进行赋值的时候会调用IntField中的__set__魔法函数
+
+我们还可以定义string的描述符类，Float的描述符类，这样就更加原子性的出来，在对应的描述符中还能增加校验等操作。
+
 ### 3.2 __getattr__和__getattribute__
 
+- __getattr__当实例访问没有的属性的时候就会触发这个魔法函数
+- __getattribute__当实例访问任何属性的时候都会触发这个函数
+```python
+class User:
+    def __init__(self, name, info={}):
+        self.name = name
+        self.info = info
+
+    def __getattr__(self, item):
+        return self.info[item]
+
+    # def __getattribute__(self, item):
+    #     return "dsd"
+if __name__ == "__main__":
+    info = {
+        "name": "helios",
+        "age": 12
+    }
+    u = User("dajiahoa", info)
+    print(u.name, u.age)
+
+```
+输出为：
+```shell
+dajiahoa 12
+```
+
+*__getattribute__*这个还是尽量少用， 比较危险。
 ### 3.3 属性的查找过程
 
-## 四、 类继承实践：mixin
+我们来根据这个例子说：
+```python
+import numbers
+
+class IntField:
+    def __init__(self):
+        self.value = None
+
+    def __get__(self, instance, owner):
+        return self.value
+    def __set__(self, instance, value):
+        if not isinstance(value, numbers.Integral):
+            raise ValueError("must int")
+        if value < 0:
+            raise ValueError(" must >= 0")
+        self.value = value
+
+class NonDataIntField:
+    def __get__(self, instance, owner):
+        return None
+
+class User:
+    age = IntField()
+    name = NonDataIntField()
+
+if __name__ == "__main__":
+    u = User()
+    u.age = 23
+    print(u.age)
+```
+u是User的实例，那么在调用u.age的时候：
+1. 调用__getattribute__
+    + 抛AttributeError错误，继续调用__getattr__
+    + 不抛错，直接返回
+2. age出现在User或者基类的的__dict__中，且age是属性描述符，那么调用其__get__方法
+3. age存在于u.__dict__上，直接返回u.__dict__["age"]
+4. 如果age出现在User或其基类的__dict__中
+    + age是 non-data descriptors，调用__get__
+    + 返回 __dict__[‘age’]
+5. 如果User有__getattr__方法，调用__getattr__方法
+6. 抛出AttributeError
+
+
+## 四、 类继承实践：抽象基类和mixin
 
 ### 4.1 抽象基类
+
+抽象类就是能
 
 ### 4.2 mixin
 
@@ -232,3 +347,4 @@ if __name__ == "__main__":
 
 ## 参考
 - [python __new__文档](https://docs.python.org/3/reference/datamodel.html?highlight=__new__#object.__new__)
+- [Python 系列学习十六：descriptor 官文解读](https://www.shangyang.me/2017/07/17/python-syntax-9-descriptor-01-official/)
