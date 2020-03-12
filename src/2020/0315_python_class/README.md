@@ -1,3 +1,9 @@
+-----
+[文章首发](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0315_python_class)
+-----
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/78)提出。我会很感谢您的建议也会解答您的问题。
+
+# 深入理解python中类和对象
 
 ## 零、你要知道的：静态语言和动态语言在类上的差别
 
@@ -332,17 +338,67 @@ u是User的实例，那么在调用u.age的时候：
 
 ### 4.1 抽象基类
 
-抽象类就是能
+python中可以通过abc模块定义抽象类。
+```python
+import abc
+class ABSBase(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def get(cls):
+        pass
+
+    @abc.abstractmethod
+    def set(self):
+        pass
+
+class ABSChild(ABSBase):
+
+    def get(self):
+        pass
+    def set(self):
+        pass
+
+if __name__ == "__main__":
+    a = ABSChild()
+```
 
 ### 4.2 mixin
 
+mixin是将多个类中的功能单元进行组合的方式进行利用。
 
-小且多的组合。
+```python
+class LogMxin():
+
+    def log(self):
+        print("log mixin load")
+
+class ShowMixin():
+    def show(self):
+        print("show mixin show")
+
+class User(LogMxin, ShowMixin):
+
+    def msg(self):
+        self.show()
+        self.log()
+
+if __name__ == "__main__":
+    u = User()
+    u.msg()
+```
+
+mixin并不是新的技术而是一种设计方法，能够更好的利用python的多继承。这种设计原则就是*mixin的设计最好原子化，小且精*。
+
 
 
 ## 总结
 
+本文主要定位是在初级之上高级之下。
+第一部分（零、一、二节）解释了python中的类和静态语言（如java）中类的差别以及细致讲解了类和对象。
+第二部分(三节)属于进阶篇章讲解了关于属性描述符的，python属性描述符在属性查找过程中的影响
+最后一部分（第四节）讲解了类的基础实践，关于抽象类和mixin的使用
 
+
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[这里](https://github.com/helios741/myblog/issues/78)提出。我会很感谢您的建议也会解答您的问题。
 
 
 ## 参考
