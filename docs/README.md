@@ -27,3 +27,4 @@
 - [翻译：In-depth introduction to Kubernetes admission webhooks](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0107_translate_k8s_admission_webhook)
 - [深入浅出kubernetes中的CNI](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0303_k8s_cni)
 - [ETCD golang ClientV3的基本使用](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0308_etcd_go_client)
+- [深入理解python中类和对象](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0315_python_class)
