@@ -23,7 +23,7 @@
 如果你编译k8s 1.16的代码，就要用1.12.9的go环境，编译k8s 1.8的环境的就要用1.8.3的go环境。
 
 ### 安装go环境
-在这个https://golang.google.cn/dl/地址中查找你要安装的golang环境。
+在这个[地址](https://golang.google.cn/dl/)中查找你要安装的golang环境。
 因为我要调试的是k8s 1.16，下面我以为1.12.9为例（一定要根据调试的k8s版本的选择go版本哟），搞一下：
 
 ```shell
@@ -50,7 +50,7 @@ echo $GOPATH
 
 
 *注*：
-如果你要调试多个版本的k8s，只需要把其他版本的go二进制包，放在其他目录下，然后修改*/etc/profile*的*GOROOT*，即可。
+如果你要调试多个版本的k8s，只需要把其他版本的go二进制包，放在其他目录下，然后修改`/etc/profile`的*GOROOT*，即可。
 
 ### clone k8s代码
 
