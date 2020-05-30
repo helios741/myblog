@@ -20,3 +20,7 @@
 
 当我们要做完饭的时候，就相当于退出这个会话（发送SIGHUP信号）
 抽油烟机在开启的时候忽略了这个信号，就不会关闭
+
+
+参考：
+- [那些永不消逝的进程](https://www.ibm.com/developerworks/cn/linux/1702_zhangym_demo/index.html)
