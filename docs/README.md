@@ -1,6 +1,8 @@
 
 ## 2020
 
+- [随笔：进程、进程组和会话](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0530_precess_pg_session)
+
 - [随笔：docker0网桥的作用](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0523_docker0)
 
 - [解析k8s中工作节点组件和集群通信原理](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0104_k8s_component_communication)
