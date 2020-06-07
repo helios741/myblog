@@ -34,10 +34,19 @@
     + vmstat： 能查看系统CPU切换
     + pidstat：查看单个进程的CPU切换（包含资源和非资源）
 
-#### 
+#### 中断处理
+
+软中断执行的时间太长
+
+#### D进程和僵尸进程过多
+
+D进程占用CPU不下来，僵尸进程会耗费资源和pid。
 
 
 ### 如何找到性能问题
 
+老师的总结不能在总结了，[定位CPU问题](https://github.com/helios741/myblog/tree/new/learn_go/talkgo_linux_pref/1_11_quick_cpu_perf)
 
 ### 如何优化性能CPU性能
+
+要从业务和系统两方面优化，具体参考：[CPU优化方法](https://github.com/helios741/myblog/tree/new/learn_go/talkgo_linux_pref/1_12_cpu_analy_method)
