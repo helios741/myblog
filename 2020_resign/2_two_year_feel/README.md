@@ -56,7 +56,7 @@
 在这七个多月，就是薅公司羊毛，真的太闲了，而且我对公司的业务也不感兴趣，而且和大家都不是一个方向。记得有一次公司想听基层同时的声音，就搞了和领导一对一面谈的机会，我还约了一个时间，问为什么不把前端作为一个资源部门去调度，却按照项目方向去调度，这样很可能空转或者过载的。领导也是接受我的建议，说有计划把前端和QA一样作为一个资源部门，有需求去要人。后来也无疾而终了。
 
 
-多次问以前带我的那个人，他也是没啥规划。我感觉对外向公司求助成长是没戏了，我开始向内从自己出发。我在想虽然没有项目可以做，但是我可以学习新东西，深入react源码，了解一些设计。我开始借鉴开源的设计重构我负责的那部分代码，因为我当初觉得那代码简直太烂了，我把自己的重构心得写了一篇文章[Typescript配合React实践](https://github.com/helios741/myblog/blob/1.1/src/2018/1015/Typescript%E9%85%8D%E5%90%88React%E5%AE%9E%E8%B7%B5.md)发表了出来，还出现在了第二天的知乎热榜还被同事发现了。这篇文章也给自己的github也增添许多star，在知乎收获了147个赞和32个评论以及有公众号作者问我能不能进行转载。也翻译了一篇比较好的文章[翻译： typescript 2.7中interface和type(Interface vs Type alias in TypeScript 2.7)](https://github.com/helios741/myblog/blob/1.1/src/2018/1215/%E7%BF%BB%E8%AF%91%EF%BC%9A%20typescript%202.7%E4%B8%ADinterface%E5%92%8Ctype(Interface%20vs%20Type%20alias%20in%20TypeScript%202.7).md)，当然还有其他一些文章。除了写文章之外还开始看开源社区的源码，但是觉得react代码太多了，我先从react-router开始看吧，原来react-router就是history的一层壳，我还通过看代码发现了他的一个比较重要的问题，因为他会以来浏览器的一个特性导致的bug，我也向社区提交了issue（(may be a bug: about revertPop/go method in createHashHistory)[https://github.com/ReactTraining/history/issues/655]）后来作者说，这个功能从来没好工作过（[][Remove history.block](https://github.com/ReactTraining/history/issues/690)），准备在重构把这个功能干掉，这个也迫使react自身没发生break change升级了一次大版本。在这期间发现代码有不合理的地方，在2019年一月给社区贡献了代码，这也是我第一次给开源社区贡献代码[Fix/all paths key redundant](https://github.com/ReactTraining/history/pull/693)，在同年的八月份被merge进去了。但是适用公司账号搞的，没有变为contributer，好桑心，但是后续也学乖了，提交之前先改用户。
+多次问以前带我的那个人，他也是没啥规划。我感觉对外向公司求助成长是没戏了，我开始向内从自己出发。我在想虽然没有项目可以做，但是我可以学习新东西，深入react源码，了解一些设计。我开始借鉴开源的设计重构我负责的那部分代码，因为我当初觉得那代码简直太烂了，我把自己的重构心得写了一篇文章[Typescript配合React实践](https://github.com/helios741/myblog/blob/1.1/src/2018/1015/Typescript%E9%85%8D%E5%90%88React%E5%AE%9E%E8%B7%B5.md)发表了出来，还出现在了第二天的知乎热榜还被同事发现了。这篇文章也给自己的github也增添许多star，在知乎收获了147个赞和32个评论以及有公众号作者问我能不能进行转载。也翻译了一篇比较好的文章[翻译： typescript 2.7中interface和type(Interface vs Type alias in TypeScript 2.7)](https://github.com/helios741/myblog/blob/1.1/src/2018/1215/%E7%BF%BB%E8%AF%91%EF%BC%9A%20typescript%202.7%E4%B8%ADinterface%E5%92%8Ctype(Interface%20vs%20Type%20alias%20in%20TypeScript%202.7).md)，当然还有其他一些文章。除了写文章之外还开始看开源社区的源码，但是觉得react代码太多了，我先从react-router开始看吧，原来react-router就是history的一层壳，我还通过看代码发现了他的一个比较重要的问题，因为他会以来浏览器的一个特性导致的bug，我也向社区提交了issue（[may be a bug: about revertPop/go method in createHashHistory](https://github.com/ReactTraining/history/issues/655)）后来作者说，这个功能从来没好工作过（[Remove history.block](https://github.com/ReactTraining/history/issues/690)），准备在重构把这个功能干掉，这个也迫使react自身没发生break change升级了一次大版本。在这期间发现代码有不合理的地方，在2019年一月给社区贡献了代码，这也是我第一次给开源社区贡献代码[Fix/all paths key redundant](https://github.com/ReactTraining/history/pull/693)，在同年的八月份被merge进去了。但是适用公司账号搞的，没有变为contributer，好桑心，但是后续也学乖了，提交之前先改用户。
 
 
 除了写文章和参与开源社区，还看一些技术书籍，比如《JavaScript高级程序设计》，《你不知道的javascript（上）》，你不知道的javascript（中）》等，在准备看《CSS世界》的时候，就经历了下一次组织架构调整。这段时间的作息是：
@@ -136,7 +136,7 @@
 ### 第六阶段：风雨同舟（2020/05/22 ～ 2020/08/22）
 
 
-觉得leader就是给我画的大饼有点多，也吃饱了。然后和一个新来的高手同时交流了一下，发现他做的事情是我比较心仪的事情，和他交流了几个，也就是他忽悠了我几次我觉得不错。后来就是因为我要离职了，就这么散了。
+觉得leader就是给我画的大饼有点多，也吃饱了。然后和一个新来的高手同时交流了一下，发现他做的事情是我比较心仪的事情，和他交流了几个，也就是他忽悠了我几次我觉得s不错。后来就是因为我要离职了，就这么散了。
 
 但是还是学到了让我继续前进的东西：
 - 别人帮不到我们的时候，自己就能帮助自己。社区是个好地方
