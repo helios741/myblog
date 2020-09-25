@@ -1,6 +1,8 @@
 
 ## 2020
 
+- [浅谈kubernetes存储](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0720_k8s_storage)
+
 - [随笔： 堆和堆排序](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0530_head_sort)
 
 - [随笔：进程、进程组和会话](https://github.com/helios741/myblog/tree/new/learn_go/src/2020/0530_precess_pg_session)
