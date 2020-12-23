@@ -180,6 +180,7 @@ veth pair的一端在network namespace中，另一端接在了linux bridge上，
 
 ### 容器访问外部网络
 
+![](./img/5.png)
 以图中的container2要访问百度为例：
 
 1、 container2 ping 220.181.38.148
