@@ -1,4 +1,10 @@
-# linux bridge事件
+【[文章首发](https://github.com/helios741/myblog/blob/new/learn_go/src/2020/1223_bridge/README.md)】
+-----
+如果您觉得有什么不理解，或者觉得文章有欠缺的地方，请您点击[文章讨论答疑：linux bridge实践](https://github.com/helios741/myblog/issues/79)提出。我会很感谢您的建议也会解答您的问题。
+
+
+----
+# linux bridge实践
 
 ## linux bridge是什么
 
