@@ -128,7 +128,7 @@ func HandleUpdatePWD(pwd string) {
 
 
 
-- calculatePay()函数是由财务部门制定的，他们负责向CFO汇
+- calculatePay()函数是由财务部门制定的，他们负责向CFO汇报
 - reportHours()函数是由人力资源部门制定并使用的，他们负责向COO汇报
 - save()函数是由DBA制定的，他们负责向CTO汇报
 
@@ -138,7 +138,7 @@ calculatePay和reportHours共用regularHours计算正常工作时长，如下：
 
 然后CFO团队修改了政策，同时也修改了regularHours方法，然后上线之后发现自己的功能没问题，美滋滋的就回家了。但是当COO统计报表的时候就炸锅了。
 
-怎么修改也是很拆，让他们只对分别的组织线负责。
+修改方式也是拆分为不同的抽象，让他们只对分别的组织线负责。
 
 
 
