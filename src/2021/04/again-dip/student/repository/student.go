@@ -8,8 +8,9 @@ import (
 	"dip/service"
 )
 
-type student struct {
+var _ service.StudentRepo = (*student)(nil)
 
+type student struct {
 }
 
 func (s *student) GetByID(id int) (*service.Student, error) {

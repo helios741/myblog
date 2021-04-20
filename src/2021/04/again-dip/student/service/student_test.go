@@ -7,7 +7,6 @@ import (
 )
 
 type testStu struct {
-
 }
 
 func (ts *testStu)GetByID(_ int) (*service.Student,error)  {
@@ -20,6 +19,8 @@ func TestStudentUseCase_Get(t *testing.T) {
 	stu := service.NewStudentUseCase(a)
 	s,_ := stu.Get(43)
 	if s.Id == 32 {
-
+		t.Logf("[TestStudentUseCase_Get] success")
+		return
 	}
+	t.Error("[TestStudentUseCase_Get] error")
 }
