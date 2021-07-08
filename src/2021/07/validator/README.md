@@ -1,8 +1,18 @@
 # Go如何实现对任意struct的校验
 
+如果你看到标题想到了[go-playground/validator](https://github.com/go-playground/validator)了，那么就猜对了，本文就是讲述了如何从需求出发实现一个validate库。本文分为下面几个部分：
 
+1、 需求：我们要知道实现什么
 
+2、 reflect小常识：reflect必知必会内容
 
+3、 reflect小应用：通过reflect实现简易版validate
+
+4、 实现validator：有了预备知识之后，就要开干了，带你一步步实现go-playground/validator精简版
+
+5、 go-playground/validator如何实现的： 一张图展示 go-playground/validator的验证过程。
+
+全文代码在[code](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/07/validator/he/validator)，即和文章同目录的he/validator目录。
 
 ## 需求
 
@@ -68,13 +78,29 @@ for i := 0; i< vv.NumField(); i++ {
 }
 ```
 
-如果要拿到tag呢？？？
+如果要拿到tag呢？
+
+```go
+vt := reflect.TypeOf(user)
+for i := 0; i< vt.NumField(); i++ {
+  fieldTyp   := vt.Field(i)
+  fmt.Println(fieldTyp.Tag)   //validate:"required"      
+  fmt.Println(fieldTyp.Tag.Get("validate")) // required
+}
+```
+
+我们能不能拿到这个Filed对应的值呢？
+
+```go
+vv := reflect.ValueOf(user)
+for i := 0; i< vv.NumField(); i++ {
+  fmt.Println(vv.Field(i).Interface()) // Helios
+}
+```
+
+我们想要什么类型的值，通过断言就可以了。
 
 如果你想对reflect有进一步的了解话，可以看[laws-of-reflection](https://blog.golang.org/laws-of-reflection).
-
-
-
-
 
 
 
@@ -148,7 +174,7 @@ func simpleValidate(v interface{}) error {
 
 
 
-## 简易版validator
+## 实现validator
 
 但是上述的验证功能还是很弱的，先说几点局限性：
 
@@ -237,7 +263,6 @@ parseTag函数比较简单，Field上的所有tag生成tag数组：
 
 func (v *validate) parseTag(tagStr string ) (tags []*tag){
 	tagItems := strings.Split(tagStr, v.splitStr)
-
 	for _, item := range tagItems {
 		t := &tag{
 			tagName:  item,
@@ -306,7 +331,7 @@ func (v *validate) validateFiled(fd *field)  {
 
 至此，解析和验证的阶段就结束了，你可能会有两个疑问🤔️：
 
-1、 receiver的validate的接受是什么做什么用的
+1、 receiver的validate的作用是什么
 
 2、 每个tag的回调是怎么注册进去的
 
@@ -345,11 +370,147 @@ func New() Validator{
 
 ```
 
-我们最后来简单看一个函数的注册：。。。。
+我们来看一个内置tag的方法：
 
-。。。
+```go
+var buildInValidators = map[string]Func{
+	"required":                      hasValue,
+}
+func hasValue(fl FieldParam) bool {
+	field := fl.Field()
+	switch field.Kind() {
+	case reflect.Slice ...:
+		return !field.IsNil()
+	default:
+		if field.Interface() != nil ... {
+			return true
+		}
+		return field.IsValid() ...
+	}
+}
+```
 
+返回true就代表验证通过，false就代表验证失败。那么注册一个tag和回调也是十分容易的：
 
+```go
+v.RegisterValidation("iscolor", isColor)
+if err := v.Struct(user); err != nil {
+ ...
+}
+func isColor(fp FieldParam) bool {
+	return fp.Field().String() == "helios"
+}
+```
+
+不用我说你也能猜到RegisterValidation实现了，特别简单：
+
+```go
+// 给某个tag添加自定义方法
+func (v *validate) RegisterValidation(tagName string, fn Func) {
+	v.builtInValidations[tagName] = fn
+}
+```
+
+###  如何进行错误处理
+
+作为一个底层库，应该给上层提供能力，如果直接返回实际错误（比如`inValidFnErr := "Feild %s Tag %s error not method please check"`）是不可取的，因为可扩展性差，所以提供给上层能力，具体错误由上层去组合就可以了，把错误定义为：
+
+单个错误：
+
+```go
+type FieldError interface {
+	Tag() string
+	StructField() string
+	Value() interface{}
+	Param() string
+	Kind() reflect.Kind
+	Type() reflect.Type
+	Error() string
+}
+```
+
+实现这个interface的类型：
+
+```go
+type fieldError struct {
+	tag            string
+	value          interface{}
+	param          string
+	val            reflect.Value
+	typ            reflect.StructField
+}
+
+func (fe fieldError) Tag() string {
+	return fe.tag
+}
+
+func (fe fieldError) Field() string {
+	return fe.typ.Name
+}
+
+func (fe fieldError) StructField() string {
+	return fe.typ.Name
+}
+
+func (fe fieldError) Value() interface{} {
+	return fe.val.Interface()
+}
+
+func (fe fieldError) Param() string {
+	return fe.param
+}
+
+func (fe fieldError) Kind() reflect.Kind {
+	return fe.val.Kind()
+}
+
+func (fe fieldError) Type() reflect.Type {
+	return fe.val.Type()
+}
+
+func (fe fieldError) Error() string {
+	return fmt.Sprintf(fieldErrMsg, fe.Field(), fe.tag)
+}
+```
+
+返回的错误：
+
+```go
+type ValidationErrors []FieldError
+
+func (ve ValidationErrors) Error() string {
+	buff := bytes.NewBufferString("")
+
+	for i := 0; i < len(ve); i++ {
+		buff.WriteString(ve[i].Error())
+		buff.WriteString("\n")
+	}
+
+	return strings.TrimSpace(buff.String())
+}
+```
+
+当我们在业务中使用的时候：
+
+```go
+if _, ok := err.(*validator.InvalidValidationError); ok {
+  fmt.Println(err)
+  return
+}
+for _, err := range err.(validator.ValidationErrors) {
+  fmt.Println(err.Field())
+  fmt.Println(err.StructNamespace())
+  fmt.Println(err.StructField())
+  fmt.Println(err.Tag())
+  fmt.Println(err.Kind())
+  fmt.Println(err.Type())
+  fmt.Println(err.Value())
+  fmt.Println(err.Param())
+  fmt.Println()
+}
+```
+
+如果一个field的多个tag都错误了，只返回第一个就行。
 
 
 
@@ -361,7 +522,7 @@ func New() Validator{
 
 ## 总结
 
-上述的几个步骤就是我实现自己的validator的辛苦过程，最开始拿到**需求**的时候很蒙圈，系统的学习了下reflect相关的东西，还发现了一个比较尴尬的问题：`reflect.StructField`这个struct只能通过`typ.Fild(i)`其他的方式得不到，比如：
+上述的几个步骤就是我实现自己的validator的心路历程，最开始拿到**需求**的时候很蒙圈，系统的学习了下reflect相关的东西，还发现了一个比较尴尬的问题：`reflect.StructField`这个struct只能通过`typ.Fild(i)`其他的方式得不到，比如：
 
 ```go
 user := User{
@@ -381,7 +542,9 @@ fmt.Println(vt.Field(5).Type) // vt.Field(5)返回的结构就是reflect.StructF
 
 后来通过reflect+switch/case实现了简单版本，当然最初也参考了曹大的[5.4 validator请求校验](https://github.com/chai2010/advanced-go-programming-book/blob/master/ch5-web/ch5-04-validator.md)，发现和想要的差距太大，可扩展性太低（其实这个时候我已经看了go-playground/validator代码了，但是太拘泥于细节了，不能体会为什么这么设计），就又回去参考go-playground/validator，发现validate、field、tag这几个结构还是设计的很好的。从它那里借鉴<del>抄</del>了很多代码。
 
-然后通过
+最后通过和redix tree时候实现router进行整合([radix tree有哪些用途](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/07/radix-tree))，当然这时候不得不借鉴<del>抄</del>了，还顺便给gin改了错别字([update the version of validator in the comment](https://github.com/gin-gonic/gin/pull/2780))，哈哈哈。
+
+整个可运行代码在[he/validator](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/07/validator/he/validator),如果有兴趣可以拉下来跑一跑。
 
 
 
