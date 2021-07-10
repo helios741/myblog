@@ -2,6 +2,7 @@ package he
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -128,24 +129,48 @@ func (n *node) appendChild(pf prefix, method string, handler HandlerFunc) {
 	c.appendChild(pf[len(c.prefix):], method, handler)
 }
 
-func (n *node) findCommonPrefixNode(pf prefix) (*node, prefix) {
-	newPf := n.prefix.longestPrefix(pf)
-	nn := n
-	for len(newPf) == len(n.prefix) && len(newPf) != len(pf) {
+// 找到和给定字符串最有最长前缀的那个节点
+func (n *node) findCommonPrefixNode(pf prefix) (*node, prefix, prefix) {
+	curNode := n
+	commonPrefix := n.prefix.longestPrefix(pf)
+	longCommonPrefix  := commonPrefix
+
+	if n.nType == ntParam  && pf.hasParamNT(){
+		for _, cnode := range curNode.child[ntParam] {
+			curNode, commonPrefix, longCommonPrefix = cnode.findCommonPrefixNode(pf[pf.paramEnd():])
+		}
+	}
+
+	for len(commonPrefix) == len(curNode.prefix) && len(commonPrefix) != len(pf) {
 		hasChild := false
-		for _, cnode := range nn.child[ntStatic] {
+		for _, cnode := range curNode.child[ntStatic] {
 			if cnode.prefix[0] == pf[0] {
-				nn = cnode
+				curNode = cnode
 				hasChild = true
 				break
+			}
+		}
+		// TODO 要是有下面这样好像处理不了？
+		// /friends/:id/classes
+		// /friends/:friendID/classes
+		// TODO 这里要加上判断:id,要不然会重复加
+		if !hasChild && pf.hasParamNT() {
+			for _, cnode := range curNode.child[ntParam] {
+				hasChild = true
+				curNode, commonPrefix, longCommonPrefix = cnode.findCommonPrefixNode(pf[pf.paramEnd():])
+			}
+			if hasChild {
+				continue
 			}
 		}
 		if !hasChild {
 			break
 		}
-		newPf = nn.prefix.longestPrefix(pf)
+		commonPrefix = curNode.prefix.longestPrefix(pf)
+		pf = pf[len(commonPrefix):]
+		longCommonPrefix += commonPrefix
 	}
-	return nn, newPf
+	return curNode, commonPrefix, longCommonPrefix
 }
 
 func (n *node) cleanChild() {
@@ -156,26 +181,35 @@ func (n *node) cleanChild() {
 
 // 进来的一定是ntStatic类型
 func (n *node) insert(pf prefix, method string, handler HandlerFunc) {
-	nn, newPf := n.findCommonPrefixNode(pf)
+	nn, newPf, longCommonPrefix := n.findCommonPrefixNode(pf)
 	if nn.prefix == newPf {
-		nn.appendChild(pf[len(newPf):], method, handler)
+		nn.appendChild(pf[len(longCommonPrefix):], method, handler)
 		return
 	}
 	oldChild := nn.child
 	nn.cleanChild()
-	nn.appendChild(pf[len(newPf):], method, handler)
+	nn.appendChild(pf[len(longCommonPrefix):], method, handler)
 	nn.child[ntStatic] = append(nn.child[ntStatic], &node{
 		nType:   ntStatic,
 		prefix:  nn.prefix[len(newPf):],
 		child:   oldChild,
-		handler: nn.handler,
+		handler: shallowCopyMap(nn.handler), // <-
 	})
+	// TODO 这里拷贝的map，会有问题。。。。
 	nn.prefix = newPf
+	fmt.Println(nn.child[ntStatic][0].handler["GET"] == nil)
 	if _, ok := nn.handler[method]; ok {
 		nn.handler[method] = nil
 	}
+	fmt.Println(nn.child[ntStatic][0].handler["GET"] == nil)
 }
-
+func shallowCopyMap(m map[string]HandlerFunc) map[string]HandlerFunc {
+	nm := make(map[string]HandlerFunc)
+	for k, v := range nm {
+		nm[k] = v
+	}
+	return nm
+}
 
 func (n *node) find(pf prefix, method string) (map[string]string, HandlerFunc, error) {
 	if n == nil {

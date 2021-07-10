@@ -25,9 +25,12 @@ func TestMappingPtr(t *testing.T) {
 }
 
 func TestSettable2(t *testing.T) {
+	type User struct {
+		Age int `form:"age"`
+	}
 	type ReqT struct {
 		Name string `form:"name"`
-		Age int `form:"age"`
+		User
 	}
 	var req ReqT
 	v := reflect.ValueOf(&req).Elem()
@@ -67,6 +70,12 @@ func TestSettable(t *testing.T) {
 	fmt.Println(*y)
 }
 
-func TestTime(t *testing.T) {
-	fmt.Println(time.Now().AddDate(0, 0, -1))
+func TestTimeReflect(t *testing.T) {
+	type ReqT struct {
+		Tim time.Time
+	}
+	r := ReqT{}
+	vv := reflect.ValueOf(r)
+	//vt := reflect.TypeOf(r)
+	t.Log(vv.NumField(), vv.Kind())
 }

@@ -34,6 +34,32 @@ func mapping1(ptr interface{}, m  map[string]string) error {
 	return nil
 }
 
+func mapping2(ptr interface{}, m  map[string]string) {
+	value := reflect.ValueOf(ptr).Elem()
+	typ   := value.Type()
+	for i := 0; i < value.NumField(); i++ {
+		fieldValue := value.Field(i)
+		fieldTyp := typ.Field(i)
+		tag := fieldTyp.Tag.Get("form")
+
+		switch fieldValue.Kind() {
+		case reflect.Int:
+			i, err := strconv.Atoi(m[tag])
+			if err != nil {
+				return
+			}
+			if fieldValue.CanSet() {
+				fieldValue.SetInt(int64(i))
+			}
+		case reflect.String:
+			if fieldValue.CanSet() {
+				fieldValue.SetString(m[tag])
+			}
+		}
+	}
+}
+
+
 func TestMapToStruct(t *testing.T) {
 	type TT struct {
 		Sex string `form:"sex"`

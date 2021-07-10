@@ -11,6 +11,7 @@ var _ Context = (*context)(nil)
 type Context interface {
 	Request() *http.Request
 	Writer() http.ResponseWriter
+	WriteString(str string) (int, error)
 	Bind(v interface{}) error
 	BindQuery(v interface{}) error
 	BindJson(v interface{}) error
@@ -28,6 +29,7 @@ func (c context) Bind(v interface{}) error {
 }
 
 func (c context) BindQuery(v interface{}) error {
+	binding.Query.ExtraParams = c.params
 	return binding.Query.Bind(c.request, v)
 }
 
@@ -44,3 +46,6 @@ func (c context) Writer() http.ResponseWriter {
 	return c.writer
 }
 
+func (c context) WriteString(str string) (int, error) {
+	return c.writer.Write([]byte(str))
+}
