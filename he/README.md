@@ -2,7 +2,7 @@
 
 ## 整体demo
 
-叫he是因为和chi进行互补。
+叫he是因为和[chi](https://github.com/go-chi/chi)进行互补。
 
 ```go
 package main
@@ -56,7 +56,7 @@ func main() {
 
 ```
 
-[example地址](https://golearn.coding.net/p/class-5/d/homework/git/tree/feature%2Fhelios/lesson8/group8/helios/he/example)
+[example地址](https://github.com/helios741/myblog/tree/new/learn_go/he/example)
 
 
 
@@ -85,7 +85,7 @@ type context struct {
 
 2、 让http参数（可能是json、form、xml类型）转换为自定义的struct
 
-[he/context.go](https://golearn.coding.net/p/class-5/d/homework/git/tree/feature%2Fhelios/lesson8/group8/helios/he/context.go)
+[he/context.go](https://github.com/helios741/myblog/blob/new/learn_go/he/context.go)
 
 
 
@@ -115,7 +115,7 @@ type router struct {
 }
 ```
 
-具体如何使用，在上面的demo已经说明过了。具体代码在[he/router.go](https://golearn.coding.net/p/class-5/d/homework/git/tree/feature%2Fhelios/lesson8/group8/helios/he/router.go)，[he/tree_test.go](https://golearn.coding.net/p/class-5/d/homework/git/tree/feature%2Fhelios/lesson8/group8/helios/he/tree_test.go)
+具体如何使用，在上面的demo已经说明过了。具体代码在[he/router.go](https://github.com/helios741/myblog/blob/new/learn_go/he/router.go)，[he/tree_test.go](https://github.com/helios741/myblog/blob/new/learn_go/he/tree_test.go)
 
 
 
@@ -180,7 +180,7 @@ func (q queryBinding) Bind(request *http.Request, obj interface{}) error {
 
 关于mappingByPtr的函数可以继续看[Go中如何将map转换为struct](https://mp.weixin.qq.com/s/w1Frhg_rlF5jtjAtlVJHmg)
 
-[he/binding](https://golearn.coding.net/p/class-5/d/homework/git/tree/feature%2Fhelios/lesson8/group8/helios/he/binding)
+[he/binding](https://github.com/helios741/myblog/tree/new/learn_go/he/binding)
 
 最后的validate的函数马上出现。
 
@@ -216,7 +216,7 @@ func New() Validator{
 
 
 
-所有的功能都在下面这个单测([he/validator/validator_test.go](https://golearn.coding.net/p/class-5/d/homework/git/tree/feature%2Fhelios/lesson8/group8/helios/he/validator/validator_test.go))里面了：
+所有的功能都在下面这个单测([he/validator/validator_test.go](https://github.com/helios741/myblog/blob/new/learn_go/he/validator/validator_test.go))里面了：
 
 ```go
 type Address struct {
@@ -263,7 +263,7 @@ func isColor(fp FieldParam) bool {
 }
 ```
 
-[he/validator](https://golearn.coding.net/p/class-5/d/homework/git/tree/feature%2Fhelios/lesson8/group8/helios/he/validator)
+[he/validator](https://github.com/helios741/myblog/tree/new/learn_go/he/validator)
 
 ## 待完成
 
