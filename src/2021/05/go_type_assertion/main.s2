@@ -1,0 +1,4 @@
+type_switch.go:4:8: undefined: Stringer
+type_switch.go:4:19: undefined: Binary
+type_switch.go:6:7: undefined: Stringer
+type_switch.go:8:7: undefined: Binary

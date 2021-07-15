@@ -25,7 +25,6 @@ func M2(handler he.HandlerFunc) he.HandlerFunc {
 
 type ReqT struct {
 	Name string `form:"name" hebind:"required"`
-	//Age string `form:"age" hebind:"gte=0,lte=130"`
 	Age string `form:"age" hebind:"required"`
 }
 
