@@ -1,6 +1,6 @@
 # [翻译] Go += Package Versioning
 
-我们需要在go中增加版本管理。
+我们需要在Go中增加版本管理。
 
 更确切的说，我们需要在Go 开发者和工具之间增加包版本的概念，以至于他们（开发者和工具）在相互沟通的时候能准确的知道构建、运行和分析哪个程序。`go`命令需要能准确的告诉开发者在某个特定的构建中使用了哪个版本的依赖包。
 
@@ -32,15 +32,15 @@
 
 ### Makefile，goinstall和go get
 
-在2019年11月份，Go的最初发布版本包含编译器、链接器和一些二进制。你必须运行`6g`和`61`编译和链接你的程序（我们提供了示例的makefile）。在大多数情况下，这是能够构建单一软件包和写一些特定的makefile的最小包装的gobuild。<del>没有和其他人共享代码好的方式。</del>我们知道还需要很多，我们发布了我们能够做什么，剩下的和社区一起做。
+在2009年11月份，Go的最初发布版本包含编译器、链接器和一些二进制。你必须运行`6g`和`61`编译和链接你的程序（我们提供了示例的makefile）。在大多数情况下，这是能够构建单一软件包和写一些特定的makefile的最小包装的gobuild。<del>没有和其他人共享代码好的方式。</del>我们知道还需要很多，我们发布了我们能够做什么，剩下的和社区一起做。
 
 
 
-在2010年的2月份，我们[提案了goinstall](https://groups.google.com/d/msg/golang-nuts/8JFwR3ESjjI/cy7qZzN7Lw4J)，这是一个新的、零配置的从远程仓库（Bitbucket或Github）下载包的命令。`goinstall`引入了import 路径（现在的Go开发者已经认为这是理所当然的）。因为当时没有代码遵循这个约定，`goinstall`只对除了标准库没有引入其他包的项目有效。开发者很快从自己不同的命名方案迁移到今天熟知的统一方案，而已经发布的软件包也逐渐形成统一的生态。
+在2010年的2月份，我们[提案了goinstall](https://groups.google.com/d/msg/golang-nuts/8JFwR3ESjjI/cy7qZzN7Lw4J)，这是一个新的、零配置的从远程仓库（Bitbucket或Github）下载包的命令。`goinstall`引入了import 路径规则（现在的Go开发者已经认为这是理所当然的）。因为当时没有代码遵循这个约定，`goinstall`只对除了标准库没有引入其他包的项目有效。开发者很快从自己不同的命名方案迁移到今天熟知的统一方案，而已经发布的软件包也逐渐形成统一的生态。
 
 
 
-`go install`还消除了makefile以及它带来的用户自定义构建变量的复杂性。不能每次编译生成代码对于一些包作者是不方便的，但这种简化对包使用者化是非常重要的：用户在构建包之前不用担心和作者不是一个工具集。这个简化对工具的使用也是很重要的。对于包makefile是强制的、按部就班的；逆向工程如何将不同的工具（比如`go vet`或代码补全）应用于同一个软件包是相当困难的。即使得到正确的依赖关系，让包只在有必要的时候重建，这对于makefile也是困难的。尽管一些人持反对态度因为灵活性被剥夺了，显然好处超过了不便之处。
+`go install`还消除了makefile以及它带来的用户自定义构建变量的复杂性。在每次编译时候不能生成代码对于一些包作者是不方便的，但这种简化对包使用者化是非常重要的：用户在构建包之前不用担心和作者不是一个工具集。这个简化对工具的使用也是很重要的。对于包makefile是强制的、按部就班的；逆向工程如何将不同的工具（比如`go vet`或代码补全）应用于同一个软件包是相当困难的。即使得到正确的依赖关系，让包只在有必要的时候重建，这对于makefile也是困难的。尽管一些人持反对态度因为灵活性被剥夺了，显然好处超过了不便之处。
 
 
 
@@ -60,11 +60,11 @@
 
 第一个缺点是不能向用户表达**在本次更新中**？？？？？？
 
-在2013年11月，Go 1.2在FAQ中增加了一项关于包版本化的基本建议（从G 1.10开始没有变化）：
+在2013年11月，Go 1.2在FAQ中增加了一项关于包版本化的基本建议（从Go 1.10开始没有变化）：
 
 > 如果包想要公开被使用那么要保持向后兼容。在[Go 1的兼容性准则](https://golang.org/doc/go1compat)中有很好的引用: 不要删除导出的变量和函数、鼓励标记复合字面量等。如果需要不同的功能，新增代替修改。如果有不兼容，使用新包和新路径。
 
-在2014年3月，Gustavo Niemeyer创建了 [*gopkg.in*](https://gopkg.in/),宣传“G语言稳定的API”。这个域名是一个具有版本意识的github重定向器。允许导入一个Git仓库中不同的commit/branch（像`gopkg.in/yaml.v1`和`gopkg.in/yaml.v2`）。根据语义化版本的划分，包作者有break change的时候应该引入一个新的大版本，所以v1版本的早期和晚期能相互替换，而v2导入路径是一个完全不同的API。
+在2014年3月，Gustavo Niemeyer创建了 [*gopkg.in*](https://gopkg.in/),宣传“Go语言稳定的API”。这个域名是一个具有版本意识的github重定向器。允许导入一个Git仓库中不同的commit/branch（像`gopkg.in/yaml.v1`和`gopkg.in/yaml.v2`）。根据语义化版本的划分，包作者有break change的时候应该引入一个新的大版本，所以v1版本的早期和晚期能相互替换，而v2导入路径是一个完全不同的API。
 
 
 
@@ -98,7 +98,7 @@ Hyrum's law并没有说语义化版本是不好的，我得出的结论是**构�
 
 
 
-在2014年10月，Keith为了让符合规定的工具更好的理解项目，提出要在工具链中[支持“外部依赖包”的概念](https://groups.google.com/forum/#!msg/golang-dev/74zjMON9glU/dGhnoi2IMzsJ)。到那时，有多种与`godep`类似着力点。Matt Farina在一篇名叫“Glide在Go版本管理的海洋”中比较了Godep与较新的工具进行对比，其中glide罪令人瞩目。
+在2014年10月，Keith为了让符合规定的工具更好的理解项目，提出要在工具链中[支持“外部包”的概念](https://groups.google.com/forum/#!msg/golang-dev/74zjMON9glU/dGhnoi2IMzsJ)。到那时，有多种与`godep`类似着力点。Matt Farina在一篇名叫“Glide在Go版本管理的海洋”中比较了Godep与较新的工具进行对比，其中glide最令人瞩目。
 
 
 
@@ -260,25 +260,7 @@ require (
 
 
 
-## 下一步是什么
-
-I've also posted “[A Tour of Versioned Go](https://research.swtch.com/vgo),” showing what it's like to use `vgo`. See that post for how to download and experiment with `vgo` today.
-
-
-
-
-
-
-
-I'm excited for Go to take the long-overdue step of adding versions to its working vocabulary. Some of the most common problems that developers run into when using Go are the lack of reproducible builds, `go` `get` ignoring release tags entirely, the inability of GOPATH to comprehend multiple versions of a package, and wanting or needing to work in source directories outside
-
-
-
-
-
-
-
-
+![image-20210808193437420](./image-20210808193437420.png)
 
 
 
