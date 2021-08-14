@@ -1,3 +1,72 @@
+欢迎大家下方扫码关注我的公众号：
+
+![4A83BDA0-6BB1-45C8-BA4E-8B3B1F5F6AAE](./gzh.png)
+
+## 2020
+
+- [为什么Go服务容器化之后延迟变高](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/docker_golang_app)
+
+- [[翻译] Go += Package Versioning](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/translate_go_package_versioning)
+
+- [Go如何实现对任意struct的校验](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/07/validator)
+
+- [Go中如何将map转换为struct](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/07/map-to-struct)
+
+- [radix tree有哪些用途](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/07/radix-tree)
+
+- [[译]go 数据结构：interface](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/05/translation_go_data_structures_interface)
+
+- [使用值还是指针](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/05/stress_value_pointer)
+
+- [golang用值还是用指针：几乎完结篇](https://mp.weixin.qq.com/s/3d0KFB3hTq4IfdUa8uKUpg)
+
+- [如何做到面向对象](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/05/how_oop)
+
+- [构建组件有哪些设计原则](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/05/component_principle)
+
+- [go中channel是如何发送的](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/05/channel_send)
+
+- [什么是SOLID设计原则](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/04/solid)
+
+- [三层架构和MVC的区别是什么](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/04/mvc-three-tier)
+
+- [GO语言初学八小问](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/04/effective_go)
+
+- [再谈ISP: 如何让代码解耦](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/04/again-isp)
+
+- [再谈DIP: 如何编写可测试代码](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/04/again-dip)
+
+- [2021 gopherChina之旅](https://mp.weixin.qq.com/s/5imE5QA7_xb4shsiyhzR9Q)
+
+- [golang interface原理分析](https://mp.weixin.qq.com/s/jDJMeZWAaN9zpqgGtNJZOQ)
+
+- [如何察觉代码坏味道：依赖](https://mp.weixin.qq.com/s/wj24fs99ONIxRRJMau_FzQ)
+
+- [如何察觉代码坏味道：变量和结构](https://mp.weixin.qq.com/s/ZcVLpio0cuAhcyGiF_UAJA)
+
+- [《代码整洁之道：程序员的职业素养》(一)](https://mp.weixin.qq.com/s/PzU9dpibJaZf0UeUnQRlIA)
+
+- [golang实现继承](https://mp.weixin.qq.com/s/TM6E1oxgzfxpl8q8djWXKQ)
+
+- [golang性能分析指南--trace](https://mp.weixin.qq.com/s/0J3t7c4-DqRxcNQv0bEGlQ)
+
+- [golang性能分析工具指南--pprof](https://mp.weixin.qq.com/s/TRQ_vwYuqXnuFLYAGbxlQA)
+
+- [一文让tcpdump无处遁形](https://mp.weixin.qq.com/s/dn0AcyU2_CbteuHxCnC-Fw)
+
+- [unix socket和tcp socket的区别](https://mp.weixin.qq.com/s/mOHculokKtkjFkO8BmSjNg)
+
+- [IP报文计算头部校验和](https://mp.weixin.qq.com/s/Mhdqt1Mlt2vbqhLHnU_yZQ)
+
+- [进阶TCP的四次挥手](https://mp.weixin.qq.com/s/2dFgHN146cBJttrwcNY95A)
+
+  
+
+
+
+
+
+
 
 ## 2020
 
