@@ -20,9 +20,13 @@
 
 我把启动的过程整理为了一张图， 并且把重点部分做了标记。
 
+<img src="./image-20210825220237823.png" alt="image-20210825220237823" style="zoom:50%;" />
 
+注⚠️
 
-rt0_amd64和rt0_go都是汇编代码在`runtime/asm_amd64.s`文件中；剩下的函数都在`runtime/proc.go`文件中。
+rt0_amd64和rt0_go都是汇编代码在`runtime/asm_amd64.s`文件中；
+
+剩下的函数都在`runtime/proc.go`文件中。
 
 
 
@@ -37,7 +41,7 @@ MOVQ	BX, (g_stack+stack_lo)(DI) // g.stack.lo = BX = -64*1024 + 104 + SP
 MOVQ	SP, (g_stack+stack_hi)(DI) // g.stack.hi =  SP
 ```
 
-要看懂这段代码我们就必须先说一下关于runtime.g这个结构中关于栈的几个字段。
+要看懂这段代码就必须先说一下runtime.g结构中关于栈的几个字段。
 
 ```go
 type stack struct {
@@ -81,7 +85,7 @@ MOVQ	AX, g_m(CX)       // g0.m = m0
 func getg() *g
 ```
 
-这个会在编译的时候根据你的平台从不同的地方那，这里其实就是从tls(thread local storage)中拿的，这个函数我们一会儿也能见到。
+这个会在编译的时候根据你的平台从不同的地方拿，这里其实就是从tls(thread local storage)中拿的，getg这个函数我们一会儿会大量见到。
 
 剩下的代码配合后面的注释也都不难理解。
 
