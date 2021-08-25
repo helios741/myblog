@@ -1,8 +1,14 @@
 欢迎大家下方扫码关注我的公众号：
 
-![4A83BDA0-6BB1-45C8-BA4E-8B3B1F5F6AAE](./gzh.png)
+<img src="https://user-images.githubusercontent.com/12036324/129443175-e2a6a676-4ba6-42cd-8e24-fe3577c4acde.png" alt="image-20210822153904096" width = "400" height = "150" />
+
+有问题可以在issue中提，或者给微信公众号留言
 
 ## 2020
+
+- [Go scheduler这十年](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/go_scheduler_history)
+
+- [[含视频]从一个问题看go scheduler执行流程](https://mp.weixin.qq.com/s/0EM9ZTdJgVbgP3Dwfr51bQ)
 
 - [为什么Go服务容器化之后延迟变高](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/docker_golang_app)
 
