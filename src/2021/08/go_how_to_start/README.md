@@ -10,7 +10,7 @@
 
 注⚠️
 
-rt0_amd64和rt0_go都是汇编代码在`runtime/asm_amd64.s`文件中；
+rt0_amd64和rt0_go汇编代码在`runtime/asm_amd64.s`文件中；
 
 剩下的函数都在`runtime/proc.go`文件中。
 
@@ -20,11 +20,11 @@ rt0_amd64和rt0_go都是汇编代码在`runtime/asm_amd64.s`文件中；
 
 <img src="./image-20210826100522570.png" alt="image-20210826100522570" style="zoom:50%;" />
 
-如果你学过intel x86的汇编执行的话，对于简单执行的结构是这样的**指令 目标 源**。
+如果你学过intel x86这类汇编的话，知道简单执行的结构是**指令 目标 源**这样的。
 
-比如**MOV EAX 48**这个的含义是将48放到EAX寄存器上，但是对于plan9却正好相反，结构是**指令 源 目标**，要想把48放到EAX寄存器上，需要写为**MOVQ 16(SP) AX **。
+比如**MOV EAX 48**的含义是将48放到EAX寄存器上，但是对于plan9却正好相反，结构是**指令 源 目标**，要想把48放到EAX寄存器上，需要写为**MOVQ $48 AX **。
 
-能够看出两点不同：
+能够看出2⃣️点不同：
 
 1、 MOV后面必须跟长度
 
@@ -62,10 +62,10 @@ type g struct {
 ```
 
 - `g.stack`表示的是这个goroutine能够使用的内存范围是[lo, hi)。
-- stackguard0：Go栈的边界，也提供给抢占式调度用。TODO
+- stackguard0：Go栈的边界，也提供给抢占式调度用。
 - stackguard1： C栈的边界
 
-知道了这个，我们再来回过头看这个栈的空间一共是64*1024 - 104字节，也就是将近64M。只有main函数的g0的栈才会这么大，普通的goroutine的栈只有2K，后面我们会看到2K怎么来的。
+知道了这些我们再来回过头看一下汇编代码，g0栈的空间一共是64*1024 - 104字节，也就是将近64M。只有main函数的g0的栈才会这么大，普通的goroutine的栈只有2K，后面我们会看到2K怎么来的。
 
 ## 得到m0和g0
 
@@ -99,7 +99,7 @@ MOVQ	AX, g_m(CX)       // g0.m = m0
 
 
 
-这个代码感觉没有什么难理解的，就是绑定m0和g0
+这个代码没有什么难理解的，就是绑定m0和g0
 
 
 
@@ -107,7 +107,7 @@ MOVQ	AX, g_m(CX)       // g0.m = m0
 
 **runtime/proc.go注释小加餐（很少，还是看看吧）**
 
-<img src="./image-20210826100429796.png" alt="image-20210826100429796" style="zoom:50%;" />
+<img src="./image-20210826101800706.png" alt="image-20210826101800706" style="zoom:50%;" />
 
   ```go
 // The bootstrap sequence is:
@@ -148,13 +148,15 @@ func schedinit() {
 }
 ```
 
-这里面有一系列相关的初始化操作，比较重要的对于内存管理的初始化（初始化堆以及m上的mcache）和GC的初始化，这都是和runtiem密切相关的。
+这里面有一系列初始化操作，比较重要的有对于内存管理的初始化（初始化堆以及m上的mcache）和GC的初始化，这都是和runtime密切相关的。
 
 还就是设置P的数量等于CPU 和核心数。
 
 注⚠️：
 
-如果P的数量远大于能使用的核心数，CPU升高进而导致延迟过高，具体分析例子可以看TODO
+如果P的数量远大于能使用的核心数，会导致CPU升高进而导致延迟过高，具体分析例子可以看[为什么Go服务容器化之后延迟变高](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/docker_golang_app)
+
+
 
 
 
@@ -202,11 +204,7 @@ GLOBL	runtime·mainPC(SB),RODATA,$8
 func main() {
 	g := getg()
 
-	if GOARCH != "wasm" { // no threads on wasm yet, so no sysmon
-		systemstack(func() {
-			newm(sysmon, nil, -1) // 后台进程
-		})
-	}
+	newm(sysmon, nil, -1) // 后台进程
 	
   lockOSThread()
 	// 只能是m0才能进入这个函数
@@ -223,17 +221,17 @@ func main() {
 
 runtime.main主要做了下面几个事情：
 
--  1、 执行sysmon后台线程
+1、将sysmon这个函数绑定到一个新的M上，但不执行
 
-- 2、 runtime.main这个g.m是不是m0
+2、 runtime.main这个g.m是不是m0
 
--  3、 开启GC
+3、 开启GC
 
--  4、 执行Go程序main包下面的main函数
+4、 执行Go程序main包下面的main函数
 
 我们来分别看一下这几个东西
 
-####  1、 执行sysmon后台线程
+####  1、 将sysmon这个函数绑定到一个新的M上，但不执行
 
 简简单单的`newm(sysmon, nil, -1)`一行调用其实包含了很多东西。第一我们先说一下sysmon的作用：
 
@@ -326,7 +324,7 @@ func gcenable() {
 }
 ```
 
-为什么说这个呢，这也解答了为什么我们启动一个go程序，会多好几个goroutine。
+为什么说这个呢，这也解答了为什么我们启动一个go程序，会多好几个goroutine，在下面的工具演示篇，会演示一下。
 
 
 
@@ -445,7 +443,7 @@ func malg(stacksize int32) *g {
 
 如果你有兴趣可以继续看`runtime.stackalloc`这个函数实现就是简单的栈空间赋值。
 
-最后是`runtime.runqput`，在[[含视频]从一个问题看go scheduler执行流程](https://mp.weixin.qq.com/s/0EM9ZTdJgVbgP3Dwfr51bQ)和[Go scheduler这十年](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/go_scheduler_history)都对这个过程做了讲述，我们在简单提一下，如果想了解Go 调度器的可以看下这两篇文章。先看图理解下过程：
+最后是`runtime.runqput`，其作用就是将G放在执行队列上。用几张图描述一下这个过程（在[[含视频]从一个问题看go scheduler执行流程](https://mp.weixin.qq.com/s/0EM9ZTdJgVbgP3Dwfr51bQ)和[Go scheduler这十年](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/go_scheduler_history)都对这个过程做了详细讲述，如果有兴趣可以看一下）：
 
 <img src="./image-20210825125929354.png" alt="image-20210825125929354" style="zoom:50%;" />
 
@@ -492,7 +490,9 @@ retry:
 
 ## runtime·mstart
 
-最后一步来了这个最好和上面两个连起来看：
+<img src="./image-20210826102854901.png" alt="image-20210826102854901" style="zoom:50%;" />
+
+最好和上面两个连起来看：
 
 ```asm
 MOVQ  $runtime·mainPC(SB), AX   
@@ -519,7 +519,7 @@ func mstart() {
 }
 ```
 
-再来看下mstart1函数
+做了一些栈操作然后调用了mstart1，再来看下mstart1函数
 
 ```go
 func mstart1() {
