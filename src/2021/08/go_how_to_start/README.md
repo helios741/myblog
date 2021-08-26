@@ -6,7 +6,7 @@
 
 我把启动的过程整理为了一张图， 并且把重点部分做了标记。可以先看一下有个大致印象，后面我们会一步步分析。
 
-<img src="./image-20210825220237823.png" alt="image-20210825220237823" style="zoom:50%;" />
+![image-20210826100849346](./image-20210826100849346.png)
 
 注⚠️
 
@@ -14,21 +14,21 @@ rt0_amd64和rt0_go都是汇编代码在`runtime/asm_amd64.s`文件中；
 
 剩下的函数都在`runtime/proc.go`文件中。
 
+## 初始化全局g0
 
+**plan9汇编小加餐（可略过）✊**
 
-### 初始化全局g0
-
-plan9汇编小加餐（可略过）：
+<img src="./image-20210826100522570.png" alt="image-20210826100522570" style="zoom:50%;" />
 
 如果你学过intel x86的汇编执行的话，对于简单执行的结构是这样的**指令 目标 源**。
 
-比如MOV EAX 16(SP)这个的含义是将SP + 16这个地址放到EAX寄存器上，但是对于plan9却正好相反，结构是**指令 源 目标**，要想把SP + 16地址放到EAX寄存器上，需要写为**MOVQ 16(SP) AX **。
+比如**MOV EAX 48**这个的含义是将48放到EAX寄存器上，但是对于plan9却正好相反，结构是**指令 源 目标**，要想把48放到EAX寄存器上，需要写为**MOVQ 16(SP) AX **。
 
 能够看出两点不同：
 
 1、 MOV后面必须跟长度
 
-2、 没有EAX、RAX这些执行，都是两个字母的AX
+2、 没有EAX、RAX这些指令，都是两个字母的AX
 
 记住这些就够用了
 
@@ -67,11 +67,11 @@ type g struct {
 
 知道了这个，我们再来回过头看这个栈的空间一共是64*1024 - 104字节，也就是将近64M。只有main函数的g0的栈才会这么大，普通的goroutine的栈只有2K，后面我们会看到2K怎么来的。
 
+## 得到m0和g0
 
+**runtime获得当前g小加餐（可忽略，但最好看看）**
 
-### 得到m0和g0
-
-runtime获得当前g小加餐（可忽略，但最好看看）：
+<img src="./image-20210826100558977.png" alt="image-20210826100558977" style="zoom:50%;" />
 
 如果你看过Go runtime代码的话就会经常看到getg()，但是看这个函数定义的时候却啥也没有：
 
@@ -101,9 +101,13 @@ MOVQ	AX, g_m(CX)       // g0.m = m0
 
 这个代码感觉没有什么难理解的，就是绑定m0和g0
 
-### runtime·schedinit
 
-runtime/proc.go注释小加餐（很少，还是看看吧）：
+
+## runtime·schedinit
+
+**runtime/proc.go注释小加餐（很少，还是看看吧）**
+
+<img src="./image-20210826100429796.png" alt="image-20210826100429796" style="zoom:50%;" />
 
   ```go
 // The bootstrap sequence is:
@@ -154,9 +158,11 @@ func schedinit() {
 
 
 
-### runtime.main
+## runtime.main
 
-plan9汇编如何定义变量小加餐（可忽略）：
+**plan9汇编如何定义变量小加餐（可忽略）**
+
+<img src="./image-20210826100807761.png" alt="image-20210826100807761" style="zoom:50%;" />
 
 定义结构如下：
 
@@ -344,7 +350,7 @@ func main_main()
 
 
 
-### runtime.main包装为g
+## runtime.main包装为g
 
 ```asm
 PUSHQ AX                        
@@ -484,7 +490,7 @@ retry:
 
 至此我们main包的mian函数已经作为g被放到待调度任务里面了。那么下一步就是开启调度循环能让我们的任务跑起来的。
 
-### runtime·mstart
+## runtime·mstart
 
 最后一步来了这个最好和上面两个连起来看：
 
