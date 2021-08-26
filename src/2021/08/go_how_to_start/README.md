@@ -2,23 +2,9 @@
 
 
 
-## 为看懂汇编
-
-汇编小常识
 
 
-
-
-
-## 工具小扫盲：dlv
-
-
-
-
-
-## 如何启动的
-
-我把启动的过程整理为了一张图， 并且把重点部分做了标记。
+我把启动的过程整理为了一张图， 并且把重点部分做了标记。可以先看一下有个大致印象，后面我们会一步步分析。
 
 <img src="./image-20210825220237823.png" alt="image-20210825220237823" style="zoom:50%;" />
 
@@ -31,6 +17,24 @@ rt0_amd64和rt0_go都是汇编代码在`runtime/asm_amd64.s`文件中；
 
 
 ### 初始化全局g0
+
+plan9汇编小加餐（可略过）：
+
+如果你学过intel x86的汇编执行的话，对于简单执行的结构是这样的**指令 目标 源**。
+
+比如MOV EAX 16(SP)这个的含义是将SP + 16这个地址放到EAX寄存器上，但是对于plan9却正好相反，结构是**指令 源 目标**，要想把SP + 16地址放到EAX寄存器上，需要写为**MOVQ 16(SP) AX **。
+
+能够看出两点不同：
+
+1、 MOV后面必须跟长度
+
+2、 没有EAX、RAX这些执行，都是两个字母的AX
+
+记住这些就够用了
+
+------
+
+
 
 ```asm
 MOVQ	$runtime·g0(SB), DI
@@ -67,6 +71,20 @@ type g struct {
 
 ### 得到m0和g0
 
+runtime获得当前g小加餐（可忽略，但最好看看）：
+
+如果你看过Go runtime代码的话就会经常看到getg()，但是看这个函数定义的时候却啥也没有：
+
+```go
+func getg() *g
+```
+
+这个会在编译的时候根据你的平台从不同的地方拿，这里其实就是从tls(thread local storage)中拿的，getg这个函数我们一会儿会大量见到。
+
+------
+
+
+
 ```asm
 get_tls(BX)
 LEAQ	runtime·g0(SB), CX  // CX = runtime·g0
@@ -79,19 +97,27 @@ MOVQ	CX, m_g0(AX)       // m0.g0 = g0
 MOVQ	AX, g_m(CX)       // g0.m = m0
 ```
 
-如果你看过Go runtime代码的话就会经常看到getg()，但是看这个函数定义的时候却啥也没有：
-
-```go
-func getg() *g
-```
-
-这个会在编译的时候根据你的平台从不同的地方拿，这里其实就是从tls(thread local storage)中拿的，getg这个函数我们一会儿会大量见到。
-
-剩下的代码配合后面的注释也都不难理解。
 
 
+这个代码感觉没有什么难理解的，就是绑定m0和g0
 
 ### runtime·schedinit
+
+runtime/proc.go注释小加餐（很少，还是看看吧）：
+
+  ```go
+// The bootstrap sequence is:
+//
+//	call osinit
+//	call schedinit
+//	make & queue new G
+//	call runtime·mstart
+//
+  ```
+
+上面是启动Go程序的主要四个步骤。
+
+------
 
 
 
@@ -120,11 +146,37 @@ func schedinit() {
 
 这里面有一系列相关的初始化操作，比较重要的对于内存管理的初始化（初始化堆以及m上的mcache）和GC的初始化，这都是和runtiem密切相关的。
 
-还就是设置P的数量等于CPU 和核心数。TODO
+还就是设置P的数量等于CPU 和核心数。
+
+注⚠️：
+
+如果P的数量远大于能使用的核心数，CPU升高进而导致延迟过高，具体分析例子可以看TODO
 
 
 
 ### runtime.main
+
+plan9汇编如何定义变量小加餐（可忽略）：
+
+定义结构如下：
+
+```asm
+DATA 变量名+偏移量(SB)/变量size, 变量值
+GLOBL 变量名, 变量模式，长度
+```
+
+就按照我们马上会遇到举个例子：
+
+```asm
+DATA	runtime·mainPC+0(SB)/8,$runtime·main(SB)
+GLOBL	runtime·mainPC(SB),RODATA,$8
+```
+
+这个的含义是定义了**变量名**为runtime·mainPC、**变量值**为runtime·main、**变量长度**是8字节、**模式**是只读（RODATA）的一个变量。
+
+------
+
+
 
 ```go
 // create a new goroutine to start program
@@ -138,7 +190,7 @@ DATA	runtime·mainPC+0(SB)/8,$runtime·main(SB)
 GLOBL	runtime·mainPC(SB),RODATA,$8
 ```
 
-如果我看了第一节，很容易就理解这是行如`runtime·mainPC := runtime·main`一个结构。那么我们就来看一下runtime.main这个函数：
+这是形如`runtime·mainPC := runtime·main`一个结构。那么我们就来看一下runtime.main这个函数：
 
 ```go
 func main() {
@@ -177,11 +229,82 @@ runtime.main主要做了下面几个事情：
 
 ####  1、 执行sysmon后台线程
 
-这个我们在TODO
+简简单单的`newm(sysmon, nil, -1)`一行调用其实包含了很多东西。第一我们先说一下sysmon的作用：
+
+- 检查死锁
+- netpoll：每10ms从（non-blocking）netpoll中拿可运行的goroutine，插入到全局队列
+- retake：从20us到10ms，每次sleep double的时间然后去抢占
+  - handoffp：如果P的状态是Syscall：唤醒一个新的M执行这个P的认为，让那个M去执行syscall吧
+
+
+
+```go
+func sysmon() {
+	// 检查死锁
+	checkdead()
+
+	idle := 0 
+	delay := uint32(0)
+	for {
+		// delay 处理
+		usleep(delay)
+		now := nanotime()
+		next, _ := timeSleepUntil()
+		// ...
+		if netpollinited() && lastpoll != 0 && lastpoll+10*1000*1000 < now {
+			list := netpoll(0) // non-blocking - returns list of goroutines
+			if !list.empty() {
+				incidlelocked(-1)
+        // 插入全局队列
+				injectglist(&list)
+				incidlelocked(1)
+			}
+		}
+		// 抢占/剥离正在执行syscall的P
+		if retake(now) != 0 {
+			idle = 0
+		} else {
+			idle++
+		}
+	}
+}
+```
+
+checkdead()这个我们经常遇到，这个就会检查如果你的所有goroutine都在阻塞那么就判断为死锁，比如：
+
+```go
+package main
+
+func main() {
+	var ch = make(chan int)
+	for i := 0 ;i < 2; i++ {
+		go func() {
+			ch<- 2
+		}()
+	}
+	ch<- 1
+}
+```
+
+说完了sysmon，我们在看下`newm(fn func(), _p_ *p, id int64) `这个函数的作用就是创建一个M，fn是启动M会执行的方法（在下面我们能看到），将创建出来的M绑定到_p_上，这个M的id，如果传递非-1代表指定ID。
+
+函数的调用关系如下：
+
+```go
+newm -> allocm(创建runtime.m这个结构但是没有创建线程) -> mcommoninit
+                                                  -> mp.g0 = malg()
+     -> newm1 -> newosproc 创建系统线程
+```
+
+
+
+
+
+
 
 #### 2、  runtime.main这个g.m是不是m0
 
-这个其实不是用多说就是一个if判断。提醒一下大家main函数通过lockOSThread()将g0绑死到了m0上，所以这个调度也是不用P的。下面还会有地方能和这里呼应。
+这个其实不是用多说只有一个if判断。提醒一下大家main函数通过lockOSThread()将g0绑死到了m0上，所以这个调度也是不用P的。下面还会有地方能和这里呼应。
 
 
 
@@ -197,7 +320,7 @@ func gcenable() {
 }
 ```
 
-为什么这么说呢，这也解答了为什么我们启动一个go程序，会多好几个goroutine。
+为什么说这个呢，这也解答了为什么我们启动一个go程序，会多好几个goroutine。
 
 
 
@@ -359,7 +482,7 @@ retry:
 }
 ```
 
-至此我们main包的mian函数已经作为g被放到待调度任务里面了。那么下一步就是开启调度循环能染我们的任务跑起来的。
+至此我们main包的mian函数已经作为g被放到待调度任务里面了。那么下一步就是开启调度循环能让我们的任务跑起来的。
 
 ### runtime·mstart
 
@@ -422,9 +545,17 @@ func mstart1() {
 }
 ```
 
+`_g_.m.mstartfn`还记得前面在runtime.main的时候通过newm创建了个M，对应的mstartfn就是sysmon，我们也能看出，其实sysmon也是不用绑定P就能执行。
+
 我们可以看出这个函数的主要作用是开启调度循环。
 
 <img src="./image-20210825193756701.png" alt="image-20210825193756701" style="zoom:50%;" />
+
+
+
+## 如何调试Go程序
+
+因为图片演示太过枯燥，我通过一个视频来演示一下dlv这个工具的全流程。
 
 
 
@@ -432,3 +563,10 @@ func mstart1() {
 
 ## 总结
 
+至此，我们就分析完了Go启动的流程，这些东西唬唬人绝对够了，但是里面还充斥着很多细节没有展开说，比如：
+
+1、 一个goroutine执行完了或者被强占了是怎么切换到G0的
+
+2、 内存是如何管理的（本文涉及到内存相关都比较概括，因为内存管理的名词实在太多）
+
+3、 
