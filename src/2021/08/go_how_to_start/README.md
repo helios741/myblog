@@ -6,7 +6,7 @@
 
 
 
-本文会从Go程序启动的第一行汇编代码分析到我们代码中写的main函数怎么执行的，并在最后介绍一个如何调试Go代码的工具，能让你清晰的看到这个过程。我把启动的过程整理为了一张图， 并且把重点部分做了标记。可以先看一下有个大致印象，后面我们会一步步分析。
+本文会从Go程序启动的第一行汇编代码一直分析到main函数如何执行的，并在最后介绍一个如何调试Go代码的工具，能让你清晰的看到整个过程。我把启动过程整理为了一张图， 并且把重点部分做了标记。可以先看一下有个大致印象，后面我们会一步步分析。
 
 ![image-20210826100849346](./image-20210826100849346.png)
 
@@ -22,17 +22,19 @@ rt0_amd64和rt0_go汇编代码在`runtime/asm_amd64.s`文件中；
 
 <img src="./image-20210826100522570.png" alt="image-20210826100522570" style="zoom:50%;" />
 
-如果你学过intel x86这类汇编的话，知道简单执行的结构是**指令 目标 源**这样的。
+如果你学过intel x86这类汇编的话，知道简单指令的结构是**指令 目标 源**这样的。
 
 比如**MOV EAX 48**的含义是将48放到EAX寄存器上，但是对于plan9却正好相反，结构是**指令 源 目标**，要想把48放到EAX寄存器上，需要写为**MOVQ $48 AX **。
 
-能够看出2⃣️点不同：
+能够看出3⃣️点不同：
 
 1、 MOV后面必须跟长度
 
 2、 没有EAX、RAX这些指令，都是两个字母的AX
 
-记住这些就够用了
+3、 操作数前面要加$
+
+记住这些就够用了。<del>如果对intel 汇编有兴趣的话，可以看看我以前写的[汇编实现两位数相加](https://blog.csdn.net/woshinannan741/article/details/50085679)，哈哈哈</del>
 
 ------
 
@@ -64,7 +66,7 @@ type g struct {
 ```
 
 - `g.stack`表示的是这个goroutine能够使用的内存范围是[lo, hi)。
-- stackguard0：Go栈的边界，也提供给抢占式调度用。
+- stackguard0：Go栈的边界，也提供给抢占式调度使用。
 - stackguard1： C栈的边界
 
 知道了这些我们再来回过头看一下汇编代码，g0栈的空间一共是64*1024 - 104字节，也就是将近64M。只有main函数的g0的栈才会这么大，普通的goroutine的栈只有2K，后面我们会看到2K怎么来的。
@@ -73,7 +75,7 @@ type g struct {
 
 **runtime获得当前g小加餐（可忽略，但最好看看）**
 
-<img src="./image-20210826100558977.png" alt="image-20210826100558977" style="zoom:50%;" />
+<img src="./image-20210826185615407.png" alt="image-20210826185615407" style="zoom:50%;" />
 
 如果你看过Go runtime代码的话就会经常看到getg()，但是看这个函数定义的时候却啥也没有：
 
@@ -109,7 +111,7 @@ MOVQ	AX, g_m(CX)       // g0.m = m0
 
 **runtime/proc.go注释小加餐（很少，还是看看吧）**
 
-<img src="./image-20210826101800706.png" alt="image-20210826101800706" style="zoom:50%;" />
+<img src="./image-20210826101800706.png" alt="image-20210826101800706" style="zoom: 25%;" />
 
   ```go
 // The bootstrap sequence is:
@@ -175,7 +177,7 @@ DATA 变量名+偏移量(SB)/变量size, 变量值
 GLOBL 变量名, 变量模式，长度
 ```
 
-就按照我们马上会遇到举个例子：
+就按照我们马上会遇到的举个例子：
 
 ```asm
 DATA	runtime·mainPC+0(SB)/8,$runtime·main(SB)
@@ -225,7 +227,7 @@ runtime.main主要做了下面几个事情：
 
 1、将sysmon这个函数绑定到一个新的M上，但不执行
 
-2、 runtime.main这个g.m是不是m0
+2、 判断runtime.main这个g.m是不是m0
 
 3、 开启GC
 
@@ -241,6 +243,7 @@ runtime.main主要做了下面几个事情：
 - netpoll：每10ms从（non-blocking）netpoll中拿可运行的goroutine，插入到全局队列
 - retake：从20us到10ms，每次sleep double的时间然后去抢占
   - handoffp：如果P的状态是Syscall：唤醒一个新的M执行这个P的认为，让那个M去执行syscall吧
+  - preemptone: 执行抢占，1.14之前是只标记为抢占，1.14之后触发抢占
 
 
 
@@ -292,12 +295,12 @@ func main() {
 }
 ```
 
-说完了sysmon，我们在看下`newm(fn func(), _p_ *p, id int64) `这个函数的作用就是创建一个M，fn是启动M会执行的方法（在下面我们能看到），将创建出来的M绑定到_p_上，这个M的id，如果传递非-1代表指定ID。
+说完了sysmon，我们在看下`newm(fn func(), _p_ *p, id int64) `这个函数的作用就是创建一个M，fn是启动M会执行的方法（在下面我们能看到在哪执行的），将创建出来的M绑定到_p_上，以及这个M的id如果传递非-1代表指定ID。
 
 函数的调用关系如下：
 
 ```go
-newm -> allocm(创建runtime.m这个结构但是没有创建线程) -> mcommoninit
+newm -> allocm(创建runtime.m结构但是没有创建线程) -> mcommoninit
                                                   -> mp.g0 = malg()
      -> newm1 -> newosproc 创建系统线程
 ```
@@ -332,21 +335,21 @@ func gcenable() {
 
 #### 4、  执行Go程序main包下面的main函数
 
-不知道你有没有这样的一个疑问🤔️，就是Go怎么知道读mian包下面的main函数呢。我们下面main_main的定义就知道的。
+不知道你有没有这样的一个疑问🤔️，就是Go怎么知道读main包下面的main函数呢。我们看下main_main的定义就知道的。
 
 ```go
 //go:linkname main_main main.main
 func main_main()
 ```
 
-这里是讲mian包下面这个私有的mian函数进行的导出，所以如果你改下这个定义：
+这里是将main包下面私有的main函数进行的导出，所以如果你改下这个定义为：
 
 ```go
 //go:linkname main_main1 main.main1
 func main_main()
 ```
 
-它就会读你main包下面的mian1函数了
+它就会读你main包下面的main1函数了
 
 
 
@@ -443,7 +446,7 @@ func malg(stacksize int32) *g {
 }
 ```
 
-如果你有兴趣可以继续看`runtime.stackalloc`这个函数实现就是简单的栈空间赋值。
+如果你有兴趣可以继续看`runtime.stackalloc`这个函数，它实现就是普通的栈空间赋值。
 
 最后是`runtime.runqput`，其作用就是将G放在执行队列上。用几张图描述一下这个过程（在[[含视频]从一个问题看go scheduler执行流程](https://mp.weixin.qq.com/s/0EM9ZTdJgVbgP3Dwfr51bQ)和[Go scheduler这十年](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/08/go_scheduler_history)都对这个过程做了详细讲述，如果有兴趣可以看一下）：
 
@@ -488,7 +491,7 @@ retry:
 }
 ```
 
-至此我们main包的mian函数已经作为g被放到待调度任务里面了。那么下一步就是开启调度循环能让我们的任务跑起来的。
+至此我们main包的main函数已经作为g被放到待调度任务里面了。那么下一步就是开启调度循环能让我们的任务跑起来的。
 
 ## runtime·mstart
 
@@ -567,7 +570,7 @@ func mstart1() {
 
 
 
-有了工具的支撑，看Go程序的启动流程就不言自明了，首先通过`dlv debug hello.o`或`dlv exec ./hello`（这两个的区别是一个跟文件一个跟二进制），然后我们就能通过si(step-instruction)就能看到我们上面讲述的起点。后面通过si/s就能进行调试看到启动的整个全貌了。
+有了工具的支撑，看Go程序的启动流程就不言自明了，首先通过`dlv debug hello.o`或`dlv exec ./hello`（这两个的区别是一个跟文件一个跟二进制），然后能通过si(step-instruction)能看到我们上面讲述的起点。后面通过si/s指令就能进行调试看到启动的整个全貌了。
 
 ![image-20210826184344262](./image-20210826184344262.png)
 
