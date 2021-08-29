@@ -1,16 +1,12 @@
 # Go程序内存假泄漏是怎么回事
 
-其实这是一个很早之前我就发现的一个问题，我在网上发现其实好多gopher都遇到的这个问题。如果你的Go服务版本是**大于等于**1.12并且**小于**1.16的话，大概率也会遇到这个问题。
-
-先简单说一下，是发现在内存持续的很长居高不下，但是看memstat参数之后发现堆inuse很少，并且堆Released已经很大了，也就是
-
-
+其实这是一个很早之前我发现的一个问题，好多gopher都遇到过的这个问题。如果你的Go服务版本是**大于等于**1.12并且**小于**1.16的话，大概率也会遇到这个问题。
 
 
 
 ## 现象&分析
 
-我们的服务使用期是在每天早10:00到晚9:00，有一天早上我来公司比较早（9:55左右），日常查看监控，这个时候理论上应该一点量没有，CPU也正常（在低位）但是内存为何如此高（低峰应该20+M，但是监控显示将近1G）。
+我们的服务使用期是在每天早10:00到晚9:00，有一天早上我来公司比较早（9:55左右），日常查看监控，这个时候理论上应该一点量没有，CPU也正常（在低位）但是内存特别高（低峰应该20+M，但是监控显示将近1G）。
 
 <img src="./1.png" alt="卧槽| 斗图表情包" style="zoom:33%;" />
 
@@ -22,19 +18,23 @@
 
 ![image-20210829161545406](./image-20210829161545406.png)
 
-那么问题来了，可能是堆内存栈的高，也可能是栈占的内存高了，要是栈的内存高了那就不好搞了（<del>突然想起我当时的前几天写了个递归，难道是出事了</del>），此时的我不知道为啥想再排除一个更不可能的问题，是不是GC一致没有执行（<del>因为同事也改了编译环境</del>）。然后打开pprof的下图(事后补的， 可能有些偏差，主要看文字)：
+那么问题来了，可能是堆内存高，也可能是栈占的内存高了，要是栈的内存高那就不好搞了（<del>突然想起我当时的前几天写了个递归，难道是出事了</del>），此时的我不知道为啥想再排除一个更不可能的问题，是不是GC一直没有执行（<del>因为同事也改了编译环境</del>）。然后打开pprof的下图(事后补的， 可能有些偏差，主要看文字)：
 
 ![image-20210829163046804](/Users/helios/Library/Application Support/typora-user-images/image-20210829163046804.png)
 
-我把重点的指标在图中进行了标柱，说明了三个问题：
+我把重点的指标在图中进行了标注，说明了三个问题：
 
 1、 执行了GC
 
 2、 goroutine占用的栈空间很小
 
-3、 堆inuse很小，堆的释放却很多。
+3、 堆inuse很小。
 
-这么一通操作下来，我蒙圈了，哪里的内存泄漏了，我有查了查go101的内存泄漏总结（[Memory Leaking Scenarios](https://go101.org/article/memory-leaking.html)，我在最后总结一下内存泄漏的情况）都不符合。
+本来就想看个GC有没有执行的，结果看出来个难以理解的问题。
+
+![img](./640.png)
+
+我有点蒙圈了，，哪里的内存泄漏了，既不是栈又不是堆。我又查了查go101的内存泄漏总结（[Memory Leaking Scenarios](https://go101.org/article/memory-leaking.html)，我在最后总结一下内存泄漏的情况）都不符合。
 
 ![这合理吗?这河里吗?这恒河理~表情包_沙雕表情包相关表情包,表情包合辑- 求表情网,斗图从此不求人!](./5ffbdb00b0ee6Hyh.png)
 
@@ -104,21 +104,11 @@ func main() {
 
 <img src="./image-20210829171028666.png" alt="image-20210829171028666" style="zoom:50%;" />
 
-这是因为在1.13总有个小优化[Proposal: Smarter Scavenging](https://go.googlesource.com/proposal/+/aa701aae530695d32916b779e048a3e18311a2e3/design/30333-smarter-scavenging.md)，将最佳分配改为最先分配。而且1.13之后加上`GODEBUG=madvdontneed=1`之后的变化曲线和1.12也是有所不同：
+这是因为在1.13有个小优化[Proposal: Smarter Scavenging](https://go.googlesource.com/proposal/+/aa701aae530695d32916b779e048a3e18311a2e3/design/30333-smarter-scavenging.md)，将最佳分配改为最先分配。而且1.13之后加上`GODEBUG=madvdontneed=1`之后的变化曲线和1.12也是有所不同：
 
 <img src="/Users/helios/Desktop/helios/myblog/src/2021/08/go_feak_memory_lark/image-20210829172536861.png" alt="image-20210829172536861" style="zoom:50%;" />
 
 这个可能因为那个小优化，但是具体问题还在进一步跟进。
-
-
-
-## Go服务内存泄漏点小加餐
-
-这是对前面说的[Memory Leaking Scenarios](https://go101.org/article/memory-leaking.html)一个小总结，希望能够帮助到读者后续排查内存泄漏的问题：
-
-### 1、从string中新建string
-
-
 
 
 
