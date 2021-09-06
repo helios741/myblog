@@ -2,19 +2,27 @@
 
 # Go的fasthttp快的秘诀：简单事情做到极致
 
+本文介绍fasthttp针对net/http的不足做了哪些优化。通过原理+数据的方式让你不仅知其然还知其所以然。
+
 
 
 ## 背景
+
+我把fasthttp、net/http以及gin（可有可无）分别对小包（512字节）和大包（4K）进行压测，得到了平均响应时间、tp99、CPU以及内存数据。
 
 ![image-20210905210951135](./image-20210905210951135.png)
 
 ![image-20210905211257030](./image-20210905211257030.png)
 
-大包和**tp99较高其他无明显差异。**
+我们能够看出大包和小包在**平均响应时间**和**tp99**无明显差异。
+
+当QPS超过4K之后分水岭越来越明显，fasthttp消耗最少(比原生少30%)，gin和原生的http相差无几。
+
+fasthttp表现明显比标准库节省将近40%，其余的相差无几。
 
 ## net/http慢在哪
 
-TODO 上图
+先看下如何启动一个http服务的demo：
 
 ```go
 func h(w http.ResponseWriter, r *http.Request) {
@@ -28,11 +36,11 @@ func main()  {
 }
 ```
 
-我们分两步看，先看http服务启动流程（http.ListenAndServe）然后看接受请求流程（h(w http.ResponseWriter, r *http.Request)）。
+我们分三步看，先看路由注册流程（http.HandleFunc）然后看下最简单的http服务启动流程（http.ListenAndServe）最后分析接受请求流程（h(w http.ResponseWriter, r *http.Request)）。
 
 
 
-### 路由的注册流程（http.HandleFunc）
+### 1、路由的注册流程（http.HandleFunc）
 
 这一步比较简单，最简单的想法就是搞一个`map[string]hander`，然后接收请求的时候和请求的path进行比较，如果存在就执对应的方法，不存在就404。确实默认http处理就是这么做的：
 
@@ -73,7 +81,7 @@ func (mux *ServeMux) Handle(pattern string, handler Handler) {
 
 平常使用gin、echo等框架，诸如`/students/:id`这样的统配是怎么实现的呢。确实原生http提供的路由比较粗糙，所有才有了替代方案，即通过radix tree实现，如果你有兴趣可以看[radix tree有哪些用途](https://github.com/helios741/myblog/tree/new/learn_go/src/2021/07/radix-tree)。开源项目[httprouter](https://github.com/julienschmidt/httprouter)是最初实现，有兴趣可以看下代码，并不多。
 
-### http的启动流程（http.ListenAndServe）
+### 2、 http的启动流程（http.ListenAndServe）
 
 这一步骤极其简单，就是用net包对tcp层进行了封装。
 
@@ -98,7 +106,7 @@ srv.server就是我们马上要讲的处理方法。
 
 
 
-### 接收请求流程（h(w http.ResponseWriter, r *http.Request)）
+### 3、 接收请求流程（h(w http.ResponseWriter, r *http.Request)）
 
 温馨小提示：
 
@@ -110,7 +118,7 @@ Goland是很好的调试工具。比如我对h函数打个断点然后请求一�
 
 ------
 
-每个连接一个goroutine，即*goroutine-per-connection*模式。代码并不少但逻辑比较简单清晰，我把整个过程整理为了一张图（黄色框框代表要创建心对象）：
+每个连接一个goroutine，即*goroutine-per-connection*模式。代码并不少但逻辑比较简单清晰，我把整个过程整理为了一张图（黄色框框代表需要创建新对象）：
 
 ![image-20210905173914086](./image-20210905173914086.png)
 
@@ -195,6 +203,20 @@ BenchmarkServer_AcquireCtxCreate-8   	 2375942	       474 ns/op	    1428 B/op	  
 
 可以看出在每次操作的消耗上快了25倍+，使用sync.Pool的内存消耗几乎为零。<del>关于sync.Pool怎么实现的，还有机会在说的，别跑题</del>
 
+我们通过pprof再来看一下整体流程：
+
+![image-20210906101640602](./image-20210906101640602.png)
+
+
+
+- runtime占用了47.4%
+  - 这是因为程序执行过快，导致runtime相对较高了，并不是问题
+- workpool.getCh占了51.88%
+
+![image-20210906102002890](./image-20210906102002890.png)
+
+除了必不可少的bufio.Peek(占用9.85%)和bufio.Flush(占用26.61%)剩下的所剩无几了（15.37%）。
+
 
 
 
@@ -253,61 +275,6 @@ mallocgc是分配内存操作，没超过64K还好一点，如果超过了64K就
 
 ## 总结
 
+上周看了许多net库的实现，说一下感叹吧。
 
-
-Server.Serve
-    -> workerPool.start() .....
-    -> acceptConn -> workerPool.Serve() -> 
-
-
-
-```go
-func (s *Server) Serve(ln net.Listener) error {
-
-	wp := &workerPool{
-		WorkerFunc:      s.serveConn,
-		MaxWorkersCount: maxWorkersCount,
-		LogAllErrors:    s.LogAllErrors,
-		Logger:          s.logger(),
-		connState:       s.setState,
-	}
-	wp.Start()
-
-
-  // 接收请求
-	for {
-		c, err = acceptConn(s, ln, &lastPerIPErrorTime)
-    // ...handle error
-		err = wp.Serve(c) // !important
-    // ... handle error
-		c = nil
-	}
-}
-```
-
-
-
-```go
-func acceptConn(s *Server, ln net.Listener, lastPerIPErrorTime *time.Time) (net.Conn, error) {
-	for {
-		c, err := ln.Accept()
-		if err != nil {
-			if c != nil {
-				panic("BUG: net.Listener returned non-nil conn and non-nil error")
-			}
-			if netErr, ok := err.(net.Error); ok && netErr.Temporary() {
-				s.logger().Printf("Temporary error when accepting new connections: %s", netErr)
-				time.Sleep(time.Second)
-				continue
-			}
-			if err != io.EOF && !strings.Contains(err.Error(), "use of closed network connection") {
-				s.logger().Printf("Permanent error when accepting new connections: %s", err)
-				return nil, err
-			}
-			return nil, io.EOF
-		}
-		return c, nil
-	}
-}
-```
-
+一门新生的语言还必须要走成熟语言（java）的全过程，并且在这个过程中涌现了各式各样的开源项目都是借鉴java的netty（不仅是rpc框架，还有设计模式、代码规范等等都是借鉴成熟语言的成熟方案）。
