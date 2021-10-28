@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:new" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:new" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="66a5434b-3d80-4a1c-b92d-8c0d2287abff" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/http/client/with-print.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../geek_45_mysql/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../geek_45_mysql/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../08/go_how_to_start/start.graffle" beforeDir="false" afterPath="$PROJECT_DIR$/../../08/go_how_to_start/start.graffle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../09/fasthttp_priciple/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../09/fasthttp_priciple/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ddia_5/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../ddia_5/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/client/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/grpc/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/server/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/http/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/http/client/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/http/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/http/server/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp/client/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tcp/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp/server/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/udp/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/udp/client/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/udp/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/udp/server/main.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" path="$USER_HOME$/go/bin/go1.16.2" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../.." />
+  </component>
+  <component name="ProjectId" id="2035uNW57KUO3a2lOvmpa3RxHmG" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunManager" selected="Go Build.go build main.go (1)">
+    <configuration name="go build main.go (1)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="uds_in_go" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/http/client/main.go" />
+      <directory value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="uds_in_go" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/http/server/main.go" />
+      <directory value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main.go (1)" />
+        <item itemvalue="Go Build.go build main.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="1398" height="245" key="GridCell.Tab.0.bottom" timestamp="1635304779591">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1398" height="245" key="GridCell.Tab.0.bottom/0.0.1440.900/1440.0.1920.1080@0.0.1440.900" timestamp="1635304779591" />
+    <state width="1398" height="245" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1635261908674" />
+    <state width="1398" height="245" key="GridCell.Tab.0.center" timestamp="1635304779590">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1398" height="245" key="GridCell.Tab.0.center/0.0.1440.900/1440.0.1920.1080@0.0.1440.900" timestamp="1635304779590" />
+    <state width="1398" height="245" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1635261908673" />
+    <state width="1398" height="245" key="GridCell.Tab.0.left" timestamp="1635304779589">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1398" height="245" key="GridCell.Tab.0.left/0.0.1440.900/1440.0.1920.1080@0.0.1440.900" timestamp="1635304779589" />
+    <state width="1398" height="245" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1635261908672" />
+    <state width="1398" height="245" key="GridCell.Tab.0.right" timestamp="1635304779590">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state width="1398" height="245" key="GridCell.Tab.0.right/0.0.1440.900/1440.0.1920.1080@0.0.1440.900" timestamp="1635304779590" />
+    <state width="1398" height="245" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1635261908673" />
+    <state x="385" y="196" width="670" height="676" key="search.everywhere.popup" timestamp="1635340773463">
+      <screen x="0" y="0" width="1440" height="900" />
+    </state>
+    <state x="385" y="196" width="670" height="676" key="search.everywhere.popup/0.0.1440.900/1440.0.1920.1080@0.0.1440.900" timestamp="1635340773463" />
+  </component>
+</project>
