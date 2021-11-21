@@ -31,7 +31,7 @@ func main() {
 
 我们使用Go内置的cpu pprof看下（go tool pprof -http=:9876 http://localhost:6060/debug/pprof/profile?seconds=10）：
 
-![image-20211120203349239](/Users/helios/Desktop/helios/myblog/src/2021/11/fgprof/image-20211120203349239.png)
+![image-20211120203349239](./image-20211120203349239.png)
 
 这个就比较扯，mian函数都是执行cpu密集的函数了，其他的都没了。但是我们通过time看下每个函数的真实执行时间：
 
@@ -97,6 +97,4 @@ Go本身不太适用CPU密集服务，但是CPU profile label却能很好的定�
 最后就是runtime暴露出来的hook是太少了，根本没办法植入自己代码（link方式这种官方不推荐的方式不说了），有的时候一个问题出现了，能根据理论猜到是调度的问题，但是如果想实践证明的话，就必须改runtime代码，甚至改网络模型。还有比如我有100个goroutine，完全不能知道状态，只能通过link runtime代码的方式hack出来。
 
 
-
-## 总结
 
