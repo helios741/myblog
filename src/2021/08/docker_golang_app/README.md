@@ -110,11 +110,12 @@ func main() {
   wg.Add(i)
   i := i
   go func() {
+    defer wg.Done()
    // 假装做一些计算操作
    fmt.Println(i)
   }()
  }
- wg.Done()
+ wg.Wait()
 }
 ```
 
