@@ -22,11 +22,9 @@
 
 我们在[Go的fasthttp快的秘诀：简单事情做到极致](https://github.com/helios741/myblog/blob/new/learn_go/src/2021/09/fasthttp_priciple/README.md)中说到fasthttp把总结出性能优化的一条建议“**通过测试看pprof哪里有内存分配，然后通过sync.Pool进行优化**”。
 
-其实sync.Pool的主要作用就是优化，优化对象申请的时候和对象太多对GC造成的压力（如果对这句话不理解可以继续往下看）。
+其实sync.Pool的主要作用就是优化，优化对象申请时和堆上对象太多对GC造成的压力（如果对这句话不理解可以继续往下看）。
 
-它里面存在的时候可能会被清除对象，sync.Pool利用GC比较巧妙的实现了类似LRU的功能，当然这个LRU还是比较原始（如果不理解怎么实现的可以往下看，因为这一节是我最后写的）。
-
-
+它里面存在的对象可能会被清除，sync.Pool利用GC比较巧妙的实现了类似LRU的功能，当然这个LRU还是比较原始（如果不理解怎么实现的可以往下看，因为这一节是我最后写的）。
 
 
 
@@ -193,6 +191,7 @@ func (p *Pool) pin() (*poolLocal, int) {
 	if uintptr(pid) < s {
 		return indexLocal(l, pid), pid
 	}
+  // 只会走到这里一次
 	return p.pinSlow()
 }
 
@@ -232,6 +231,31 @@ func canPreemptM(mp *m) bool {
 ```
 
 第一条就是`mp.locks == 0`所以说，mp.locks!=0是不能触发抢占的。
+
+我们目前为止还没看到local在哪初始化的，这就是pinSlow的功劳了：
+
+```go
+func (p *Pool) pinSlow() (*poolLocal, int) {
+	// 操作全局变量要加锁
+	allPoolsMu.Lock()
+	defer allPoolsMu.Unlock()
+  
+	s := p.localSize
+	l := p.local
+	// 证明是首次创建，将当前的pool塞到全局allPools中，方便清理
+	if p.local == nil {
+		allPools = append(allPools, p)
+	}
+	
+  // 创建local，原子保存
+	size := runtime.GOMAXPROCS(0)
+	local := make([]poolLocal, size)
+	atomic.StorePointer(&p.local, unsafe.Pointer(&local[0])) // store-release
+	atomic.StoreUintptr(&p.localSize, uintptr(size))         // store-release
+	return &local[pid], pid
+}
+
+```
 
 
 
@@ -322,7 +346,7 @@ type poolLocalInternal struct {
 
 ```
 
-第一就是没次操作shared需要加锁，但是调用runtime_procPin的时候不能使用mutex，因为可能会造成死锁，所以没次使用mutex还要runtime_unprocPin，TODO 是不是可能导致奇怪的race问题。
+第一就是没次操作shared需要加锁，但是调用runtime_procPin的时候不能使用mutex，因为可能会造成死锁，所以没次使用mutex还要runtime_unprocPin（这问题我会在后面具体解释）。
 
 第二是没有victim优化，我们结合注册到GC清理的函数来看：
 
@@ -371,8 +395,6 @@ PoolExpensiveNew-12       33.9 ± 6%       40.0 ± 6%  +17.97%  (p=0.000 n=19+20
 
 
 
-
-
 ⏰这解决了文章开始的第二个问题（“**可不可以通过全局对象自己实现pool替代sync.Pool？有哪些问题？**”），因为我们自己实现肯定要加锁（ 就算自己实现无锁也要用两次CAS，有的时候压测下来可能还不如Mutex），不能像标准库那样充分利用runtime的能力。
 
 
@@ -383,13 +405,58 @@ PoolExpensiveNew-12       33.9 ± 6%       40.0 ± 6%  +17.97%  (p=0.000 n=19+20
 
 ### 1、 内存长时间不回收
 
-先来看段代码：
+先来看段代码（from [#23199](https://github.com/golang/go/issues/23199)）：
 
 ```go
+func main() {
+	pool := sync.Pool{New: func() interface{} { return new(bytes.Buffer) }}
 
+	processRequest := func(size int) {
+		b := pool.Get().(*bytes.Buffer)
+		time.Sleep(500 * time.Millisecond) // 模拟处理时间
+		b.Grow(size)
+		pool.Put(b)
+		time.Sleep(1 * time.Millisecond) // 模拟空闲时间
+	}
+
+	// 向Pool中Put是个256M的
+	for i := 0; i < 10; i++ {
+		go func() {
+			processRequest(1 << 28) // 256MiB
+		}()
+	}
+
+	time.Sleep(time.Second) 
+
+	// 向Pool中Put是个1K大小的
+	for i := 0; i < 10; i++ {
+		go func() {
+			for {
+				processRequest(1 << 10) // 1KiB
+			}
+		}()
+	}
+
+	// 持续触发GC看什么时候内存降低
+	var stats runtime.MemStats
+	for i := 0; ; i++ {
+		runtime.ReadMemStats(&stats)
+		fmt.Printf("Cycle %d: %dB\n", i, stats.Alloc)
+		time.Sleep(time.Second)
+		runtime.GC()
+	}
+
+}
 ```
 
-https://github.com/golang/go/issues/23199
+当执行35次GC之后，内存才降低下来：
+
+```go
+Cycle 30: 537018704B
+Cycle 31: 148640B
+```
+
+如果你向pool中put 1000个1k大小的，那么内存持续的时间会更长。
 
 ### 2、 频繁GC导致Pool被清空
 
@@ -406,11 +473,41 @@ func main() {
 }
 ```
 
-但是这样还是太频繁了
+根据咱上面的介绍，我们能看出这是输出nil，但是感觉还是太频繁了，两次GC可能在一分钟就完成了。
 
 ### 3、 频繁创建sync.Pool
 
-https://xargin.com/lock-contention-in-go/
+
+
+我们通过pinSlow知道了每次创建一个sync.Pool，都会想全局的allPools中append一个，再来回顾一下pinSlow：
+
+```go
+func (p *Pool) pinSlow() (*poolLocal, int) {
+	runtime_procUnpin()
+	allPoolsMu.Lock()
+	defer allPoolsMu.Unlock()
+	pid := runtime_procPin()
+  // ...
+  if p.local == nil {
+		allPools = append(allPools, p)
+	}
+  // ...
+}
+```
+
+能看到需要先将G和P解除固定，然后申请这把全局锁allPoolsMu，以后遇到一个请求创建一个sync.Pool的时候就要注意了，并发上不去的原因可能是因为这里有把大锁。那么下一个问题来了，为什么加锁之前要把G和P解除固定呢。我们假设三个条件：
+
+- 只有一个Process（P）；
+- 有两个goroutine，分别是G1和G2
+- 一个全局的mutex，m1
+
+G1获取到了m1，之后被调度走了，G2得到了执行权，并且调用procUnpin和P绑定，然后G2也要获取m1，但是G1被执行了，所以就死锁了。所以保证每次加锁的顺序是一致的，即先拿锁，再调用procUnpin。
+
+1.13的问题比较严重，因为local上的shared也是有锁的，就导致每次操作shared之前要先unprocUnpin，然后加锁，但是GC清理的时候是不加锁的，所以就可能导致race。这个问题让我想起了gin.Context中的Keys字段，他提供的Set和Get方法（里面有锁操作）还把Keys设置为大写，个人认为是个设计失误，当然现在已经骑虎难下了[Context.reset should be locked against keys](https://github.com/gin-gonic/gin/issues/2874)和[context.Keys should be private](https://github.com/gin-gonic/gin/issues/2873) 。
+
+
+
+
 
 ### 4、 buffer pool的最佳实践
 
