@@ -29,15 +29,15 @@ func main() {
 
 | 名字     | fd   | 缩写   |
 | -------- | ---- | ------ |
-| 标准输入 | 0    | stdiin |
+| 标准输入 | 0    | stdin  |
 | 标准输出 | 1    | stdout |
-| 保准错误 | 2    | stderr |
+| 标准错误 | 2    | stderr |
 
 我们再把这个问题深挖一下，**fd怎么对应到真实的文件的呢？**，首先需要科普一下Linux文件系统的结构(图from [introduction-to-the-linux-virtual-filesystem-vfs](https://www.starlab.io/blog/introduction-to-the-linux-virtual-filesystem-vfs-part-i-a-high-level-tour))：
 
 ![image-20211213225241252](./image-20211213225241252.png)
 
-VFS的存在相当于为上层提供统一的接口，下层能对接任意的存储，比如ext系列、nfs、xfs等。inode存放的是文件的metadata，比如权限，大小是多大，占多少个块等，这个结构相当大。TODO，贴inode的结构。
+VFS的存在相当于为上层提供统一的接口，下层能对接任意的存储，比如ext系列、nfs、xfs等。inode存放的是文件的metadata，比如权限，大小是多大，占多少个块等，这个结构相当大。
 
 VFS还要具有快速**通过文件名得到inode**的能力，总不能把所有的inode都缓存下来吧，这谁也受不了了呀，所以就有了dentry（directory entry），他是一个承上启下的结构，能通过文件名快速得到inode，VFS会把尽量多的dentry缓存下来，即dentry cache。
 
@@ -112,7 +112,7 @@ https://stackoverflow.com/questions/28003921/sending-file-descriptor-by-linux-so
 
 
 
-## 在Go中实现进程传递fd
+## 用Go中实现进程间传递fd
 
 我们实现如下：
 

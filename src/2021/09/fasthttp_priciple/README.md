@@ -8,17 +8,17 @@
 
 ## 背景
 
-我把fasthttp、net/http以及gin（可有可无）分别对小包（512字节）和大包（4K）进行压测，得到了平均响应时间、tp99、CPU以及内存数据。
+我把fasthttp、net/http以及gin（可有可无）分别对小包（512字节）和大包（4K）进行压测，得到了平均响应时间、tp99、CPU以及内存数据如下：
 
 ![image-20210905210951135](./image-20210905210951135.png)
 
 ![image-20210905211257030](./image-20210905211257030.png)
 
-我们能够看出大包和小包在**平均响应时间**和**tp99**无明显差异。
+我们能够看出无论是大包还是小包在**平均响应时间**和**tp99**无明显差异。
 
-当QPS超过4K之后分水岭越来越明显，fasthttp消耗最少(比原生少30%)，gin和原生的http相差无几。
+当QPS超过4K之后**CPU**的分水岭越来越明显，fasthttp消耗最少(比原生少30%)，gin和原生的http相差无几。
 
-fasthttp表现明显比标准库节省将近40%，其余的相差无几。
+在**内存**方面fasthttp表现明显比标准库节省将近40%，其余的相差无几。
 
 ## net/http慢在哪
 
@@ -36,7 +36,7 @@ func main()  {
 }
 ```
 
-我们分三步看，先看路由注册流程（http.HandleFunc）然后看下最简单的http服务启动流程（http.ListenAndServe）最后分析接受请求流程（h(w http.ResponseWriter, r *http.Request)）。
+我们分三步看，先看路由注册流程（http.HandleFunc）然后看下最简单的http服务启动流程（http.ListenAndServe）最后分析接收请求流程（h(w http.ResponseWriter, r *http.Request)）。
 
 
 
@@ -143,7 +143,7 @@ Goland是很好的调试工具。比如我对h函数打个断点然后请求一�
 
 
 
-除了上面这些还有一点就是，每次来了一个连接实例化一个连接对象是相当浪费的。
+除了上面这些还有一点就是每次来了一个连接，都要实例化一个连接对象，这其实是相当浪费的。
 
 
 
@@ -163,19 +163,19 @@ func main() {
 }
 ```
 
-fasthttp的实现有点像但Reactor多goroutine的模式，如下图：
+fasthttp的实现有点像单Reactor多goroutine的模式，如下图：
 
 ![image-20210905200404281](./image-20210905200404281.png)
 
-fasthttp优化的唯一原则就是**复用**，包括连接复用和内存复用（其实连接复用也可以叫内存复用）。
+fasthttp优化的唯一原则就是**复用**，包括连接复用和内存复用（其实连接复用也归为内存复用）。
 
-首先说说连接服用，思路和java的线程池以及http的连接池的思路是一致的（上图右边的判断），如有可以复用的就复用，没有可复用的并且池子还么满那么就创建一个，如果池子满了就报错。
+首先说说连接复用，思路和java的线程池以及http的连接池的思路是一致的（上图右边的判断），如有可以复用的就复用，没有可复用的并且池子还没满那么就创建一个，如果池子满了就报错。
 
 对于内存复用，就是大量使用了sync.Pool，基本acquire开头的都是
 
 ![image-20210905201458784](./image-20210905201458784.png)
 
-我们最context做一下benchmark看看使用sync.Pool能提升多少性能，benchmark代码如下：
+我们对context做一下benchmark看看使用sync.Pool能提升多少性能，benchmark代码如下：
 
 ```go
 func BenchmarkServer_AcquireCtxPool(b *testing.B) {

@@ -125,7 +125,7 @@ Showing top 10 nodes out of 17
 
 ![image-20211121181104143](./image-20211121181104143.png)
 
-可以看到，使用了profile label最多会损失3%左右的性能，在[Demystifying Pprof Labels with Go](https://www.polarsignals.com/blog/posts/2021/04/13/demystifying-pprof-labels-with-go/)中透露出来的数据差不多。
+可以看到，使用了profile label最多会损失3%左右的性能，在[Demystifying Pprof Labels with Go](https://www.polarsignals.com/blog/posts/2021/04/13/demystifying-pprof-labels-with-go/)中透露出来的数据差不多。官方实现（[Proposal: Support for pprof profiler labels](https://github.com/golang/proposal/blob/master/design/17280-profile-labels.md#implementation)说明了这还和label的数量有关系）。
 
 除了上面常规的手段，tidb通过profile label统计SQL的执行时间，个人觉得这种方式还是很值得借鉴的，他们思路如下：
 

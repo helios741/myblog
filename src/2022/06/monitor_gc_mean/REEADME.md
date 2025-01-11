@@ -40,7 +40,7 @@ go_gc_duration_seconds_count 17972
 
 你可能疑问， **按理说100分位的应该只增不减的呀，怎么还凹凸不平的呢**。我们就顺着这个问题，来深入了解Go GCStats的实现揭开这个谜题。
 
-我们先来看下如何指标怎么采集上来的 ([go_collector.go#L247](https://github.com/prometheus/client_golang/blob/main/prometheus/go_collector.go#L247))：
+我们先来看下指标是怎么采集上来的 ([go_collector.go#L247](https://github.com/prometheus/client_golang/blob/main/prometheus/go_collector.go#L247))：
 
 ```go
 func (c *baseGoCollector) Collect(ch chan<- Metric) {
@@ -57,6 +57,8 @@ func (c *baseGoCollector) Collect(ch chan<- Metric) {
 	quantiles[0.0] = stats.PauseQuantiles[0].Seconds()
 	//...
 }
+
+
 
 
 ```

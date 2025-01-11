@@ -31,20 +31,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="66a5434b-3d80-4a1c-b92d-8c0d2287abff" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/http/client/with-print.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../../geek_45_mysql/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../geek_45_mysql/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../08/go_how_to_start/start.graffle" beforeDir="false" afterPath="$PROJECT_DIR$/../../08/go_how_to_start/start.graffle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../09/fasthttp_priciple/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../09/fasthttp_priciple/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../ddia_5/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../ddia_5/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/client/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grpc/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/grpc/server/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/http/client/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/http/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/http/server/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp/client/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tcp/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/tcp/server/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/udp/client/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/udp/client/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/udp/server/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/udp/server/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

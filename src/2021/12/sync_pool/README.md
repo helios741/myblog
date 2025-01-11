@@ -16,13 +16,17 @@
 
 
 
+TODO：
+
+将绑改为锁。
+
 
 
 ## 为什么会有sync.Pool
 
-我们在[Go的fasthttp快的秘诀：简单事情做到极致](https://github.com/helios741/myblog/blob/new/learn_go/src/2021/09/fasthttp_priciple/README.md)中说到fasthttp把总结出性能优化的一条建议“**通过测试看pprof哪里有内存分配，然后通过sync.Pool进行优化**”。
+我们在[Go的fasthttp快的秘诀：简单事情做到极致](https://github.com/helios741/myblog/blob/new/learn_go/src/2021/09/fasthttp_priciple/README.md)中说到fasthttp总结出性能优化的一条建议“**通过测试看pprof哪里有内存分配，然后使用sync.Pool进行优化**”。
 
-其实sync.Pool的主要作用就是优化，优化对象申请时和堆上对象太多对GC造成的压力（如果对这句话不理解可以继续往下看）。
+其实sync.Pool的主要作用就是优化，优化对象申请时速度和堆上对象太多对GC造成的压力（如果对这句话不理解可以继续往下看）。
 
 它里面存在的对象可能会被清除，sync.Pool利用GC比较巧妙的实现了类似LRU的功能，当然这个LRU还是比较原始（如果不理解怎么实现的可以往下看，因为这一节是我最后写的）。
 
@@ -52,7 +56,7 @@
 
 ·
 
-local和victim的类型是一样的，类型是`[P]poolLocal`，P就是runtime中processer的数量（如果不熟悉可以看[Go scheduler这十年](https://github.com/helios741/myblog/blob/new/learn_go/src/2021/08/go_scheduler_history/README.md)和[从一个问题看go scheduler执行流程](https://mp.weixin.qq.com/s/0EM9ZTdJgVbgP3Dwfr51bQ)），我们后续在说为什么这么设计。
+local和victim的类型是一样的，类型是`[P]poolLocal`，P就是runtime中processer的数量（如果不熟悉可以看[Go scheduler这十年](https://github.com/helios741/myblog/blob/new/learn_go/src/2021/08/go_scheduler_history/README.md)和[从一个问题看go scheduler执行流程](https://mp.weixin.qq.com/s/0EM9ZTdJgVbgP3Dwfr51bQ)），我们后续再说为什么这么设计。
 
 
 
@@ -65,13 +69,13 @@ local和victim的类型是一样的，类型是`[P]poolLocal`，P就是runtime�
 
 ### local 和victim的关系
 
-如果你熟悉CPU cache的话看到victim可能会想到victim cache，sync.Pool的victim就是借鉴的CPU victim cache，这里为了后续好理解简单说一下CPU victim cache原理：以CPU的L1 cache举例，L1 cache miss之后会重填，但是这次重填可能是错误的，victim cache的作用是减少cache miss误填损失，所以把L1 miss的先存到victim cache中（victim cache可以理解为在L1和L2之间），当误填之后要把上一次的拿回来的时候就不用一层层的着了，直接在victim cache中返回了。
+如果你熟悉CPU cache看到victim可能会想到victim cache，sync.Pool的victim就是借鉴的CPU victim cache，这里为了后续好理解简单说一下CPU victim cache原理：以CPU的L1 cache举例，L1 cache miss之后会重填，但这次重填可能是错误的，victim cache的作用是减少cache miss误填损失，所以把L1 miss的先存到victim cache中（victim cache可以理解为在L1和L2之间），当误填之后要把上一次的拿回来的时候就不用一层层的找了，直接在victim cache中返回了。
 
 
 
 ### Get的原理
 
-Get的流程本质上就是优先级的问题，优先级的标准就是拿到对象的速度，首先是相当于L1cache的local字段，不加锁的private肯定最快，然后从自己的队列中拿，从别人队列中拿最慢，L1 cache（local）中找不到就去L2 cache即victim中拿，逻辑和从local中 拿的逻辑一样。完成流程如下：
+Get的流程本质上就是优先级的问题，优先级的标准就是拿到对象的速度，首先是相当于L1cache的local字段，不加锁的private肯定最快，然后从自己的队列中拿，从别人队列中拿最慢，L1 cache（local）中找不到就去L2 cache即victim中拿，逻辑和从local中 拿的逻辑一样。完整流程如下：
 
 1、 将当前的G和P进行绑定（禁止抢占、GC）
 
@@ -150,7 +154,7 @@ func (p *Pool) getSlow(pid int) interface{} {
 
 
 
-如果你熟悉调度调度的话，差不多也是这个流程。
+如果你熟悉runtime调度的话，差不多也是这个流程。
 
 
 
@@ -191,7 +195,7 @@ func (p *Pool) pin() (*poolLocal, int) {
 	if uintptr(pid) < s {
 		return indexLocal(l, pid), pid
 	}
-  // 只会走到这里一次
+  // 一个Pool只会走到这里一次
 	return p.pinSlow()
 }
 
@@ -219,7 +223,7 @@ func stopTheWorldWithSema() {
 
 
 
-抢占在1.14之后有两个点：一是基于信号的另一个是基于协同的也就是在函数调用的时候，他们最终都会调用canPreemptM，这个函数名一看就知道什么，能不能抢占呗，我们在来看看函数体：
+抢占在1.14之后有两个点：一是基于信号的另一个是基于协同的也就是在函数调用的时候，他们最终都会调用canPreemptM，这个函数名一看就知道什么意思，能不能抢占呗，我们在来看看函数体：
 
 ```go
 func canPreemptM(mp *m) bool {
@@ -409,7 +413,11 @@ PoolExpensiveNew-12       33.9 ± 6%       40.0 ± 6%  +17.97%  (p=0.000 n=19+20
 
 ```go
 func main() {
-	pool := sync.Pool{New: func() interface{} { return new(bytes.Buffer) }}
+	pool := sync.Pool{
+    New: func() interface{} { 
+      return new(bytes.Buffer) 
+    }
+  }
 
 	processRequest := func(size int) {
 		b := pool.Get().(*bytes.Buffer)
@@ -479,7 +487,7 @@ func main() {
 
 
 
-我们通过pinSlow知道了每次创建一个sync.Pool，都会想全局的allPools中append一个，再来回顾一下pinSlow：
+我们通过pinSlow知道了每次创建一个sync.Pool，都会向全局的allPools中append一个，再来回顾一下pinSlow：
 
 ```go
 func (p *Pool) pinSlow() (*poolLocal, int) {
@@ -511,6 +519,85 @@ G1获取到了m1，之后被调度走了，G2得到了执行权，并且调用pr
 
 ### 4、 buffer pool的最佳实践
 
+现在我们知道了缓存slice可能造成一段时间的大内存不回收呢，那么sync.Pool如何应对大内存呢，来看下fmt包怎么做的(fmt.Print -> fmt.Fprint -> )：
+
+```go
+func Fprint(w io.Writer, a ...interface{}) (n int, err error) {
+	p := newPrinter()
+	p.doPrint(a)
+	n, err = w.Write(p.buf)
+	p.free()
+	return
+}
+func (p *pp) free() {
+	// 看了吧，大于64<<10字节就不要了
+	if cap(p.buf) > 64<<10 {
+		return
+	}
+
+	p.buf = p.buf[:0]
+	p.arg = nil
+	p.value = reflect.Value{}
+	p.wrappedErr = nil
+	ppFree.Put(p)
+}
+```
+
+其实标准库还有很多这么做的（好像都是**[dsnet](https://github.com/dsnet)**这个哥们提交的）。我们来看下youtube的[bucketpool](https://github.com/vitessio/vitess/blob/main/go/bucketpool/bucketpool.go)如何做的:
+
+初始化：
+
+```go
+func New(minSize, maxSize int) *Pool {
+
+	const multiplier = 2
+	var pools []*sizedPool
+	curSize := minSize
+  // 桶中元素的大小成倍数增加
+	for curSize < maxSize {
+		pools = append(pools, newSizedPool(curSize))
+		curSize *= multiplier
+	}
+	pools = append(pools, newSizedPool(maxSize))
+	return &Pool{
+		minSize: minSize,
+		maxSize: maxSize,
+		pools:   pools,
+	}
+}
+```
+
+Put：
+
+```go
+func (p *Pool) Put(b *[]byte) {
+	sp := p.findPool(cap(*b))
+	if sp == nil {
+		return
+	}
+	*b = (*b)[:cap(*b)]
+	sp.pool.Put(b)
+}
+
+func (p *Pool) findPool(size int) *sizedPool {
+  // 超过了最大size就不put了
+	if size > p.maxSize {
+		return nil
+	}
+  // 找到比size大的最近的那个桶
+	div, rem := bits.Div64(0, uint64(size), uint64(p.minSize))
+	idx := bits.Len64(div)
+	if rem == 0 && div != 0 && (div&(div-1)) == 0 {
+		idx = idx - 1
+	}
+	return p.pools[idx]
+}
+```
+
+
+
+fasthttp的作者也写了一个[bytebufferpool](https://github.com/valyala/bytebufferpool/blob/master/bytebuffer.go)原理和上面的大差不差，但是多了一个自适应调节的过程，如果有兴趣你可以看一下，在这里就不过多分析代码了。
+
 
 
 ⏰这解决了文章开始的第五个问题（“**Pool中的元素是slice有什么需要注意的**”） ，因为是slice底层的数组可能占用的空间比较大，导致长时间内存不回收，看起来像内存泄漏。
@@ -525,11 +612,15 @@ G1获取到了m1，之后被调度走了，G2得到了执行权，并且调用pr
 
 
 
-GC频繁可能并不是适合用。
+GC频繁的业务如果用sync.Pool可能做benchmark提升很高，但是真是环境提升并不高，我见过一个业务高峰期的GC频率都是级别的，用了sync.pool就优化不大。
+
+当然用sync.Pool如果已经Put会pool中的对象会造成各种诡异的问题，如下图：
+
+![image-20211227203130688](./image-20211227203130688.png)
 
 
 
-内存分级、锁分级别
+我们能通过sync.Pool学习到如何优化锁的技巧：大锁拆小锁，留一个可以无锁操作。其实sync.Pool中的steal阶段感觉批量的偷，或者自适应的偷会好一点，现在每次只偷一个有点浪费。
 
 
 
